@@ -4,111 +4,159 @@
         "Website": "https://www.uwsa.ca/campuspridecentre",
         "Location": "University of Windsor, 401 Sunset Avenue, Windsor, Ontario, N9B 3P4",
         "Phone": "519-253-3000 Ext.4093",
-        "Description": "The Campus Pride Centre provides a positive environment for Lesbian, Gay, Bisexual, Trans, Queer, Questioning, Two-Spirited, Intersex, Pansexual and Asexual individuals and their allies on the University of Windsor campus. The Campus Pride Centre holds a variety of events during the year. There are also events for National and International celebrations of queer identities such as: National Coming out Day, Transgender Day of Remembrance, International Women’s Day, World AIDS Day, and more."
+        "Description": "The Campus Pride Centre provides a positive environment for Lesbian, Gay, Bisexual, Trans, Queer, Questioning, Two-Spirited, Intersex, Pansexual and Asexual individuals and their allies on the University of Windsor campus. The Campus Pride Centre holds a variety of events during the year. There are also events for National and International celebrations of queer identities such as: National Coming out Day, Transgender Day of Remembrance, International Women's Day, World AIDS Day, and more.",
+        "lat": 42.3044,
+        "lng": -83.0660,
+        "tags": ["Youth Focus", "Family/Ally Focus"]
     },
     {
         "Name": "Five Fourteen",
         "Website": "https://www.fivefourteen.ca/",
         "Location": "3640 Wells Street, Windsor, Ontario, N9C 1T9",
         "Phone": "844-514-0514",
-        "Description": "Five/Fourteen is the only foster agency dedicated solely to providing services and support to lesbian, gay, bisexual, trans*, queer, two-spirit, and otherwise gender-independent children and youth in foster care."
+        "Description": "Five/Fourteen is the only foster agency dedicated solely to providing services and support to lesbian, gay, bisexual, trans*, queer, two-spirit, and otherwise gender-independent children and youth in foster care.",
+        "lat": 42.2858,
+        "lng": -83.0722,
+        "tags": ["Youth Focus", "Family/Ally Focus"]
     },
     {
         "Name": "LGBT National Youth Talkline",
         "Website": "https://lgbthotline.org/",
         "Location": "",
         "Phone": "1-800-246-7743",
-        "Description": "We provide a safe space that is anonymous and confidential where young callers can speak on many different issues and concerns including, but limited to, coming out issues, gender and/or"
+        "Description": "We provide a safe space that is anonymous and confidential where young callers can speak on many different issues and concerns including, but not limited to, coming out issues, gender and/or sexuality.",
+        "lat": null,
+        "lng": null,
+        "tags": ["Youth Focus"]
     },
     {
         "Name": "LGBT Youthline",
         "Website": "https://www.youthline.ca/",
         "Location": "",
         "Phone": "1-800-268-9688",
-        "Description": "The Lesbian Gay Bi Trans Youth Line exists to provide service for youth, by youth that affirms the experiences and aspirations of lesbian, gay, bisexual, transsexual, transgender, 2-spirited, queer and questioning youth in Ontario. Working within an anti-oppression and anti-racist framework, we provide leadership opportunities, outreach, confidential peer support and referrals by telephone, texting and online. Get in touch with a peer support volunteer from Sunday to Friday, 4:00PM to 9:30 PM."
+        "Description": "The Lesbian Gay Bi Trans Youth Line exists to provide service for youth, by youth that affirms the experiences and aspirations of lesbian, gay, bisexual, transsexual, transgender, 2-spirited, queer and questioning youth in Ontario. Working within an anti-oppression and anti-racist framework, we provide leadership opportunities, outreach, confidential peer support and referrals by telephone, texting and online. Get in touch with a peer support volunteer from Sunday to Friday, 4:00PM to 9:30 PM.",
+        "lat": null,
+        "lng": null,
+        "tags": ["Youth Focus"]
     },
     {
         "Name": "Metropolitan Community Church",
         "Website": "https://mccwindsor.org/",
         "Location": "1728 Lincoln Road, Windsor, Ontario, N8W 2S2",
         "Phone": "519-977-6897",
-        "Description": "Around the world, Metropolitan Community Church (MCC) provides a spiritual home for the lesbian, gay, bisexual, and transgender communities and for all who choose to join us through the practicing of the gospel of Jesus Christ in worship, prayer, social action, education, fellowship, and generosity so that all people might experience God’s liberating love, wholeness, and justice; come to live in right relationship with God and all creation; and have the courage to change the world."
+        "Description": "Around the world, Metropolitan Community Church (MCC) provides a spiritual home for the lesbian, gay, bisexual, and transgender communities and for all who choose to join us through the practicing of the gospel of Jesus Christ in worship, prayer, social action, education, fellowship, and generosity so that all people might experience God's liberating love, wholeness, and justice.",
+        "lat": 42.3115,
+        "lng": -82.9992,
+        "tags": []
     },
     {
         "Name": "OK2BME Counselling",
         "Website": "https://fswe.ca/on/safe-space/",
         "Location": "Family Services Windsor-Essex, 1770 Langlois Avenue, Windsor, Ontario N8X 4M5",
         "Phone": "1-888-933-1831",
-        "Description": "Free counselling to youth ages 12 -29 who identify as 2SLGBTQIA+. Sessions are available in-person, by phone, and secure online video. Counselling can help anyone struggling with depression, anxiety, relationships, addictions, sexuality, their gender identity, gender expression and overall wellness. Family Services Windsor-Essex is proud to offer a safer space for the 2SLGBTQIA+ community to meet their mental health needs."
+        "Description": "Free counselling to youth ages 12-29 who identify as 2SLGBTQIA+. Sessions are available in-person, by phone, and secure online video. Counselling can help anyone struggling with depression, anxiety, relationships, addictions, sexuality, their gender identity, gender expression and overall wellness. Family Services Windsor-Essex is proud to offer a safer space for the 2SLGBTQIA+ community to meet their mental health needs.",
+        "lat": 42.3013,
+        "lng": -83.0132,
+        "tags": ["Youth Focus"]
     },
     {
         "Name": "Pozitive Pathways",
         "Website": "https://www.pozitivepathways.com/",
         "Location": "511 Pelissier Street, Windsor, Ontario, N9A 4L2",
         "Phone": "519-973-0222",
-        "Description": "Our roots and core are the base of our existence. We acknowledge our deep history in the community and to the collective AIDS movement. Our mission and vision are grounded in the values developed by all of those we’ve lost, those who have experienced stigma and discrimination, our long-time survivors, activists and allies. This is the basis for the many branches of people we serve today and provides the strength that drives our work into the future. They host a Gay Men’s Sexual Health Program and also some LGBTQ Youth Groups."
+        "Description": "Our roots and core are the base of our existence. We acknowledge our deep history in the community and to the collective AIDS movement. Our mission and vision are grounded in the values developed by all of those we've lost, those who have experienced stigma and discrimination, our long-time survivors, activists and allies. This is the basis for the many branches of people we serve today. They host a Gay Men's Sexual Health Program and also some LGBTQ Youth Groups.",
+        "lat": 42.3141,
+        "lng": -83.0396,
+        "tags": ["Youth Focus"]
     },
     {
         "Name": "QConnect Plus",
         "Website": "https://www.wepridefest.com/",
         "Location": "Windsor-Essex Pride Fest, 2109 Ottawa Street, Unit #216, Windsor, Ontario, N8Y 1R8",
         "Phone": "226-348-3378",
-        "Description": "QCONNECT PLUS is an LGBTQ2S+ weekly program for the 50+ community in Windsor-Essex providing opportunities for meaningful social and recreational connections. QCCONNECT PLUS will take place in inclusive, interactive and accessible spaces and will include recreational activities, discussions and workshops as well as meaningful volunteer opportunities."
+        "Description": "QCONNECT PLUS is an LGBTQ2S+ weekly program for the 50+ community in Windsor-Essex providing opportunities for meaningful social and recreational connections. QCONNECT PLUS will take place in inclusive, interactive and accessible spaces and will include recreational activities, discussions and workshops as well as meaningful volunteer opportunities.",
+        "lat": 42.3175,
+        "lng": -82.9984,
+        "tags": ["Senior Focus"]
     },
     {
         "Name": "Qlink Windsor-Essex",
         "Website": "https://www.wepridefest.com/",
         "Location": "Windsor-Essex Pride Fest, 2109 Ottawa Street, Unit #216, Windsor, Ontario, N8Y 1R8",
         "Phone": "226-348-3378",
-        "Description": "QLink Windsor-Essex is a collaborative of three local organizations including Windsor Pride Community, Windsor-Essex Pride Fest and Family Services Windsor-Essex working together to deliver peer-led supports, programs and counselling for LGBTQ+ youth between the ages of 12-29 years of age and their families, caregivers, allies and friends."
+        "Description": "QLink Windsor-Essex is a collaborative of three local organizations including Windsor Pride Community, Windsor-Essex Pride Fest and Family Services Windsor-Essex working together to deliver peer-led supports, programs and counselling for LGBTQ+ youth between the ages of 12-29 years of age and their families, caregivers, allies and friends.",
+        "lat": 42.3175,
+        "lng": -82.9984,
+        "tags": ["Youth Focus", "Family/Ally Focus"]
     },
     {
         "Name": "Qlink Youth Drop In",
         "Website": "https://www.wepridefest.com/",
         "Location": "Windsor-Essex Pride Fest, 2109 Ottawa Street, Unit #216, Windsor, Ontario, N8Y 1R8",
         "Phone": "226-348-3378",
-        "Description": "Qlink Windsor-Essex invites you to join us for the online QConnect LGBTQ2S+ Youth Drop In. This peer facilitated online program is for individuals 12-29 years of age and offers a positive space for LGBTQ2S+ youth and their allies in an online format. This group offers a space to hang out, meet new people and make connections while fostering inclusion, community belonging, positive relationships and respect for all LGTBQ2S+ people. Groups are on Mondays and Wednesdays weekly."
+        "Description": "Qlink Windsor-Essex invites you to join us for the online QConnect LGBTQ2S+ Youth Drop In. This peer facilitated online program is for individuals 12-29 years of age and offers a positive space for LGBTQ2S+ youth and their allies in an online format. This group offers a space to hang out, meet new people and make connections while fostering inclusion, community belonging, positive relationships and respect for all LGTBQ2S+ people. Groups are on Mondays and Wednesdays weekly.",
+        "lat": 42.3175,
+        "lng": -82.9984,
+        "tags": ["Youth Focus", "Family/Ally Focus"]
     },
     {
         "Name": "Run For Rocky",
-        "Website": "runforrocky.com",
+        "Website": "https://runforrocky.com",
         "Location": "1280 Woodmont Crescent, LaSalle, Ontario, N9J 3H9",
         "Phone": "519-978-0856",
-        "Description": "The fundraising efforts through these events have established a Legacy Fund that helps to support Gay Straight Alliances in local high schools and post-secondary schools in Windsor-Essex County. This financial support includes GSA grants, GSA scholarships, funds students and educators to go to GSA educational conferences, supplies educational resources that help support parents and educators and accommodates Diversity Training for educators."
+        "Description": "The fundraising efforts through these events have established a Legacy Fund that helps to support Gay Straight Alliances in local high schools and post-secondary schools in Windsor-Essex County. This financial support includes GSA grants, GSA scholarships, funds students and educators to go to GSA educational conferences, supplies educational resources that help support parents and educators and accommodates Diversity Training for educators.",
+        "lat": 42.2341,
+        "lng": -83.0078,
+        "tags": ["Youth Focus", "Family/Ally Focus"]
     },
     {
         "Name": "Transwellness Ontario",
-        "Website": "transwellness.ca",
+        "Website": "https://transwellness.ca",
         "Location": "1435 Tecumseh Road East, Windsor, Ontario, N8W 1C2",
         "Phone": "226-674-4745",
-        "Description": "The mission of Trans Wellness Ontario is to enhance and sustain the health and wellness of Transgender, Genderqueer, Two-Spirit, Non-Binary, Queer and Questioning communities and their families."
+        "Description": "The mission of Trans Wellness Ontario is to enhance and sustain the health and wellness of Transgender, Genderqueer, Two-Spirit, Non-Binary, Queer and Questioning communities and their families.",
+        "lat": 42.3041,
+        "lng": -83.0089,
+        "tags": ["Family/Ally Focus"]
     },
     {
         "Name": "Windsor-Essex Pride Fest",
-        "Website": "wepridefest.com",
+        "Website": "https://wepridefest.com",
         "Location": "2109 Ottawa Street, Unit #216, Windsor, Ontario, N8Y 1R8",
         "Phone": "226-348-3378",
-        "Description": "Windsor-Essex Pride Fest strives to strengthen the sense of community and contribute to the vibrancy, health and overall well-being of LGBTQ2S+ persons in WindsorEssex. Raising awareness of ongoing issues facing the LGBTQ2S+ community including youth suicide, discrimination & bullying. Windsor-Essex Pride Fest as an organization is more than just a festival, it empowers individuals to reach out to each other and facilitates opportunities for connection and belonging through age-specific activities or initiatives, peer-facilitated groups and special events and will address social isolation and create a social environment that is more accommodating, resilient and connected to the broader LGBTQ2S+ community in Windsor-Essex."
+        "Description": "Windsor-Essex Pride Fest strives to strengthen the sense of community and contribute to the vibrancy, health and overall well-being of LGBTQ2S+ persons in Windsor-Essex. Raising awareness of ongoing issues facing the LGBTQ2S+ community including youth suicide, discrimination and bullying. Windsor-Essex Pride Fest empowers individuals to reach out to each other and facilitates opportunities for connection and belonging through age-specific activities or initiatives, peer-facilitated groups and special events.",
+        "lat": 42.3175,
+        "lng": -82.9984,
+        "tags": ["Youth Focus", "Family/Ally Focus"]
     },
     {
         "Name": "Windsor Pride Community",
         "Website": "https://www.windsorpride.com/",
         "Location": "1770 Langlois Avenue, Windsor, Ontario, N8X 4M5",
         "Phone": "519-946-4740",
-        "Description": "We support our committees who, among other things: work to create educational opportunities for the community, including diversity training; work with the local school boards and the Gay-Straight Alliances in schools; work with and support other community organizations, and; host seniors’ programs & activities."
+        "Description": "We support our committees who, among other things: work to create educational opportunities for the community, including diversity training; work with the local school boards and the Gay-Straight Alliances in schools; work with and support other community organizations, and; host seniors' programs and activities.",
+        "lat": 42.3013,
+        "lng": -83.0132,
+        "tags": ["Senior Focus", "Family/Ally Focus"]
     },
     {
         "Name": "Windsor Rainbow Sports Club",
-        "Website": "wrsc.ca",
+        "Website": "https://wrsc.ca",
         "Location": "",
         "Phone": "",
-        "Description": ""
+        "Description": "A social and recreational sports club for LGBTQ2S+ individuals and allies in the Windsor-Essex region.",
+        "lat": null,
+        "lng": null,
+        "tags": ["Family/Ally Focus"]
     },
     {
         "Name": "Windsor Youth Centre GSA",
-        "Website": "thewindsoryouthcentre.org",
+        "Website": "https://thewindsoryouthcentre.org",
         "Location": "1247 Wyandotte Street East, Windsor, Ontario, N9A 3K6",
         "Phone": "226-674-0006",
-        "Description": "The Windsor Youth Centre (WYC) is a surrogate living room to over one hundred and fifty youth. Where else is there to go? The youth always answer, “Nowhere.” When it opened in October 2011, WYC was the only drop-in center for homeless and at-risk youth in Windsor-Essex."
+        "Description": "The Windsor Youth Centre (WYC) is a surrogate living room to over one hundred and fifty youth. Where else is there to go? The youth always answer, \"Nowhere.\" When it opened in October 2011, WYC was the only drop-in center for homeless and at-risk youth in Windsor-Essex.",
+        "lat": 42.3170,
+        "lng": -83.0195,
+        "tags": ["Youth Focus"]
     }
 ]

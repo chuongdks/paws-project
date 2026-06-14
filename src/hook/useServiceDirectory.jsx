@@ -16,50 +16,30 @@ export function useServiceDirectory() {
   }, []);
 
   const filteredServices = useMemo(() => {
-    let results = servicesData;
+    // 1. Keyword search
+    let results = searchQuery.trim()
+      ? fuse.search(searchQuery).map(r => r.item)
+      : servicesData;
 
-    // 1. Keyword search filter
-    if (searchQuery.trim() !== '') {
-      results = fuse.search(searchQuery).map(res => res.item);
-    }
-
-    // 2. Category parsing (Physical site layout checking)
+    // 2. Access model filter — driven by whether a Location string exists
     if (categoryFilter === 'In-Person') {
-      results = results.filter(s => s.Location && s.Location.trim() !== "");
+      results = results.filter(s => s.Location?.trim());
     } else if (categoryFilter === 'Virtual/Helpline') {
-      results = results.filter(s => !s.Location || s.Location.trim() === "");
+      results = results.filter(s => !s.Location?.trim());
     }
 
-    // 3. Inclusivity tag lookup parsing descriptions
-    if (inclusivityFilter === 'Youth Focus') {
-      results = results.filter(s => 
-        s.Description.toLowerCase().includes('youth') || 
-        s.Description.toLowerCase().includes('children') || 
-        s.Name.toLowerCase().includes('youth')
-      );
-    } else if (inclusivityFilter === 'Senior Focus') {
-      results = results.filter(s => 
-        s.Description.toLowerCase().includes('senior') || 
-        s.Description.toLowerCase().includes('50+')
-      );
-    } else if (inclusivityFilter === 'Family/Ally Focus') {
-      results = results.filter(s => 
-        s.Description.toLowerCase().includes('allies') || 
-        s.Description.toLowerCase().includes('caregivers') || 
-        s.Description.toLowerCase().includes('foster')
-      );
+    // 3. Demographic/focus filter — driven by the explicit tags array
+    if (inclusivityFilter !== 'All') {
+      results = results.filter(s => s.tags?.includes(inclusivityFilter));
     }
 
     return results;
   }, [searchQuery, categoryFilter, inclusivityFilter, fuse]);
 
   return {
-    searchQuery,
-    setSearchQuery,
-    categoryFilter,
-    setCategoryFilter,
-    inclusivityFilter,
-    setInclusivityFilter,
+    searchQuery,      setSearchQuery,
+    categoryFilter,   setCategoryFilter,
+    inclusivityFilter,setInclusivityFilter,
     filteredServices
   };
 }
