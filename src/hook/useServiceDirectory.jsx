@@ -37,9 +37,9 @@ export function useServiceDirectory() {
   }, [searchQuery, categoryFilter, inclusivityFilter, fuse]);
 
   return {
-    searchQuery,      setSearchQuery,
-    categoryFilter,   setCategoryFilter,
-    inclusivityFilter,setInclusivityFilter,
+    searchQuery,        setSearchQuery,
+    categoryFilter,     setCategoryFilter,
+    inclusivityFilter,  setInclusivityFilter,
     filteredServices
   };
 }
