@@ -220,7 +220,7 @@ export default function App() {
           </div>
 
           {/* Cards list — scrolls independently */}
-          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-3 space-y-2">
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
             {filteredServices.length > 0 ? (
               filteredServices.map(service => (
                 <div
@@ -235,7 +235,8 @@ export default function App() {
                 </div>
               ))
             ) : (
-              <div className="text-center text-slate-400 text-sm py-12">
+              /* Spans the empty message across all available columns when no filters match */
+              <div className="col-span-full text-center text-slate-400 text-sm py-12">
                 <MapPin className="h-8 w-8 mx-auto mb-2 text-slate-300" />
                 No services match your filters.
                 <br />
