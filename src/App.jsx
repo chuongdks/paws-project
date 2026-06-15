@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useServiceDirectory } from './hook/useServiceDirectory.jsx';
 import LeafletTestMap from './components/LeafletTestMap.jsx';
-import { Search, MapPin, Phone, Globe, ExternalLink, SlidersHorizontal, X, ChevronRight } from 'lucide-react';
+import ServiceFormModal from './components/ServiceFormModal.jsx';
+import servicesData from './data/service.json';
+import { Search, MapPin, Phone, Globe, ExternalLink, 
+  SlidersHorizontal, X, ChevronRight, Plus, Pencil, Trash2
+} from 'lucide-react';
 
 // Helper calculation to build external Google Map link pointers cleanly
 const buildGoogleMapsLink = (address) => {
@@ -25,20 +29,56 @@ function Pill({ label, active, onClick }) {
 }
 
 // ── Compact card for the sidebar ───────────────────────────────────────────────
-function ServiceCard({ service, isSelected, onClick }) {
+function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   return (
     <article
       onClick={onClick}
-      className={`rounded-xl border p-4 cursor-pointer transition-all space-y-2 ${
+      className={`rounded-xl border p-4 cursor-pointer transition-all space-y-2 group ${
         isSelected
           ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
           : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
       }`}
     >
-      {/* Name + chevron */}
+      {/* Name + chevron + action buttons */}
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-semibold text-slate-900 text-sm leading-snug">{service.Name}</h3>
         <ChevronRight className={`h-4 w-4 shrink-0 mt-0.5 transition-colors ${isSelected ? 'text-blue-500' : 'text-slate-300'}`} />
+
+        {/* Edit / Delete — visible on hover or when selected */}
+        <div
+          className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={e => e.stopPropagation()}
+        >
+          <button
+            onClick={() => onEdit(service)}
+            title="Edit"
+            className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+
+          {confirmDelete ? (
+            <span className="flex items-center gap-1 text-[11px] bg-red-50 border border-red-200 text-red-600 rounded-md px-2 py-0.5">
+              Sure?
+              <button
+                onClick={() => { onDelete(service); setConfirmDelete(false); }}
+                className="font-bold hover:underline"
+              >Yes</button>
+              <span className="text-red-300">/</span>
+              <button onClick={() => setConfirmDelete(false)} className="hover:underline">No</button>
+            </span>
+          ) : (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              title="Delete"
+              className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tag badges */}
@@ -52,7 +92,7 @@ function ServiceCard({ service, isSelected, onClick }) {
         </div>
       )}
 
-      {/* Location or helpline badge */}
+      {/* Location or Helpline badge */}
       {service.Location ? (
         <div className="flex items-start gap-1.5 text-xs text-slate-500">
           <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 text-slate-400" />
@@ -104,12 +144,17 @@ function ServiceCard({ service, isSelected, onClick }) {
 
 // ── Main App ───────────────────────────────────────────────────────────────────
 export default function App() {
+  // ── Services state — source of truth (swap useState init below for fetch() later when the back end is finallize) ──
+  const [services, setServices] = useState(servicesData);
+  // const [services, setServices] = useState([]);
+  // useEffect(() => { fetch('/api/services').then(r => r.json()).then(setServices); }, []);
+
   const {
     searchQuery,        setSearchQuery,
     categoryFilter,     setCategoryFilter,
     inclusivityFilter,  setInclusivityFilter,
     filteredServices
-  } = useServiceDirectory();
+  } = useServiceDirectory(services);
 
   // ── Shared selection state ─────────────────────────────────────────────────
   const [selectedService, setSelectedService] = useState(null);
@@ -119,11 +164,11 @@ export default function App() {
   // Map pin click → scroll to card in sidebar
   useEffect(() => {
     if (!selectedService) return;
-    const el = cardRefs.current[selectedService.Name];
-    if (!el || !scrollContainerRef.current) return;
+    const el        = cardRefs.current[selectedService.Name];
+    const container = scrollContainerRef.current;
+    if (!el || !container) return;
 
     // Scroll within the sidebar container, not the page
-    const container = scrollContainerRef.current;
     const cardTop = el.offsetTop - container.offsetTop;
     container.scrollTo({ top: cardTop - 16, behavior: 'smooth' });
   }, [selectedService]);
@@ -140,15 +185,46 @@ export default function App() {
     setSelectedService(prev => prev?.Name === service.Name ? null : service);
   };
 
-  const accessOptions    = ['All', 'In-Person', 'Helplines'];
-  const focusOptions     = ['All', 'Youth', 'Seniors', 'Allies'];
+  // ── CRUD modal state ────────────────────────────────────────────────────────
+  const [modal, setModal] = useState(null); // null | { mode: 'add' | 'edit', service?: object }
+
+  const openAdd  = ()        => setModal({ mode: 'add' });
+  const openEdit = (service) => setModal({ mode: 'edit', service });
+  const closeModal = ()      => setModal(null);
+
+  const handleSave = (formData) => {
+    if (modal.mode === 'add') {
+      setServices(prev => [...prev, formData]);
+    } else {
+      setServices(prev => prev.map(s => s.Name === modal.service.Name ? formData : s));
+      // Update selection if the edited service was selected
+      if (selectedService?.Name === modal.service.Name) setSelectedService(formData);
+    }
+    closeModal();
+  };
+
+  const handleDelete = (service) => {
+    setServices(prev => prev.filter(s => s.Name !== service.Name));
+    if (selectedService?.Name === service.Name) setSelectedService(null);
+  };
+
+  // ── Filter label maps ──────────────────────────────────────────────────────
   // Map display labels back to filter values
-  const accessFilterMap  = { 'All': 'All', 'In-Person': 'In-Person', 'Helplines': 'Virtual/Helpline' };
-  const focusFilterMap   = { 'All': 'All', 'Youth': 'Youth Focus', 'Seniors': 'Senior Focus', 'Allies': 'Family/Ally Focus' };
+  const accessFilterMap  = { 
+    'All': 'All', 
+    'In-Person': 'In-Person', 
+    'Helplines': 'Virtual/Helpline' 
+  };
+  const focusFilterMap   = { 
+    'All': 'All', 
+    'Youth': 'Youth Focus', 
+    'Seniors': 'Senior Focus', 
+    'Allies': 'Family/Ally Focus' 
+  };
   const focusFilterMapRev = Object.fromEntries(Object.entries(focusFilterMap).map(([k,v]) => [v,k]));
 
   return (
-    // Full viewport height, no page scroll
+    // HEADER, BODY and CRUD MODAL
     <div className="h-screen flex flex-col bg-slate-100 overflow-hidden">
 
       {/* ── Header ───────────────────────────────────────────────────────────── */}
@@ -183,54 +259,51 @@ export default function App() {
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
-
-            {/* Access model pills */}
+            {/* Accessibility model pills */}
             <div className="space-y-1.5">
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                 <SlidersHorizontal className="h-3 w-3" /> Access
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {accessOptions.map(opt => (
-                  <Pill
-                    key={opt}
-                    label={opt}
+                {Object.keys(accessFilterMap).map(opt => (
+                  <Pill key={opt} label={opt}
                     active={categoryFilter === accessFilterMap[opt]}
                     onClick={() => setCategoryFilter(accessFilterMap[opt])}
                   />
                 ))}
               </div>
             </div>
-
-            {/* Focus pills */}
+            {/* Focus Group pills */}
             <div className="space-y-1.5">
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                 <SlidersHorizontal className="h-3 w-3" /> Focus
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {focusOptions.map(opt => (
-                  <Pill
-                    key={opt}
-                    label={opt}
+                {Object.keys(focusFilterMap).map(opt => (
+                  <Pill key={opt} label={opt}
                     active={inclusivityFilter === focusFilterMap[opt]}
                     onClick={() => setInclusivityFilter(focusFilterMap[opt])}
                   />
                 ))}
               </div>
             </div>
+            {/* Adding a service button */}
+            <button onClick={openAdd} className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors">
+              <Plus className="h-4 w-4" /> Add Service
+            </button>
           </div>
 
           {/* Cards list — scrolls independently */}
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
             {filteredServices.length > 0 ? (
               filteredServices.map(service => (
-                <div
-                  key={service.Name}
-                  ref={el => { cardRefs.current[service.Name] = el; }}
-                >
+                <div key={service.Name} ref={el => { cardRefs.current[service.Name] = el; }}>
                   <ServiceCard
                     service={service}
                     isSelected={selectedService?.Name === service.Name}
                     onClick={() => handleSelectService(service)}
+                    onEdit={openEdit}
+                    onDelete={handleDelete}
                   />
                 </div>
               ))
@@ -251,17 +324,14 @@ export default function App() {
           </div>
         </aside>
 
-        {/* ── Map panel — fills remaining space ────────────────────────────── */}
+        {/* ── Map panel - The Right side ────────────────────────────── */}
         <main className="flex-1 relative">
           {/* Selected service info bar */}
           {selectedService && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 bg-white rounded-full shadow-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-800 max-w-sm">
               <MapPin className="h-4 w-4 text-blue-600 shrink-0" />
               <span className="truncate">{selectedService.Name}</span>
-              <button
-                onClick={() => setSelectedService(null)}
-                className="ml-1 text-slate-400 hover:text-slate-700 shrink-0"
-              >
+              <button onClick={() => setSelectedService(null)} className="ml-1 text-slate-400 hover:text-slate-700 shrink-0">
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -273,8 +343,18 @@ export default function App() {
             onSelectService={handleSelectService}
           />
         </main>
-
       </div>
+
+      {/* ── CRUD Modal ───────────────────────────────────────────────────────── */}
+      {modal && (
+        <ServiceFormModal
+          mode={modal.mode}
+          initial={modal.service ?? null}
+          onSave={handleSave}
+          onClose={closeModal}
+        />
+      )}
+
     </div>
   );
 }
