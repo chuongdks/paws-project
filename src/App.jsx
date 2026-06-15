@@ -4,7 +4,7 @@ import LeafletTestMap from './components/LeafletTestMap.jsx';
 import ServiceFormModal from './components/ServiceFormModal.jsx';
 import servicesData from './data/service.json';
 import { Search, MapPin, Phone, Globe, ExternalLink, 
-  SlidersHorizontal, X, ChevronRight, Plus, Pencil, Trash2
+  SlidersHorizontal, X, Plus, Pencil, Trash2, AlertTriangle
 } from 'lucide-react';
 
 // Helper calculation to build external Google Map link pointers cleanly
@@ -28,6 +28,50 @@ function Pill({ label, active, onClick }) {
   );
 }
 
+// ── Delete confirmation modal ──────────────────────────────────────────────────
+function DeleteConfirmModal({ service, onConfirm, onCancel }) {
+  return (
+    <div
+      className="fixed inset-0 z-[3000] flex items-center justify-center p-4"
+      style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(2px)' }}
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5">
+        {/* Icon + message */}
+        <div className="flex items-start gap-4">
+          <div className="p-2.5 bg-red-50 rounded-xl shrink-0">
+            <AlertTriangle className="h-5 w-5 text-red-500" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900 text-base">Delete Service</h3>
+            <p className="text-sm text-slate-500 mt-1 leading-relaxed">
+              Are you sure you want to remove{' '}
+              <span className="font-semibold text-slate-700">{service.Name}</span>?
+              This cannot be undone.
+            </p>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2 justify-end pt-1">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Yes, Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Compact card for the sidebar ───────────────────────────────────────────────
 function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -42,44 +86,7 @@ function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
       }`}
     >
       {/* Name + chevron + action buttons */}
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="font-semibold text-slate-900 text-sm leading-snug">{service.Name}</h3>
-        <ChevronRight className={`h-4 w-4 shrink-0 mt-0.5 transition-colors ${isSelected ? 'text-blue-500' : 'text-slate-300'}`} />
-
-        {/* Edit / Delete — visible on hover or when selected */}
-        <div
-          className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={e => e.stopPropagation()}
-        >
-          <button
-            onClick={() => onEdit(service)}
-            title="Edit"
-            className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-
-          {confirmDelete ? (
-            <span className="flex items-center gap-1 text-[11px] bg-red-50 border border-red-200 text-red-600 rounded-md px-2 py-0.5">
-              Sure?
-              <button
-                onClick={() => { onDelete(service); setConfirmDelete(false); }}
-                className="font-bold hover:underline"
-              >Yes</button>
-              <span className="text-red-300">/</span>
-              <button onClick={() => setConfirmDelete(false)} className="hover:underline">No</button>
-            </span>
-          ) : (
-            <button
-              onClick={() => setConfirmDelete(true)}
-              title="Delete"
-              className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
-      </div>
+      <h3 className="font-semibold text-slate-900 text-sm leading-snug">{service.Name}</h3>
 
       {/* Tag badges */}
       {service.tags?.length > 0 && (
@@ -113,30 +120,42 @@ function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
         </div>
       )}
 
-      {/* Action links */}
-      <div className="flex items-center gap-3 pt-1 border-t border-slate-100">
-        {service.Website && (
-          <a
-            href={service.Website}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline"
+      {/* Action row — links on left, edit/delete on right */}
+      <div onClick={e => e.stopPropagation()} className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+        {/* External links */}
+        <div className="flex items-center gap-3">
+          {service.Website && (
+            <a href={service.Website} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline">
+              <Globe className="h-3 w-3" /> Website
+            </a>
+          )}
+          {service.Location && (
+            <a href={buildGoogleMapsLink(service.Location)} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700">
+              <ExternalLink className="h-3 w-3" /> Directions
+            </a>
+          )}
+        </div>
+
+        {/* Edit + Delete — right side, appear on hover */}
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+          <button
+            onClick={() => onEdit(service)}
+            title="Edit"
+            className="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
           >
-            <Globe className="h-3 w-3" /> Website
-          </a>
-        )}
-        {service.Location && (
-          <a
-            href={buildGoogleMapsLink(service.Location)}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700"
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={() => onDelete(service)}
+            title="Delete"
+            className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
           >
-            <ExternalLink className="h-3 w-3" /> Directions
-          </a>
-        )}
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
       </div>
     </article>
   );
@@ -187,6 +206,7 @@ export default function App() {
 
   // ── CRUD modal state ────────────────────────────────────────────────────────
   const [modal, setModal] = useState(null); // null | { mode: 'add' | 'edit', service?: object }
+  const [deleteTarget, setDeleteTarget] = useState(null); // service pending deletion
 
   const openAdd  = ()        => setModal({ mode: 'add' });
   const openEdit = (service) => setModal({ mode: 'edit', service });
@@ -206,6 +226,7 @@ export default function App() {
   const handleDelete = (service) => {
     setServices(prev => prev.filter(s => s.Name !== service.Name));
     if (selectedService?.Name === service.Name) setSelectedService(null);
+    setDeleteTarget(null);
   };
 
   // ── Filter label maps ──────────────────────────────────────────────────────
@@ -294,7 +315,7 @@ export default function App() {
           </div>
 
           {/* Cards list — scrolls independently */}
-          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-3 space-y-2">
             {filteredServices.length > 0 ? (
               filteredServices.map(service => (
                 <div key={service.Name} ref={el => { cardRefs.current[service.Name] = el; }}>
@@ -303,7 +324,7 @@ export default function App() {
                     isSelected={selectedService?.Name === service.Name}
                     onClick={() => handleSelectService(service)}
                     onEdit={openEdit}
-                    onDelete={handleDelete}
+                    onDelete={setDeleteTarget}
                   />
                 </div>
               ))
@@ -345,13 +366,22 @@ export default function App() {
         </main>
       </div>
 
-      {/* ── CRUD Modal ───────────────────────────────────────────────────────── */}
+      {/* ── Add / Edit modal ───────────────────────────────────────────────────────── */}
       {modal && (
         <ServiceFormModal
           mode={modal.mode}
           initial={modal.service ?? null}
           onSave={handleSave}
           onClose={closeModal}
+        />
+      )}
+
+      {/* ── Delete confirmation modal ─────────────────────────────────────────── */}
+      {deleteTarget && (
+        <DeleteConfirmModal
+          service={deleteTarget}
+          onConfirm={() => handleDelete(deleteTarget)}
+          onCancel={() => setDeleteTarget(null)}
         />
       )}
 
