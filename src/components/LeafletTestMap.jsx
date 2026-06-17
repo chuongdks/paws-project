@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { isMappable, fullAddress } from '../models/Service.js';
 
 const centerOfWindsor = [42.3149, -83.0364];
 
@@ -92,7 +93,7 @@ function NearMeButton() {
 export default function LeafletTestMap({ services, selectedService, onSelectService }) {
   // Only render services that have valid coordinates
   const markerRefs = useRef({});
-  const mappableServices = services.filter(s => s.lat != null && s.lng != null);
+  const mappable = services.filter(isMappable);
   
   return (
     // h-full fills whatever height the parent panel gives it
@@ -106,11 +107,11 @@ export default function LeafletTestMap({ services, selectedService, onSelectServ
         <MapController selectedService={selectedService} markerRefs={markerRefs} />
         <NearMeButton />
 
-        {mappableServices.map((service) => {
-          const isSelected = selectedService?.Name === service.Name;
+        {mappable.map((service) => {
+          const isSelected = selectedService?.id === service.id;
           return (
             <Marker
-              key={service.Name}
+              key={service.id}
               position={[service.lat, service.lng]}
               icon={isSelected ? selectedIcon : defaultIcon}
               ref={(ref) => { markerRefs.current[service.Name] = ref; }}
@@ -118,20 +119,18 @@ export default function LeafletTestMap({ services, selectedService, onSelectServ
             >
               <Popup>
                 <div className="text-gray-900 space-y-1" style={{ minWidth: 180 }}>
-                  <strong className="block text-sm leading-tight">{service.Name}</strong>
-                  {service.Phone && (
-                    <span className="text-xs text-gray-500 block">{service.Phone}</span>
+                  <strong className="block text-sm leading-tight">{service.name}</strong>
+                  {service.phone && (
+                    <span className="text-xs text-gray-500 block">{service.phone}</span>
                   )}
-                  {service.Location && (
-                    <span className="text-xs text-gray-400 block leading-snug">{service.Location}</span>
+                  {fullAddress(service) && (
+                    <span className="text-xs text-gray-400 block leading-snug">
+                      {fullAddress(service)}
+                    </span>
                   )}
-                  {service.Website && (
-                    <a
-                      href={service.Website}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-xs text-blue-600 underline block pt-1"
-                    >
+                  {service.website_url && (
+                    <a href={service.website_url} target="_blank" rel="noreferrer"
+                      className="text-xs text-blue-600 underline block pt-1">
                       Open Website ↗
                     </a>
                   )}
