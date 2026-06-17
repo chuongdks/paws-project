@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, MapPin, Globe, Phone, FileText, Tag } from 'lucide-react';
+import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building } from 'lucide-react';
+import { CATEGORIES, ASSIGNABLE_TAGS, emptyService } from '../models/Service.js';
 
-const ALL_TAGS = ['Youth Focus', 'Senior Focus', 'Family/Ally Focus'];
-
-const EMPTY_FORM = {
-  Name: '', Website: '', Location: '',
-  lat: '', lng: '', Phone: '', Description: '', tags: [],
-};
+const VERIFICATION_OPTIONS = ['needs verification', 'verified', 'rejected', 'archived'];
 
 function Field({ label, icon: Icon, error, children }) {
   return (
@@ -15,6 +11,7 @@ function Field({ label, icon: Icon, error, children }) {
         {Icon && <Icon className="h-3.5 w-3.5" />} {label}
       </label>
       {children}
+      {hint  && <p className="text-[11px] text-slate-400">{hint}</p>}
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
@@ -25,25 +22,12 @@ const inputCls = `w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-
   focus:border-blue-500 transition-all`;
 
 export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
-  const [form, setForm]   = useState(EMPTY_FORM);
+  const [form, setForm]     = useState(emptyService());
   const [errors, setErrors] = useState({});
 
   // Populate form when editing an existing service
   useEffect(() => {
-    if (initial) {
-      setForm({
-        Name:        initial.Name        ?? '',
-        Website:     initial.Website     ?? '',
-        Location:    initial.Location    ?? '',
-        lat:         initial.lat         ?? '',
-        lng:         initial.lng         ?? '',
-        Phone:       initial.Phone       ?? '',
-        Description: initial.Description ?? '',
-        tags:        initial.tags        ?? [],
-      });
-    } else {
-      setForm(EMPTY_FORM);
-    }
+    setForm(initial ? { ...emptyService(), ...initial } : emptyService());
     setErrors({});
   }, [initial]);
 
@@ -61,11 +45,12 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
 
   const validate = () => {
     const e = {};
-    if (!form.Name.trim()) e.Name = 'Name is required.';
-    if (form.lat  && isNaN(parseFloat(form.lat)))  e.lat  = 'Must be a valid number.';
-    if (form.lng  && isNaN(parseFloat(form.lng)))  e.lng  = 'Must be a valid number.';
-    if (form.lat && !form.lng) e.lng = 'Longitude is required when latitude is set.';
-    if (form.lng && !form.lat) e.lat = 'Latitude is required when longitude is set.';
+    if (!form.Name.trim())                          e.Name = 'Name is required.';
+    if (!form.category_id)                          e.category_id = 'Category is required.';
+    if (form.lat  && isNaN(parseFloat(form.lat)))   e.lat  = 'Must be a valid number.';
+    if (form.lng  && isNaN(parseFloat(form.lng)))   e.lng  = 'Must be a valid number.';
+    if (form.lat && !form.lng)                      e.lng = 'Longitude is required when latitude is set.';
+    if (form.lng && !form.lat)                      e.lat = 'Latitude is required when longitude is set.';
     return e;
   };
 
@@ -75,6 +60,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
 
     onSave({
       ...form,
+      category_id: Number(form.category_id),
       lat: form.lat !== '' ? parseFloat(form.lat) : null,
       lng: form.lng !== '' ? parseFloat(form.lng) : null,
     });
@@ -95,10 +81,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
           <h2 className="text-base font-bold text-slate-900">
             {mode === 'edit' ? 'Edit Service' : 'Add New Service'}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 rounded-lg p-1 hover:bg-slate-100 transition-colors"
-          >
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 rounded-lg p-1 hover:bg-slate-100 transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -106,6 +89,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
+          {/* ── Basic info ── */}
           <Field label="Name *" error={errors.Name}>
             <input
               className={inputCls}
@@ -115,6 +99,24 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
             />
           </Field>
 
+          <Field label="Category *" icon={Building2} error={errors.category_id}>
+            <select 
+              className={inputCls} 
+              value={form.category_id ?? ''}
+              onChange={e => set('category_id', e.target.value)}>
+
+              <option value="">Select a category...</option>
+
+              {CATEGORIES.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+
+            </select>
+          </Field>
+
+          {/* ── Contact ── */}
           <Field label="Website" icon={Globe}>
             <input
               className={inputCls}
@@ -124,26 +126,34 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
             />
           </Field>
 
-          <Field label="Phone" icon={Phone}>
-            <input
-              className={inputCls}
-              placeholder="519-000-0000"
-              value={form.Phone}
-              onChange={e => set('Phone', e.target.value)}
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Phone" icon={Phone}>
+              <input className={inputCls} placeholder="519-000-0000"
+                value={form.phone} onChange={e => set('phone', e.target.value)} />
+            </Field>
+            <Field label="Email" icon={Mail}>
+              <input className={inputCls} placeholder="info@example.org"
+                value={form.email} onChange={e => set('email', e.target.value)} />
+            </Field>
+          </div>
+
+          {/* ── Location ── */}
+          <Field label="Street Address" icon={MapPin}
+            hint="Leave blank for provincial / national helplines.">
+            <input className={inputCls} placeholder="123 Main Street"
+              value={form.address ?? ''} onChange={e => set('address', e.target.value)} />
           </Field>
 
-          <Field label="Location (full address)" icon={MapPin}>
-            <input
-              className={inputCls}
-              placeholder="Leave blank for virtual / helpline services"
-              value={form.Location}
-              onChange={e => set('Location', e.target.value)}
-            />
-            <p className="text-[11px] text-slate-400">
-              Leave blank if this is a provincial/national helpline.
-            </p>
-          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="City">
+              <input className={inputCls} placeholder="Windsor"
+                value={form.city ?? ''} onChange={e => set('city', e.target.value)} />
+            </Field>
+            <Field label="Province">
+              <input className={inputCls} placeholder="ON"
+                value={form.province ?? 'ON'} onChange={e => set('province', e.target.value)} />
+            </Field>
+          </div>
 
           {/* Coordinates — side by side */}
           <div className="grid grid-cols-2 gap-3">
@@ -169,32 +179,53 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
             {/* Future: auto-geocode from Location */}
           </p>
 
+          {/* ── Details ── */}
           <Field label="Description" icon={FileText}>
             <textarea
               className={`${inputCls} resize-none`}
-              rows={4}
+              rows={3}
               placeholder="Describe the services offered..."
               value={form.Description}
               onChange={e => set('Description', e.target.value)}
             />
           </Field>
 
-          {/* Tag checkboxes */}
-          <Field label="Focus tags" icon={Tag}>
+          <Field label="Inclusivity Notes"
+            hint="Specific notes about who is welcomed or how the space is inclusive.">
+            <textarea className={`${inputCls} resize-none`} rows={2}
+              placeholder="e.g. Free of charge for youth 12-29. Anonymous and confidential."
+              value={form.inclusivity_notes} onChange={e => set('inclusivity_notes', e.target.value)} />
+          </Field>
+
+          <Field label="Washroom Info"
+            hint="Gender-inclusive or accessible washroom availability.">
+            <input className={inputCls} placeholder="e.g. Gender-inclusive washroom available."
+              value={form.washroom_info} onChange={e => set('washroom_info', e.target.value)} />
+          </Field>
+
+          {/* ── Verification status ── */}
+          <Field label="Verification Status">
+            <select className={inputCls} value={form.verification_status}
+              onChange={e => set('verification_status', e.target.value)}>
+              {VERIFICATION_OPTIONS.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </Field>
+
+          {/* ── PAWS Tags ── */}
+          <Field label="PAWS Tags" icon={Tag}
+            hint="Select all that apply. 'Verified by PAWS' should only be set after review.">
             <div className="flex flex-wrap gap-2 pt-1">
-              {ALL_TAGS.map(tag => {
+              {ASSIGNABLE_TAGS.map(tag => {
                 const checked = form.tags.includes(tag);
                 return (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => toggleTag(tag)}
+                  <button key={tag} type="button" onClick={() => toggleTag(tag)}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                       checked
                         ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
-                    }`}
-                  >
+                    }`}>
                     {tag}
                   </button>
                 );
