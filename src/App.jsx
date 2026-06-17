@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useServiceDirectory } from './hook/useServiceDirectory.js';
 import LeafletTestMap from './components/LeafletTestMap.jsx';
 import ServiceFormModal from './components/ServiceFormModal.jsx';
+import ServiceDetailPanel from './components/ServiceDetailPanel.jsx';
 import { CATEGORIES, getCategoryName, fullAddress, createService, isVerified } from './models/Service.js';
 import servicesData from './data/service.json';
-import { 
-  Search, MapPin, Phone, Globe, ExternalLink, 
-  SlidersHorizontal, X, Plus, Pencil, Trash2, 
+import {
+  Search, MapPin, Phone, Globe, ExternalLink,
+  SlidersHorizontal, X, Plus, Pencil, Trash2,
   AlertTriangle, BadgeCheck, ShieldAlert
 } from 'lucide-react';
 
@@ -16,30 +17,26 @@ const buildGoogleMapsLink = (s) => {
   return addr;
 };
 
-// ── Filter pill button ─────────────────────────────────────────────────────────
+// ── Filter pill ────────────────────────────────────────────────────────────────
 function Pill({ label, active, onClick }) {
   return (
-    <button
-      onClick={onClick}
+    <button onClick={onClick}
       className={`px-3 py-1 rounded-full text-xs font-medium border transition-all whitespace-nowrap ${
         active
           ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
           : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
-      }`}
-    >
+      }`}>
       {label}
     </button>
   );
 }
 
-// ── Delete confirmation modal ──────────────────────────────────────────────────
+// ── Delete confirm modal ───────────────────────────────────────────────────────
 function DeleteConfirmModal({ service, onConfirm, onCancel }) {
   return (
-    <div
-      className="fixed inset-0 z-[3000] flex items-center justify-center p-4"
+    <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4"
       style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(2px)' }}
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}
-    >
+      onMouseDown={e => { if (e.target === e.currentTarget) onCancel(); }}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5">
         {/* Icon + message */}
         <div className="flex items-start gap-4">
@@ -58,16 +55,12 @@ function DeleteConfirmModal({ service, onConfirm, onCancel }) {
 
         {/* Actions */}
         <div className="flex gap-2 justify-end pt-1">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-          >
+          <button onClick={onCancel}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
             Cancel
           </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
+          <button onClick={onConfirm}
+            className="px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
             Yes, Delete
           </button>
         </div>
@@ -91,20 +84,17 @@ function VerificationBadge({ status }) {
   return null;
 }
 
-// ── Compact card for the sidebar ───────────────────────────────────────────────
+// ── Sidebar card ───────────────────────────────────────────────────────────────
 function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
-  const [confirmDelete, setConfirmDelete] = useState(false);
-
   return (
-    <article
-      onClick={onClick}
-      className={`rounded-xl border p-4 cursor-pointer transition-all space-y-2 group ${
+    <article onClick={onClick}
+      className={`rounded-xl border p-4 cursor-pointer transition-all space-y-2.5 group ${
         isSelected
           ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
           : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-      }`}
-    >
-      {/* Name + chevron + action buttons */}
+      }`}>
+
+      {/* Name */}
       <h3 className="font-semibold text-slate-900 text-sm leading-snug">
         {service.name}
       </h3>
@@ -128,7 +118,7 @@ function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
         </div>
       )}
 
-      {/* Location or Helpline badge */}
+      {/* Location or helpline */}
       {fullAddress(service) ? (
         <div className="flex items-start gap-1.5 text-xs text-slate-500">
           <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 text-slate-400" />
@@ -142,10 +132,10 @@ function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
       )}
 
       {/* Phone */}
-      {service.Phone && (
+      {service.phone && (
         <div className="flex items-center gap-1.5 text-xs text-slate-500">
           <Phone className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-          <span>{service.Phone}</span>
+          <span>{service.phone}</span>
         </div>
       )}
 
@@ -156,9 +146,10 @@ function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
         </p>
       )}
 
-      {/* Action row — links on left, edit/delete on right */}
-      <div onClick={e => e.stopPropagation()} className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
-        {/* External links */}
+      {/* Action row */}
+      <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100"
+        onClick={e => e.stopPropagation()}>
+        {/* Links for Direction, Website,... */}
         <div className="flex items-center gap-3">
           {service.website_url && (
             <a href={service.website_url} target="_blank" rel="noopener noreferrer"
@@ -173,25 +164,17 @@ function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
             </a>
           )}
         </div>
-
-        {/* Edit + Delete — right side, appear on hover */}
+        {/* Edit Buttons for the Service */}
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-          <button
-            onClick={() => onEdit(service)}
-            title="Edit"
-            className="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-          >
+          <button onClick={() => onEdit(service)} title="Edit"
+            className="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
             <Pencil className="h-3.5 w-3.5" />
           </button>
-          <button
-            onClick={() => onDelete(service)}
-            title="Delete"
-            className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-          >
+          <button onClick={() => onDelete(service)} title="Delete"
+            className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
-
       </div>
     </article>
   );
@@ -205,10 +188,10 @@ export default function App() {
   // useEffect(() => { fetch('/api/services').then(r => r.json()).then(setServices); }, []);
 
   const {
-    searchQuery,      setSearchQuery,
-    accessFilter,     setAccessFilter,
-    categoryFilter,   setCategoryFilter,
-    filteredServices
+    searchQuery,    setSearchQuery,
+    accessFilter,   setAccessFilter,
+    categoryFilter, setCategoryFilter,
+    filteredServices,
   } = useServiceDirectory(services);
 
   // Categories that actually have services in the current data (for filter pills)
@@ -217,9 +200,9 @@ export default function App() {
     return CATEGORIES.filter(c => usedIds.includes(c.id));
   }, [services]);
 
-  // ── Shared selection state ─────────────────────────────────────────────────
-  const [selectedService, setSelectedService] = useState(null);
-  const cardRefs = useRef({});
+  // ── Map selection + scroll ─────────────────────────────────────────────────
+  const [selectedService, setSelectedService]   = useState(null);
+  const cardRefs           = useRef({});
   const scrollContainerRef = useRef(null);
 
   // Map pin click → scroll to card in sidebar
@@ -228,10 +211,7 @@ export default function App() {
     const el        = cardRefs.current[selectedService.id];
     const container = scrollContainerRef.current;
     if (!el || !container) return;
-
-    // Scroll within the sidebar container, not the page
-    const cardTop = el.offsetTop - container.offsetTop;
-    container.scrollTo({ top: cardTop - 16, behavior: 'smooth' });
+    container.scrollTo({ top: el.offsetTop - container.offsetTop - 16, behavior: 'smooth' });
   }, [selectedService]);
 
   // If filters remove the selected service, clear selection
@@ -242,19 +222,19 @@ export default function App() {
   }, [filteredServices]);
 
   // Toggle off if clicking the already selected service
-  const handleSelectService = (service) => {
+  const handleSelectService = (service) =>
     setSelectedService(prev => prev?.id === service.id ? null : service);
-  };
 
-  // ── CRUD modal state ────────────────────────────────────────────────────────
-  const [modal, setModal]               = useState(null); // null | { mode: 'add' | 'edit', service?: object }
-  const [deleteTarget, setDeleteTarget] = useState(null); // service pending deletion
+  // ── CRUD ──────────────────────────────────────────────────────────────────
+  const [modal, setModal]               = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const openAdd  = ()        => setModal({ mode: 'add' });
-  const openEdit = (service) => setModal({ mode: 'edit', service });
-  const closeModal = ()      => setModal(null);
+  const openAdd    = ()        => setModal({ mode: 'add' });
+  const openEdit   = (service) => setModal({ mode: 'edit', service });
+  const closeModal = ()        => setModal(null);
 
   const handleSave = (formData) => {
+    const normalized = createService(formData);
     if (modal.mode === 'add') {
       // Temporary client-side ID — will be assigned by the DB on real save
       setServices(prev => [...prev, { ...normalized, id: Date.now() }]);
@@ -272,11 +252,17 @@ export default function App() {
     setDeleteTarget(null);
   };
 
+  // Updates a service's photo in-memory (temporary, until DB supports images)
+  const handleUpdateImage = (id, dataUrl) => {
+    setServices(prev => prev.map(s => s.id === id ? { ...s, image_url: dataUrl } : s));
+    setSelectedService(prev => prev?.id === id ? { ...prev, image_url: dataUrl } : prev);
+  };
+
   return (
     // HEADER, BODY and CRUD MODAL
     <div className="h-screen flex flex-col bg-slate-100 overflow-hidden">
 
-      {/* ── Header ───────────────────────────────────────────────────────────── */}
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-slate-200 px-5 py-3 flex items-center justify-between shrink-0 z-10">
         <div>
           <h1 className="text-lg font-bold text-slate-900 leading-tight tracking-tight">
@@ -292,23 +278,19 @@ export default function App() {
       {/* ── Body: sidebar + map ───────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden">
 
-        {/* ── Left sidebar ─────────────────────────────────────────────────── */}
+        {/* ── Sidebar ──────────────────────────────────────────────────────── */}
         <aside className="w-[380px] shrink-0 flex flex-col border-r border-slate-200 bg-slate-50 overflow-hidden">
 
-          {/* Filters — fixed, doesn't scroll */}
+          {/* Filters */}
           <div className="p-4 bg-white border-b border-slate-200 space-y-3 shrink-0">
-            {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search services..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-              />
+              <input type="text" placeholder="Search services..."
+                value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
             </div>
-            {/* Accessibility model pills */}
+
+            {/* Access filter */}
             <div className="space-y-1.5">
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                 <SlidersHorizontal className="h-3 w-3" /> Access
@@ -337,14 +319,15 @@ export default function App() {
                 ))}
               </div>
             </div>
-            
-            {/* Adding a service button */}
-            <button onClick={openAdd} className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors">
+
+            {/* Adding a service button */}  
+            <button onClick={openAdd}
+              className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors">
               <Plus className="h-4 w-4" /> Add Service
             </button>
           </div>
 
-          {/* Cards list — scrolls independently */}
+          {/* Card list */}
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-3 space-y-2">
             {filteredServices.length > 0 ? (
               filteredServices.map(service => (
@@ -364,8 +347,7 @@ export default function App() {
                 <MapPin className="h-8 w-8 mx-auto mb-2 text-slate-300" />
                 No services match your filters.
                 <br />
-                <button
-                  onClick={() => { setSearchQuery(''); setCategoryFilter('All'); setInclusivityFilter('All'); }}
+                <button onClick={() => { setSearchQuery(''); setAccessFilter('All'); setCategoryFilter('All'); }}
                   className="mt-2 text-blue-600 text-xs underline">
                   Clear all filters
                 </button>
@@ -374,46 +356,48 @@ export default function App() {
           </div>
         </aside>
 
-        {/* ── Map panel - The Right side ────────────────────────────── */}
-        <main className="flex-1 relative">
-          {/* Selected service info bar */}
+        {/* ── Detail panel + Map ───────────────────────────────────────────── */}
+        <main className="flex-1 flex overflow-hidden">
+
+          {/* Detail panel — only renders when a service is selected */}
           {selectedService && (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 bg-white rounded-full shadow-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-800 max-w-sm">
-              <MapPin className="h-4 w-4 text-blue-600 shrink-0" />
-              <span className="truncate">{selectedService.name}</span>
-              <button onClick={() => setSelectedService(null)} className="ml-1 text-slate-400 hover:text-slate-700 shrink-0">
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
+            <ServiceDetailPanel
+              service={selectedService}
+              onClose={() => setSelectedService(null)}
+              onEdit={openEdit}
+              onDelete={setDeleteTarget}
+              onUpdateImage={handleUpdateImage}
+            />
           )}
 
-          <LeafletTestMap
-            services={filteredServices}
-            selectedService={selectedService}
-            onSelectService={handleSelectService}
-          />
+          {/* Map fills whatever space remains */}
+          <div className="flex-1 relative">
+            {!selectedService && (
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-white rounded-full shadow-lg border border-slate-200 px-4 py-2 text-sm text-slate-500">
+                Select a service or click a map pin to view full details
+              </div>
+            )}
+            <LeafletTestMap
+              services={filteredServices}
+              selectedService={selectedService}
+              onSelectService={handleSelectService}
+            />
+          </div>
         </main>
       </div>
 
-      {/* ── Add / Edit modal ───────────────────────────────────────────────────────── */}
+      {/* ── Add / Edit pop up modal ───────────────────────────────────────────────────────── */}
       {modal && (
-        <ServiceFormModal
-          mode={modal.mode}
-          initial={modal.service ?? null}
-          onSave={handleSave}
-          onClose={closeModal}
-        />
+        <ServiceFormModal mode={modal.mode} initial={modal.service ?? null}
+          onSave={handleSave} onClose={closeModal} />
       )}
 
       {/* ── Delete confirmation modal ─────────────────────────────────────────── */}
       {deleteTarget && (
-        <DeleteConfirmModal
-          service={deleteTarget}
+        <DeleteConfirmModal service={deleteTarget}
           onConfirm={() => handleDelete(deleteTarget)}
-          onCancel={() => setDeleteTarget(null)}
-        />
+          onCancel={() => setDeleteTarget(null)} />
       )}
-
     </div>
   );
 }

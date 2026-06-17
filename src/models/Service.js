@@ -58,6 +58,8 @@ export function createService(raw = {}) {
     verification_status: raw.verification_status  ?? 'needs verification',
     is_visible:          raw.is_visible            ?? 1,
     tags:                Array.isArray(raw.tags)   ? raw.tags : [],
+    // Temporary client-side only, YO add this in the DB
+    image_url:           raw.image_url             ?? null,
   };
 }
 
