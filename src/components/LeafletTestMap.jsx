@@ -45,7 +45,7 @@ function MapController({ selectedService, markerRefs }) {
 
     // Open the matching marker popup after the fly animation settles
     const timer = setTimeout(() => {
-      markerRefs.current[selectedService.Name]?.openPopup();
+      markerRefs.current[selectedService.id]?.openPopup();
     }, 850);
 
     return () => clearTimeout(timer);
@@ -114,7 +114,7 @@ export default function LeafletTestMap({ services, selectedService, onSelectServ
               key={service.id}
               position={[service.lat, service.lng]}
               icon={isSelected ? selectedIcon : defaultIcon}
-              ref={(ref) => { markerRefs.current[service.Name] = ref; }}
+              ref={(ref) => { markerRefs.current[service.id] = ref; }}
               eventHandlers={{ click: () => onSelectService(service) }}
             >
               <Popup>
