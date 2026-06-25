@@ -3,12 +3,14 @@ import { useServiceDirectory } from './hook/useServiceDirectory.js';
 import LeafletTestMap from './components/LeafletTestMap.jsx';
 import ServiceFormModal from './components/ServiceFormModal.jsx';
 import ServiceDetailPanel from './components/ServiceDetailPanel.jsx';
+import LoginModal from './components/LoginModal.jsx';
+import { useAuth } from './context/AuthContext.jsx';
 import { CATEGORIES, getCategoryName, fullAddress, createService, isVerified } from './models/Service.js';
 import servicesData from './data/service.json';
 import {
   Search, MapPin, Phone, Globe, ExternalLink,
   SlidersHorizontal, X, Plus, Pencil, Trash2,
-  AlertTriangle, BadgeCheck, ShieldAlert
+  AlertTriangle, BadgeCheck, ShieldAlert, LogIn, LogOut
 } from 'lucide-react';
 
 // Helper calculation to build external Google Map link pointers cleanly
@@ -85,7 +87,7 @@ function VerificationBadge({ status }) {
 }
 
 // ── Sidebar card ───────────────────────────────────────────────────────────────
-function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
+function ServiceCard({ service, isSelected, onClick, onEdit, onDelete, isAdmin }) {
   return (
     <article onClick={onClick}
       className={`rounded-xl border p-4 cursor-pointer transition-all space-y-2.5 group ${
@@ -164,17 +166,19 @@ function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
             </a>
           )}
         </div>
-        {/* Edit Buttons for the Service */}
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-          <button onClick={() => onEdit(service)} title="Edit"
-            className="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-          <button onClick={() => onDelete(service)} title="Delete"
-            className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        {/* Admin privilage: Edit Buttons for the Service */}
+        {isAdmin && (
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+            <button onClick={() => onEdit(service)} title="Edit"
+              className="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+            <button onClick={() => onDelete(service)} title="Delete"
+              className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </article>
   );
@@ -182,6 +186,9 @@ function ServiceCard({ service, isSelected, onClick, onEdit, onDelete }) {
 
 // ── Main App ───────────────────────────────────────────────────────────────────
 export default function App() {
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
+
   // ── Services state — source of truth (swap useState init below for fetch() later when the back end is finallize) ──
   const [services, setServices] = useState(() => servicesData.map(createService));
   // const [services, setServices] = useState([]);
@@ -270,9 +277,39 @@ export default function App() {
           </h1>
           <p className="text-xs text-slate-500">Windsor-Essex 2SLGBTQIA+ support programs</p>
         </div>
-        <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100">
-          {filteredServices.length} {filteredServices.length === 1 ? 'result' : 'results'}
-        </span>
+
+        <div className="flex items-center gap-3">
+          {/* No of Services after filter */}
+          <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100">
+            {filteredServices.length} {filteredServices.length === 1 ? 'result' : 'results'}
+          </span>
+
+          {/* Logging In */}
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                isAdmin
+                  ? 'bg-purple-50 text-purple-700 border-purple-200'
+                  : 'bg-slate-100 text-slate-600 border-slate-200'
+              }`}>
+                {isAdmin ? 'Admin' : 'Member'}
+              </span>
+
+              <span className="text-sm text-slate-600 hidden sm:inline">{user.name}</span>
+
+              <button onClick={logout} title="Log out"
+                className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                <LogOut className="h-4 w-4" />
+              </button>
+
+            </div>
+          ) : (
+            <button onClick={() => setShowLogin(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+              <LogIn className="h-3.5 w-3.5" /> Sign In
+            </button>
+          )}
+        </div>
       </header>
 
       {/* ── Body: sidebar + map ───────────────────────────────────────────────── */}
@@ -281,7 +318,7 @@ export default function App() {
         {/* ── Sidebar ──────────────────────────────────────────────────────── */}
         <aside className="w-[380px] shrink-0 flex flex-col border-r border-slate-200 bg-slate-50 overflow-hidden">
 
-          {/* Filters */}
+          {/* Filters + Adding Service */}
           <div className="p-4 bg-white border-b border-slate-200 space-y-3 shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -320,11 +357,13 @@ export default function App() {
               </div>
             </div>
 
-            {/* Adding a service button */}  
-            <button onClick={openAdd}
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors">
-              <Plus className="h-4 w-4" /> Add Service
-            </button>
+            {/* Admin privilage: Adding a Service button */}  
+            {isAdmin && (
+              <button onClick={openAdd}
+                className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors">
+                <Plus className="h-4 w-4" /> Add Service
+              </button>
+            )}
           </div>
 
           {/* Card list */}
@@ -338,6 +377,7 @@ export default function App() {
                     onClick={() => handleSelectService(service)}
                     onEdit={openEdit}
                     onDelete={setDeleteTarget}
+                    isAdmin={isAdmin}
                   />
                 </div>
               ))
@@ -367,6 +407,7 @@ export default function App() {
               onEdit={openEdit}
               onDelete={setDeleteTarget}
               onUpdateImage={handleUpdateImage}
+              isAdmin={isAdmin}
             />
           )}
 
@@ -386,6 +427,9 @@ export default function App() {
         </main>
       </div>
 
+      {/* ── Login modal ───────────────────────────────────────────────────────── */}
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+        
       {/* ── Add / Edit pop up modal ───────────────────────────────────────────────────────── */}
       {modal && (
         <ServiceFormModal mode={modal.mode} initial={modal.service ?? null}

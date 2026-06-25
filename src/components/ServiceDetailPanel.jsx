@@ -28,8 +28,8 @@ function VerificationBadge({ status }) {
   );
 }
 
-// ── Image area — temporary client-side-only upload until DB support exists ────
-function ImageUploader({ imageUrl, onChange }) {
+// ── Image area. WARNING: temporary client-side-only upload until DB support exists ────
+function ImageUploader({ imageUrl, onChange, isAdmin }) {
   const inputRef = useRef(null);
 
   const handleFile = (e) => {
@@ -51,14 +51,17 @@ function ImageUploader({ imageUrl, onChange }) {
         </div>
       )}
 
-      <button
-        onClick={() => inputRef.current?.click()}
-        className={`absolute bottom-2.5 right-2.5 flex items-center gap-1.5 bg-white/95 hover:bg-white text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-md border border-slate-200 transition-opacity ${
-          imageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
-        }`}
-      >
-        <Upload className="h-3.5 w-3.5" /> {imageUrl ? 'Change Photo' : 'Add Photo'}
-      </button>
+      {/* Admin privilage */}
+      {isAdmin && (
+        <button
+          onClick={() => inputRef.current?.click()}
+          className={`absolute bottom-2.5 right-2.5 flex items-center gap-1.5 bg-white/95 hover:bg-white text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-md border border-slate-200 transition-opacity ${
+            imageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
+          }`}
+        >
+          <Upload className="h-3.5 w-3.5" /> {imageUrl ? 'Change Photo' : 'Add Photo'}
+        </button>
+      )}
 
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
     </div>
@@ -76,7 +79,7 @@ function InfoRow({ icon: Icon, children }) {
 }
 
 // ── Main export ────────────────────────────────────────────────────────────────
-export default function ServiceDetailPanel({ service, onClose, onEdit, onDelete, onUpdateImage }) {
+export default function ServiceDetailPanel({ service, onClose, onEdit, onDelete, onUpdateImage, isAdmin }) {
   return (
     <aside className="w-[400px] shrink-0 flex flex-col border-r border-slate-200 bg-white overflow-hidden">
 
@@ -85,15 +88,22 @@ export default function ServiceDetailPanel({ service, onClose, onEdit, onDelete,
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
           Service Details
         </span>
+
         <div className="flex items-center gap-1">
-          <button onClick={() => onEdit(service)} title="Edit"
-            className="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
-            <Pencil className="h-4 w-4" />
-          </button>
-          <button onClick={() => onDelete(service)} title="Delete"
-            className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
-            <Trash2 className="h-4 w-4" />
-          </button>
+          {/* Admin privilage Edits*/}
+          {isAdmin && (
+            <>
+              <button onClick={() => onEdit(service)} title="Edit"
+                className="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                <Pencil className="h-4 w-4" />
+              </button>
+              <button onClick={() => onDelete(service)} title="Delete"
+                className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </>
+          )}
+          {/* Normal User close button*/}
           <button onClick={onClose} title="Close"
             className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
             <X className="h-4 w-4" />
@@ -108,6 +118,7 @@ export default function ServiceDetailPanel({ service, onClose, onEdit, onDelete,
         <ImageUploader
           imageUrl={service.image_url}
           onChange={(dataUrl) => onUpdateImage(service.id, dataUrl)}
+          isAdmin={isAdmin}
         />
 
         {/* Name + category + verification */}

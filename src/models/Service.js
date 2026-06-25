@@ -82,5 +82,4 @@ export const isInPerson = (s) => Boolean(s.address?.trim());
 export const isVerified = (s) => s.verification_status === 'verified';
 
 // Lookup a category name by id
-export const getCategoryName = (id) =>
-  CATEGORIES.find(c => c.id === id)?.name ?? 'Uncategorized';
+export const getCategoryName = (id) => CATEGORIES.find(c => c.id === id)?.name ?? 'Uncategorized';
