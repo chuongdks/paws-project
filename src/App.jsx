@@ -4,6 +4,7 @@ import LeafletTestMap from './components/LeafletTestMap.jsx';
 import ServiceFormModal from './components/ServiceFormModal.jsx';
 import ServiceDetailPanel from './components/ServiceDetailPanel.jsx';
 import LoginModal from './components/LoginModal.jsx';
+import FilterBar from './components/FilterBar.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import { CATEGORIES, getCategoryName, fullAddress, createService, isVerified } from './models/Service.js';
 import servicesData from './data/service.json';
@@ -312,59 +313,20 @@ export default function App() {
         </div>
       </header>
 
+      {/* ── Filter bar — spans full width above all 3 columns ───────────────── */}
+      <FilterBar
+        searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+        accessFilter={accessFilter} setAccessFilter={setAccessFilter}
+        categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
+        activeCategories={activeCategories}
+        isAdmin={isAdmin} onAddService={openAdd}
+      />
+
       {/* ── Body: sidebar + map ───────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden">
 
         {/* ── Sidebar ──────────────────────────────────────────────────────── */}
         <aside className="w-[380px] shrink-0 flex flex-col border-r border-slate-200 bg-slate-50 overflow-hidden">
-
-          {/* Filters + Adding Service */}
-          <div className="p-4 bg-white border-b border-slate-200 space-y-3 shrink-0">
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-              <input type="text" placeholder="Search services..."
-                value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
-            </div>
-
-            {/* Access filter */}
-            <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                <SlidersHorizontal className="h-3 w-3" /> Access
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {['All', 'In-Person', 'Helplines'].map(opt => (
-                  <Pill key={opt} label={opt}
-                    active={accessFilter === opt}
-                    onClick={() => setAccessFilter(opt)} />
-                ))}
-              </div>
-            </div>
-
-            {/* Category filter — only shows categories present in the data */}
-            <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                <SlidersHorizontal className="h-3 w-3" /> Category
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                <Pill label="All" active={categoryFilter === 'All'}
-                  onClick={() => setCategoryFilter('All')} />
-                {activeCategories.map(cat => (
-                  <Pill key={cat.id} label={cat.name}
-                    active={categoryFilter === cat.id}
-                    onClick={() => setCategoryFilter(cat.id)} />
-                ))}
-              </div>
-            </div>
-
-            {/* Admin privilage: Adding a Service button */}  
-            {isAdmin && (
-              <button onClick={openAdd}
-                className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors">
-                <Plus className="h-4 w-4" /> Add Service
-              </button>
-            )}
-          </div>
 
           {/* Card list */}
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-3 space-y-2">
