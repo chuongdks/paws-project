@@ -97,7 +97,7 @@ export default function LeafletTestMap({ services, selectedService, onSelectServ
   
   return (
     // h-full fills whatever height the parent panel gives it
-    <div className="w-full h-full">
+    <div className="w-full h-full relative z-0">
       <MapContainer center={centerOfWindsor} zoom={12} style={{ width: '100%', height: '100%' }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
