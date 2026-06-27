@@ -69,8 +69,7 @@ export const emptyService = () => createService({});
 // ── Derived helpers ───────────────────────────────────────────────────────────
 
 // Builds a readable address string from split fields
-export const fullAddress = (s) =>
-  [s.address, s.city, s.province].filter(Boolean).join(', ');
+export const fullAddress = (s) => [s.address, s.city, s.province].filter(Boolean).join(', ');
 
 // True if the service has coordinates for the Leaflet map
 export const isMappable = (s) => s.lat != null && s.lng != null;
@@ -83,3 +82,7 @@ export const isVerified = (s) => s.verification_status === 'verified';
 
 // Lookup a category name by id
 export const getCategoryName = (id) => CATEGORIES.find(c => c.id === id)?.name ?? 'Uncategorized';
+
+// Builds an external Google Maps link. Uses the stored URL if the DB has one, otherwise falls back to a search query built from the address parts.
+// Was previously copy-pasted in App.jsx and ServiceDetailPanel.jsx.
+export const buildGoogleMapsLink = (s) => s.google_maps_url ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress(s))}`;

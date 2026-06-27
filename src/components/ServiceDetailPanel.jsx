@@ -1,32 +1,11 @@
 import React, { useRef } from 'react';
 import {
   X, Pencil, Trash2, Globe, Phone, Mail, MapPin, ExternalLink,
-  FileText, Sparkles, DoorOpen, BadgeCheck, ShieldAlert,
+  FileText, Sparkles, DoorOpen,
   Image as ImageIcon, Upload
 } from 'lucide-react';
-import { getCategoryName, fullAddress } from '../models/Service.js';
-
-const buildGoogleMapsLink = (s) =>
-  s.google_maps_url ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress(s))}`;
-
-// ── Verification badge (larger version for the detail panel) ──────────────────
-function VerificationBadge({ status }) {
-  if (status === 'verified') return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-      <BadgeCheck className="h-3.5 w-3.5" /> Verified by PAWS
-    </span>
-  );
-  if (status === 'needs verification') return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
-      <ShieldAlert className="h-3.5 w-3.5" /> Needs Verification
-    </span>
-  );
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-full">
-      {status}
-    </span>
-  );
-}
+import { getCategoryName, fullAddress, buildGoogleMapsLink } from '../models/Service.js';
+import VerificationBadge from './VerificationBadge.jsx';
 
 // ── Image area. WARNING: temporary client-side-only upload until DB support exists ────
 function ImageUploader({ imageUrl, onChange, isAdmin }) {
@@ -128,7 +107,7 @@ export default function ServiceDetailPanel({ service, onClose, onEdit, onDelete,
             <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
               {getCategoryName(service.category_id)}
             </span>
-            <VerificationBadge status={service.verification_status} />
+            <VerificationBadge status={service.verification_status} size="lg" />
           </div>
         </div>
 

@@ -53,7 +53,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
 
   const validate = () => {
     const e = {};
-    if (!form.name.trim())                          e.name = 'Name is required.';
+    if (!form.name.trim())                          e.name        = 'Name is required.';
     if (!form.category_id)                          e.category_id = 'Category is required.';
     if (form.lat  && isNaN(parseFloat(form.lat)))   e.lat  = 'Must be a valid number.';
     if (form.lng  && isNaN(parseFloat(form.lng)))   e.lng  = 'Must be a valid number.';
@@ -250,3 +250,4 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
     </div>
   );
 }
+
