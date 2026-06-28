@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useServiceDirectory } from './hook/useServiceDirectory.js';
 import { useServiceCRUD } from './hook/useServiceCRUD.js';
 import { useServiceSelection } from './hook/useServiceSelection.js';
+import { useReviews } from './hook/useReviews.js';
 import { useAuth } from './context/AuthContext.jsx';
 import { CATEGORIES } from './models/Service.js';
 
@@ -18,6 +19,9 @@ import Sidebar from './components/Sidebar.jsx';
 export default function App() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
+
+  // Reviews — owns its own array, scoped per-service via getReviewsFor
+  const { getReviewsFor, addReview, deleteReview } = useReviews();
 
   // Services array + every create/update/delete/image operation
   const {
@@ -49,6 +53,7 @@ export default function App() {
     handleSelectService,
   } = useServiceSelection(services, filteredServices);
 
+  // Lonely clear all filter function
   const clearAllFilters = () => {
     setSearchQuery('');
     setAccessFilter('All');
@@ -58,6 +63,7 @@ export default function App() {
   return (
     /* HEADER, FILTER BAR, BODY and CRUD MODAL */
     <div className="h-screen flex flex-col bg-slate-100 overflow-hidden">
+
       {/* ── Header: Website name, logo, and others and Logging In/Sign Out ─── */}
       <Header
         resultCount={filteredServices.length}
@@ -99,6 +105,10 @@ export default function App() {
               onDelete={setDeleteTarget}
               onUpdateImage={handleUpdateImage}
               isAdmin={isAdmin}
+              isAuthenticated={isAuthenticated}
+              reviews={getReviewsFor(selectedService.id)}
+              onAddReview={(formData) => addReview(selectedService.id, formData, user)}
+              onDeleteReview={deleteReview}
             />
           )}
 

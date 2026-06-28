@@ -1,10 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   X, Pencil, Trash2, Globe, Phone, Mail, MapPin, ExternalLink,
-  FileText, Sparkles, DoorOpen,
+  FileText, Sparkles, DoorOpen, MessageSquare, Plus,
   Image as ImageIcon, Upload
 } from 'lucide-react';
 import { getCategoryName, fullAddress, buildGoogleMapsLink } from '../models/Service.js';
+import { averageRating, formatReviewDate, getInitials } from '../models/Review.js';
 import VerificationBadge from './VerificationBadge.jsx';
 import StarRating from './StarRating.jsx';
 import ReviewFormModal from './ReviewFormModal.jsx';
@@ -60,8 +61,46 @@ function InfoRow({ icon: Icon, children }) {
   );
 }
 
+// ── Single review row ───────────────────────────────────────────────────────────
+function ReviewCard({ review, isAdmin, onDelete }) {
+  return (
+    <div className="space-y-2 pb-4 border-b border-slate-100 last:border-0 last:pb-0">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center shrink-0">
+            {getInitials(review.reviewer_name)}
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-800 leading-tight">{review.reviewer_name}</p>
+            <p className="text-[11px] text-slate-400">{formatReviewDate(review.created_at)}</p>
+          </div>
+        </div>
+
+        {isAdmin && (
+          <button onClick={() => onDelete(review)} title="Delete review"
+            className="p-1 rounded-md text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0">
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
+      <StarRating rating={review.overall_rating} size="h-3.5 w-3.5" />
+
+      {review.comment && (
+        <p className="text-sm text-slate-600 leading-relaxed">{review.comment}</p>
+      )}
+    </div>
+  );
+}
+
 // ── Main export ────────────────────────────────────────────────────────────────
-export default function ServiceDetailPanel({ service, onClose, onEdit, onDelete, onUpdateImage, isAdmin }) {
+export default function ServiceDetailPanel({
+  service, onClose, onEdit, onDelete, onUpdateImage, isAdmin,
+  isAuthenticated, reviews, onAddReview, onDeleteReview,
+}) {
+  const [showReviewForm, setShowReviewForm]         = useState(false);
+  const [deleteReviewTarget, setDeleteReviewTarget] = useState(null);
+
   return (
     <aside className="w-[400px] shrink-0 flex flex-col border-r border-slate-200 bg-white overflow-hidden">
 
