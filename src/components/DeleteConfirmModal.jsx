@@ -2,7 +2,7 @@ import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 // ── Delete confirm modal ───────────────────────────────────────────────────────
-export default function DeleteConfirmModal({ service, onConfirm, onCancel }) {
+export default function DeleteConfirmModal({ title = 'Delete Item', message, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4"
       style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(2px)' }}
@@ -14,12 +14,8 @@ export default function DeleteConfirmModal({ service, onConfirm, onCancel }) {
             <AlertTriangle className="h-5 w-5 text-red-500" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 text-base">Delete Service</h3>
-            <p className="text-sm text-slate-500 mt-1 leading-relaxed">
-              Are you sure you want to remove{' '}
-              <span className="font-semibold text-slate-700">{service.name}</span>?
-              This cannot be undone.
-            </p>
+            <h3 className="font-bold text-slate-900 text-base">{title}</h3>
+            <p className="text-sm text-slate-500 mt-1 leading-relaxed">{message}</p>
           </div>
         </div>
 
