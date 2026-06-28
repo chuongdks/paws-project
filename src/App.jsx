@@ -5,14 +5,14 @@ import { useServiceSelection } from './hook/useServiceSelection.js';
 import { useAuth } from './context/AuthContext.jsx';
 import { CATEGORIES } from './models/Service.js';
 
-import Header from './components/Header.jsx';
-import FilterBar from './components/FilterBar.jsx';
-import Sidebar from './components/Sidebar.jsx';
-import ServiceDetailPanel from './components/ServiceDetailPanel.jsx';
-import LeafletTestMap from './components/LeafletTestMap.jsx';
-import ServiceFormModal from './components/ServiceFormModal.jsx';
-import LoginModal from './components/LoginModal.jsx';
 import DeleteConfirmModal from './components/DeleteConfirmModal.jsx';
+import FilterBar from './components/FilterBar.jsx';
+import Header from './components/Header.jsx';
+import LeafletTestMap from './components/LeafletTestMap.jsx';
+import LoginModal from './components/LoginModal.jsx';
+import ServiceDetailPanel from './components/ServiceDetailPanel.jsx';
+import ServiceFormModal from './components/ServiceFormModal.jsx';
+import Sidebar from './components/Sidebar.jsx';
 
 // ── Main App ───────────────────────────────────────────────────────────────────
 export default function App() {

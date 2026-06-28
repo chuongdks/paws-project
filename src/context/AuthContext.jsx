@@ -7,24 +7,51 @@ const AuthContext = createContext(null);
 //   const res = await fetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
 //   const { token, user } = await res.json();
 //   localStorage.setItem('token', token);
-// Nothing else in this file or the components using useAuth() needs to change.
-const MOCK_USERS = [
+const INITIAL_USERS = [
   { id: 1, name: 'PAWS Admin',       email: 'admin@pawsinrecovery.ca', password: 'admin123', role: 'admin' },
   { id: 2, name: 'Community Member', email: 'user@pawsinrecovery.ca',  password: 'user123',  role: 'user'  },
 ];
 
 export function AuthProvider({ children }) {
+  const [users, setUsers] = useState(INITIAL_USERS);
   const [user, setUser]   = useState(null);
   const [error, setError] = useState(null);
 
   const login = (email, password) => {
-    const found = MOCK_USERS.find(u => u.email === email && u.password === password);
+    const found = users.find(u => u.email === email && u.password === password);
     if (!found) {
       setError('Invalid email or password.');
       return false;
     }
     setError(null);
     setUser({ id: found.id, name: found.name, email: found.email, role: found.role });
+    return true;
+  };
+
+  // Always creates role: 'user', nobody can self-register as admin.
+  // Mirrors the planned PHP endpoint: POST /api/auth/register always inserts role='user'; granting admin access is a separate, privileged action (e.g. an existing admin updating the role in the database)
+  const register = (name, email, password) => {
+    const trimmedName  = name.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+
+    if (!trimmedName || !trimmedEmail || !password) {
+      setError('Please fill out every field.');
+      return false;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return false;
+    }
+    if (users.some(u => u.email.toLowerCase() === trimmedEmail)) {
+      setError('An account with that email already exists.');
+      return false;
+    }
+
+    const newUser = { id: Date.now(), name: trimmedName, email: trimmedEmail, password, role: 'user' };
+    setUsers(prev => [...prev, newUser]);
+    setError(null);
+    // Auto-login right after registering, like most sign-up flows
+    setUser({ id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role });
     return true;
   };
 
@@ -35,6 +62,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     login,
+    register,
     logout,
     error,
     clearError: () => setError(null),
