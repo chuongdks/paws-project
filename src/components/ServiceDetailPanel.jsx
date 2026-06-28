@@ -6,6 +6,9 @@ import {
 } from 'lucide-react';
 import { getCategoryName, fullAddress, buildGoogleMapsLink } from '../models/Service.js';
 import VerificationBadge from './VerificationBadge.jsx';
+import StarRating from './StarRating.jsx';
+import ReviewFormModal from './ReviewFormModal.jsx';
+import DeleteConfirmModal from './DeleteConfirmModal.jsx';
 
 // ── Image area. WARNING: temporary client-side-only upload until DB support exists ────
 function ImageUploader({ imageUrl, onChange, isAdmin }) {
@@ -188,11 +191,71 @@ export default function ServiceDetailPanel({ service, onClose, onEdit, onDelete,
             <p className="text-sm text-slate-600 leading-relaxed">{service.washroom_info}</p>
           </div>
         )}
+        {/* Reviews — Google Maps style */}
+        <div className="space-y-3 pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-between">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <MessageSquare className="h-3.5 w-3.5" /> Reviews
+            </p>
+            {isAuthenticated && (
+              <button onClick={() => setShowReviewForm(true)}
+                className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline">
+                <Plus className="h-3.5 w-3.5" /> Write a Review
+              </button>
+            )}
+          </div>
+
+          {reviews.length > 0 && (
+            <div className="flex items-center gap-2">
+              <StarRating rating={averageRating(reviews)} />
+              <span className="text-sm font-semibold text-slate-700">{averageRating(reviews)}</span>
+              <span className="text-xs text-slate-400">
+                ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+              </span>
+            </div>
+          )}
+
+          {reviews.length > 0 ? (
+            <div className="space-y-4 pt-1">
+              {reviews.map(review => (
+                <ReviewCard key={review.id} review={review} isAdmin={isAdmin}
+                  onDelete={setDeleteReviewTarget} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400 italic py-2">
+              No reviews yet — be the first to share your experience.
+            </p>
+          )}
+
+          {!isAuthenticated && (
+            <p className="text-[11px] text-slate-400">Sign in to leave a review.</p>
+          )}
+        </div>
 
         <p className="text-[11px] text-slate-300 pt-2 border-t border-slate-100">
           Photo and edits are stored in-memory only until connected to the backend. NOOR PLZ ADD BACK END SOON
         </p>
       </div>
+
+      {/* Write a review modal */}
+      {showReviewForm && (
+        <ReviewFormModal
+          serviceName={service.name}
+          onClose={() => setShowReviewForm(false)}
+          onSave={(formData) => { onAddReview(formData); setShowReviewForm(false); }}
+        />
+      )}
+
+      {/* Delete review confirmation */}
+      {deleteReviewTarget && (
+        <DeleteConfirmModal
+          title="Delete Review"
+          message="Are you sure you want to remove this review? This cannot be undone."
+          onConfirm={() => { onDeleteReview(deleteReviewTarget.id); setDeleteReviewTarget(null); }}
+          onCancel={() => setDeleteReviewTarget(null)}
+        />
+      )}
     </aside>
   );
 }
