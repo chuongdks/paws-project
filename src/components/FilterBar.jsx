@@ -22,21 +22,21 @@ function FilterDropdown({ label, activeLabel, children }) {
   const isFiltered = activeLabel && activeLabel !== 'All';
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative w-full sm:w-auto">
       <button
         onClick={() => setOpen(o => !o)}
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors whitespace-nowrap ${
+        className={`w-full sm:w-auto flex items-center justify-between sm:justify-start gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
           isFiltered
             ? 'bg-blue-50 text-blue-700 border-blue-200'
             : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
         }`}
       >
-        {label}{isFiltered ? `: ${activeLabel}` : ''}
-        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <span className="truncate">{label}{isFiltered ? `: ${activeLabel}` : ''}</span>
+        <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg p-2 z-[1100] min-w-[220px] max-h-72 overflow-y-auto">
+        <div className="absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg p-2 z-[1100] w-full sm:w-auto sm:min-w-[220px] max-h-72 overflow-y-auto">
           {children}
         </div>
       )}
@@ -81,7 +81,7 @@ export default function FilterBar({
   };
 
   return (
-    <div className="bg-white border-b border-slate-200 px-4 sm:px-5 py-3 flex flex-wrap items-center gap-2 sm:gap-3 shrink-0 z-10">
+    <div className="bg-white border-b border-slate-200 px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 shrink-0 z-10">
 
       {/* Search */}
       <div className="relative w-full sm:w-64 shrink-0">
@@ -95,9 +95,6 @@ export default function FilterBar({
 
       {/* Divider only appear once everything sits on one row */}
       <div className="hidden sm:block h-6 w-px bg-slate-200" />
-
-      {/* Filter dropdowns */}
-      <SlidersHorizontal className="h-4 w-4 text-slate-400 shrink-0" />
 
       <FilterDropdown label="Access" activeLabel={accessFilter}>
         {ACCESS_OPTIONS.map(opt => (

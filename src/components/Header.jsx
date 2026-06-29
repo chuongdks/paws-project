@@ -1,16 +1,21 @@
 import React from 'react';
 import { LogIn, LogOut } from 'lucide-react';
 
+const LOGO_URL = 'https://pawsinrecovery.ca/wp-content/uploads/2025/08/cropped-Logo-July-2025.jpg';
+
 export default function Header({ resultCount, user, isAuthenticated, isAdmin, onSignIn, onLogout }) {
   return (
     /* ── Header ─────────────────────────────────────────────────────────── */
     <header className="bg-white border-b border-slate-200 px-4 sm:px-5 py-3 flex items-center justify-between gap-3 shrink-0 z-10">
-      <div className="min-w-0">
-        <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-tight tracking-tight truncate">
-          Community Services Directory
-        </h1>
-        <p className="text-xs text-slate-500 hidden sm:block">Windsor-Essex 2SLGBTQIA+ support programs</p>
-      </div>
+
+      {/* Logo + description (Link to the PAWS site)*/}
+      <a
+        href="https://pawsinrecovery.ca/"
+        target="_blank" rel="noopener noreferrer"
+        className="flex flex-col min-w-0"
+      >
+        <img src={LOGO_URL} alt="Paws in Recovery" className="h-9 sm:h-11 w-auto object-contain" />
+      </a>
 
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* No of Services after filter */}
@@ -41,6 +46,11 @@ export default function Header({ resultCount, user, isAuthenticated, isAdmin, on
           </button>
         )}
       </div>
+
+      {/* Always visible, even on mobile — doesn't disappear like the old subtitle did */}
+      <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-snug">
+        Windsor-Essex 2SLGBTQIA+ support programs
+      </p>
     </header>
   );
 }

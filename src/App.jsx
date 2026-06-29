@@ -62,7 +62,7 @@ export default function App() {
 
   return (
     /* HEADER, FILTER BAR, BODY and CRUD MODAL */
-    <div className="h-screen flex flex-col bg-slate-100 overflow-hidden">
+    <div className="min-h-screen md:h-screen flex flex-col bg-slate-100 overflow-y-auto md:overflow-hidden">
 
       {/* ── Header: Website name, logo, and others and Logging In/Sign Out ─── */}
       <Header
@@ -81,22 +81,21 @@ export default function App() {
       />
 
       {/* ── Body: sidebar + detail panel + map ───────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 flex-col md:flex-row md:overflow-hidden">
 
         {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-        <div className={`${selectedService ? 'hidden md:flex' : 'flex'} h-full w-full md:w-auto`}>
-          <Sidebar
-            filteredServices={filteredServices}
-            selectedService={selectedService}
-            onSelectService={handleSelectService}
-            onEdit={openEdit} onDelete={setDeleteTarget} isAdmin={isAdmin}
-            cardRefs={cardRefs} scrollContainerRef={scrollContainerRef}
-            onClearFilters={clearAllFilters}
-          />
-        </div>
+        <Sidebar
+          filteredServices={filteredServices}
+          selectedService={selectedService}
+          onSelectService={handleSelectService}
+          onEdit={openEdit} onDelete={setDeleteTarget} isAdmin={isAdmin}
+          cardRefs={cardRefs} scrollContainerRef={scrollContainerRef}
+          onClearFilters={clearAllFilters}
+        />
+
 
         {/* ── Detail panel + Map ───────────────────────────────────────────── */}
-        <main className={`flex-1 overflow-hidden ${selectedService ? 'flex' : 'hidden md:flex'}`}>
+        <main className="flex-1 flex flex-col md:flex-row md:overflow-hidden">
 
           {/* Detail panel — only renders when a service is selected */}
           {selectedService && (
@@ -115,7 +114,7 @@ export default function App() {
           )}
 
           {/* Map fills whatever space remains */}
-          <div className="flex-1 relative hidden md:block">
+          <div className="relative w-full h-[400px] md:h-auto md:flex-1">
             {!selectedService && (
               <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-white rounded-full shadow-lg border border-slate-200 px-4 py-2 text-sm text-slate-500">
                 Select a service or click a map pin to view full details
