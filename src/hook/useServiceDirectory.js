@@ -24,7 +24,7 @@ export function useServiceDirectory(services) {
     // 2. Access model, check if the service is in-person or online
     if (accessFilter === 'In-Person') {
       results = results.filter(isInPerson);
-    } else if (accessFilter === 'Helplines') {
+    } else if (accessFilter === 'No Fixed Location') {
       results = results.filter(s => !isInPerson(s));
     }
 

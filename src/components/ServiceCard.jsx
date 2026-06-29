@@ -37,7 +37,7 @@ export default function ServiceCard({ service, isSelected, onClick, onEdit, onDe
         </div>
       )}
 
-      {/* Location or helpline */}
+      {/* Location or no-fixed-location (helplines, performers, mobile services, etc.) */}
       {fullAddress(service) ? (
         <div className="flex items-start gap-1.5 text-xs text-slate-500">
           <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 text-slate-400" />
@@ -46,7 +46,7 @@ export default function ServiceCard({ service, isSelected, onClick, onEdit, onDe
       ) : (
         <div className="flex items-center gap-1.5 text-xs font-medium text-purple-600">
           <Globe className="h-3.5 w-3.5 shrink-0" />
-          <span>Provincial / National Helpline</span>
+          <span>No Fixed Location</span>
         </div>
       )}
 

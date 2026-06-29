@@ -170,7 +170,7 @@ export default function ServiceDetailPanel({
             <InfoRow icon={MapPin}>{fullAddress(service)}</InfoRow>
           ) : (
             <InfoRow icon={Globe}>
-              <span className="text-purple-600 font-medium">Provincial / National Helpline</span>
+              <span className="text-purple-600 font-medium">No Fixed Location</span>
             </InfoRow>
           )}
           {service.phone && <InfoRow icon={Phone}>{service.phone}</InfoRow>}
