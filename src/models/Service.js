@@ -17,6 +17,8 @@ export const CATEGORIES = [
   { id: 15, name: 'Pet Services',                     slug: 'pet-services' },
   { id: 16, name: 'Local Businesses',                 slug: 'local-businesses' },
   { id: 17, name: 'Other Community Resources',        slug: 'other-community-resources' },
+  // NOOR add this in the DB
+  { id: 18, name: 'Performers & Entertainers',        slug: 'performers-entertainers' },
 ];
 
 // ── Tags — mirrors the `tags` table exactly ────────────────────────────────────
@@ -58,7 +60,7 @@ export function createService(raw = {}) {
     verification_status: raw.verification_status  ?? 'needs verification',
     is_visible:          raw.is_visible            ?? 1,
     tags:                Array.isArray(raw.tags)   ? raw.tags : [],
-    // Temporary client-side only, YO add this in the DB
+    // Temporary client-side only, NOOR add this in the DB
     image_url:           raw.image_url             ?? null,
   };
 }

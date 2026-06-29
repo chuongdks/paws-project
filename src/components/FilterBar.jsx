@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, SlidersHorizontal, ChevronDown, Check, Plus, X } from 'lucide-react';
 
-// ── Generic dropdown shell — click the button to toggle a popover, ────────────
-// click outside or press Escape to close it.
+// ── Generic dropdown shell, click the button to toggle a popover ────────────
 function FilterDropdown({ label, activeLabel, children }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -68,7 +67,7 @@ export default function FilterBar({
   activeCategories,
   isAdmin, onAddService,
 }) {
-  const ACCESS_OPTIONS = ['All', 'In-Person', 'Helplines'];
+  const ACCESS_OPTIONS = ['All', 'In-Person', 'No Fixed Location'];
   const categoryLabel = categoryFilter === 'All'
     ? 'All'
     : activeCategories.find(c => c.id === categoryFilter)?.name ?? 'All';
@@ -85,7 +84,7 @@ export default function FilterBar({
     <div className="bg-white border-b border-slate-200 px-5 py-3 flex items-center gap-3 shrink-0 z-10">
 
       {/* Search */}
-      <div className="relative w-64 shrink-0">
+      <div className="relative w-full sm:w-64 shrink-0">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
         <input
           type="text" placeholder="Search services..."
@@ -94,7 +93,8 @@ export default function FilterBar({
         />
       </div>
 
-      <div className="h-6 w-px bg-slate-200" />
+      {/* Divider only appear once everything sits on one row */}
+      <div className="hidden sm:block h-6 w-px bg-slate-200" />
 
       {/* Filter dropdowns */}
       <SlidersHorizontal className="h-4 w-4 text-slate-400 shrink-0" />
@@ -124,12 +124,9 @@ export default function FilterBar({
         </button>
       )}
 
-      {/* Spacer pushes Add Service to the right */}
-      <div className="flex-1" />
-
       {isAdmin && (
         <button onClick={onAddService}
-          className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors shrink-0">
+          className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors shrink-0">
           <Plus className="h-4 w-4" /> Add Service
         </button>
       )}
