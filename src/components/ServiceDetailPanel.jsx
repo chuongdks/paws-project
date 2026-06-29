@@ -273,7 +273,7 @@ export default function ServiceDetailPanel({
         </div>
 
         <p className="text-[11px] text-slate-300 pt-2 border-t border-slate-100">
-          Photo and edits are stored in-memory only until connected to the backend. NOOR PLZ ADD BACK END SOON
+          Photo, edits, and reviews are stored in-memory only until connected to the backend. NOOR PLZ ADD BACK END SOON
         </p>
       </div>
 

@@ -81,7 +81,7 @@ export default function FilterBar({
   };
 
   return (
-    <div className="bg-white border-b border-slate-200 px-5 py-3 flex items-center gap-3 shrink-0 z-10">
+    <div className="bg-white border-b border-slate-200 px-4 sm:px-5 py-3 flex flex-wrap items-center gap-2 sm:gap-3 shrink-0 z-10">
 
       {/* Search */}
       <div className="relative w-full sm:w-64 shrink-0">

@@ -84,17 +84,19 @@ export default function App() {
       <div className="flex flex-1 overflow-hidden">
 
         {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-        <Sidebar
-          filteredServices={filteredServices}
-          selectedService={selectedService}
-          onSelectService={handleSelectService}
-          onEdit={openEdit} onDelete={setDeleteTarget} isAdmin={isAdmin}
-          cardRefs={cardRefs} scrollContainerRef={scrollContainerRef}
-          onClearFilters={clearAllFilters}
-        />
+        <div className={`${selectedService ? 'hidden md:flex' : 'flex'} h-full w-full md:w-auto`}>
+          <Sidebar
+            filteredServices={filteredServices}
+            selectedService={selectedService}
+            onSelectService={handleSelectService}
+            onEdit={openEdit} onDelete={setDeleteTarget} isAdmin={isAdmin}
+            cardRefs={cardRefs} scrollContainerRef={scrollContainerRef}
+            onClearFilters={clearAllFilters}
+          />
+        </div>
 
         {/* ── Detail panel + Map ───────────────────────────────────────────── */}
-        <main className="flex-1 flex overflow-hidden">
+        <main className={`flex-1 overflow-hidden ${selectedService ? 'flex' : 'hidden md:flex'}`}>
 
           {/* Detail panel — only renders when a service is selected */}
           {selectedService && (
@@ -113,7 +115,7 @@ export default function App() {
           )}
 
           {/* Map fills whatever space remains */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative hidden md:block">
             {!selectedService && (
               <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-white rounded-full shadow-lg border border-slate-200 px-4 py-2 text-sm text-slate-500">
                 Select a service or click a map pin to view full details
@@ -139,9 +141,12 @@ export default function App() {
 
       {/* ── Delete confirmation modal ─────────────────────────────────────────── */}
       {deleteTarget && (
-        <DeleteConfirmModal service={deleteTarget}
+        <DeleteConfirmModal
+          title="Delete Service"
+          message={<>Are you sure you want to remove <span className="font-semibold text-slate-700">{deleteTarget.name}</span>? This cannot be undone.</>}
           onConfirm={() => handleDelete(deleteTarget)}
-          onCancel={() => setDeleteTarget(null)} />
+          onCancel={() => setDeleteTarget(null)}
+        />
       )}
     </div>
   );
