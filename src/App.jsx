@@ -17,7 +17,7 @@ import Sidebar from './components/Sidebar.jsx';
 
 // ── Main App ───────────────────────────────────────────────────────────────────
 export default function App() {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isUser, logout } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const mapSectionRef = useRef(null);
 
@@ -95,7 +95,7 @@ export default function App() {
         accessFilter={accessFilter} setAccessFilter={setAccessFilter}
         categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
         activeCategories={activeCategories}
-        isAdmin={isAdmin} onAddService={openAdd}
+        isUser={isUser} onAddService={openAdd}
       />
 
       {/* ── Body: sidebar -> detail panel + map (stacked on mobile, row on desktop) ───────────────────────────── */}
