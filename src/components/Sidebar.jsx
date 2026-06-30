@@ -9,7 +9,7 @@ export default function Sidebar({
   onClearFilters,
 }) {
   return (
-    <aside className="w-full md:w-[380px] shrink-0 flex flex-col border-r border-slate-200 bg-slate-50 overflow-hidden">
+    <aside className="w-full h-full shrink-0 flex flex-col border-r border-slate-200 bg-slate-50 overflow-hidden">
 
       {/* Card list */}
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-3 space-y-2">

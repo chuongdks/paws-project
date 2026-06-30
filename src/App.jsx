@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useServiceDirectory } from './hook/useServiceDirectory.js';
 import { useServiceCRUD } from './hook/useServiceCRUD.js';
 import { useServiceSelection } from './hook/useServiceSelection.js';
@@ -19,6 +19,7 @@ import Sidebar from './components/Sidebar.jsx';
 export default function App() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
+  const mapSectionRef = useRef(null);
 
   // Reviews — owns its own array, scoped per-service via getReviewsFor
   const { getReviewsFor, addReview, deleteReview } = useReviews();
@@ -53,11 +54,28 @@ export default function App() {
     handleSelectService,
   } = useServiceSelection(services, filteredServices);
 
-  // Lonely clear all filter function
+  // Clear all filter function
   const clearAllFilters = () => {
     setSearchQuery('');
     setAccessFilter('All');
     setCategoryFilter('All');
+  };
+
+  // Auto scroll to map when select a Service
+  // call requestAnimationFrame() twice to wait for the detail panel to render first. NOTE: need better way to do this
+  const handleSelectServiceAndScroll = (service) => {
+    handleSelectService(service);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  };
+
+  // Return back from detail to lists, and also scroll back to top
+  const handleBackToResults = () => {
+    setSelectedService(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -80,28 +98,15 @@ export default function App() {
         isAdmin={isAdmin} onAddService={openAdd}
       />
 
-      {/* ── Body: sidebar + detail panel + map ───────────────────────────── */}
+      {/* ── Body: sidebar -> detail panel + map (stacked on mobile, row on desktop) ───────────────────────────── */}
       <div className="flex flex-1 flex-col md:flex-row md:overflow-hidden">
 
-        {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-        <Sidebar
-          filteredServices={filteredServices}
-          selectedService={selectedService}
-          onSelectService={handleSelectService}
-          onEdit={openEdit} onDelete={setDeleteTarget} isAdmin={isAdmin}
-          cardRefs={cardRefs} scrollContainerRef={scrollContainerRef}
-          onClearFilters={clearAllFilters}
-        />
-
-
-        {/* ── Detail panel + Map ───────────────────────────────────────────── */}
-        <main className="flex-1 flex flex-col md:flex-row md:overflow-hidden">
-
-          {/* Detail panel — only renders when a service is selected */}
-          {selectedService && (
+        {/* Left slot: List OR Detail, mutually exclusive */}
+        <div className="w-full md:w-[400px] shrink-0">
+          {selectedService ? (
             <ServiceDetailPanel
               service={selectedService}
-              onClose={() => setSelectedService(null)}
+              onClose={handleBackToResults}
               onEdit={openEdit}
               onDelete={setDeleteTarget}
               onUpdateImage={handleUpdateImage}
@@ -111,22 +116,31 @@ export default function App() {
               onAddReview={(formData) => addReview(selectedService.id, formData, user)}
               onDeleteReview={deleteReview}
             />
-          )}
-
-          {/* Map fills whatever space remains */}
-          <div className="relative w-full h-[400px] md:h-auto md:flex-1">
-            {!selectedService && (
-              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-white rounded-full shadow-lg border border-slate-200 px-4 py-2 text-sm text-slate-500">
-                Select a service or click a map pin to view full details
-              </div>
-            )}
-            <LeafletTestMap
-              services={filteredServices}
+          ) : (
+            <Sidebar
+              filteredServices={filteredServices}
               selectedService={selectedService}
-              onSelectService={handleSelectService}
+              onSelectService={handleSelectServiceAndScroll}
+              onEdit={openEdit} onDelete={setDeleteTarget} isAdmin={isAdmin}
+              cardRefs={cardRefs} scrollContainerRef={scrollContainerRef}
+              onClearFilters={clearAllFilters}
             />
-          </div>
-        </main>
+          )}
+        </div>
+
+        {/* Right slot: Map, always visible regardless of selection */}
+        <div ref={mapSectionRef} className="relative w-full h-[400px] md:h-auto md:flex-1">
+          {!selectedService && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-white rounded-full shadow-lg border border-slate-200 px-4 py-2 text-sm text-slate-500">
+              Select a service or click a map pin to view full details
+            </div>
+          )}
+          <LeafletTestMap
+            services={filteredServices}
+            selectedService={selectedService}
+            onSelectService={handleSelectServiceAndScroll}
+          />
+        </div>
       </div>
 
       {/* ── Login modal ───────────────────────────────────────────────────────── */}

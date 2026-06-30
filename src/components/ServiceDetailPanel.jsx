@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
-  X, Pencil, Trash2, Globe, Phone, Mail, MapPin, ExternalLink,
+  ArrowLeft, Pencil, Trash2, Globe, Phone, Mail, MapPin, ExternalLink,
   FileText, Sparkles, DoorOpen, MessageSquare, Plus,
   Image as ImageIcon, Upload
 } from 'lucide-react';
@@ -102,34 +102,27 @@ export default function ServiceDetailPanel({
   const [deleteReviewTarget, setDeleteReviewTarget] = useState(null);
 
   return (
-    <aside className="w-[400px] shrink-0 flex flex-col border-r border-slate-200 bg-white overflow-hidden">
+    <aside className="w-full h-full shrink-0 flex flex-col border-r border-slate-200 bg-white overflow-hidden">
 
-      {/* Header bar */}
+      {/* Header bar and Edit Button*/}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 shrink-0">
-        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-          Service Details
-        </span>
-
-        <div className="flex items-center gap-1">
-          {/* Admin privilage Edits*/}
-          {isAdmin && (
-            <>
-              <button onClick={() => onEdit(service)} title="Edit"
-                className="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
-                <Pencil className="h-4 w-4" />
-              </button>
-              <button onClick={() => onDelete(service)} title="Delete"
-                className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </>
-          )}
-          {/* Normal User close button*/}
-          <button onClick={onClose} title="Close"
-            className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        <button onClick={onClose}
+          className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">
+          <ArrowLeft className="h-4 w-4" /> Back to results
+        </button>
+        {/* Admin privilage Edits*/}
+        {isAdmin && (
+          <div className="flex items-center gap-1">
+            <button onClick={() => onEdit(service)} title="Edit"
+              className="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button onClick={() => onDelete(service)} title="Delete"
+              className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Scrollable body */}
@@ -230,6 +223,7 @@ export default function ServiceDetailPanel({
             <p className="text-sm text-slate-600 leading-relaxed">{service.washroom_info}</p>
           </div>
         )}
+
         {/* Reviews — Google Maps style */}
         <div className="space-y-3 pt-2 border-t border-slate-100">
           <div className="flex items-center justify-between">
