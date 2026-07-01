@@ -21,8 +21,8 @@ export default function App() {
   const [showLogin, setShowLogin] = useState(false);
   const mapSectionRef = useRef(null);
 
-  // Reviews — owns its own array, scoped per-service via getReviewsFor
-  const { getReviewsFor, addReview, deleteReview } = useReviews();
+  // Reviews — owns its own array, scoped per service via getReviewsFor
+  const { getReviewsFor, addReview, deleteReview, hasUserReviewed } = useReviews();
 
   // Services array + every create/update/delete/image operation
   const {
@@ -113,6 +113,7 @@ export default function App() {
               isAdmin={isAdmin}
               isAuthenticated={isAuthenticated}
               reviews={getReviewsFor(selectedService.id)}
+              canReview={!isAdmin && isAuthenticated && !hasUserReviewed(selectedService.id, user?.id)}
               onAddReview={(formData) => addReview(selectedService.id, formData, user)}
               onDeleteReview={deleteReview}
             />

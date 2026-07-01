@@ -96,7 +96,7 @@ function ReviewCard({ review, isAdmin, onDelete }) {
 // ── Main export ────────────────────────────────────────────────────────────────
 export default function ServiceDetailPanel({
   service, onClose, onEdit, onDelete, onUpdateImage, isAdmin,
-  isAuthenticated, reviews, onAddReview, onDeleteReview,
+  isAuthenticated, canReview, reviews, onAddReview, onDeleteReview,
 }) {
   const [showReviewForm, setShowReviewForm]         = useState(false);
   const [deleteReviewTarget, setDeleteReviewTarget] = useState(null);
@@ -204,7 +204,7 @@ export default function ServiceDetailPanel({
           </div>
         )}
 
-        {/* Inclusivity notes — highlighted, this is a key trust signal */}
+        {/* Inclusivity notes */}
         {service.inclusivity_notes && (
           <div className="space-y-1.5 bg-blue-50/60 border border-blue-100 rounded-xl p-3.5">
             <p className="flex items-center gap-1.5 text-xs font-semibold text-blue-700 uppercase tracking-wider">
@@ -230,7 +230,7 @@ export default function ServiceDetailPanel({
             <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
               <MessageSquare className="h-3.5 w-3.5" /> Reviews
             </p>
-            {isAuthenticated && (
+            {canReview && (
               <button onClick={() => setShowReviewForm(true)}
                 className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline">
                 <Plus className="h-3.5 w-3.5" /> Write a Review
@@ -261,13 +261,20 @@ export default function ServiceDetailPanel({
             </p>
           )}
 
+          {/* Contextual footer message — one of four states */}
           {!isAuthenticated && (
             <p className="text-[11px] text-slate-400">Sign in to leave a review.</p>
+          )}
+          {isAdmin && (
+            <p className="text-[11px] text-slate-400">Sorry Admins, you cannot post reviews. No corruption</p>
+          )}
+          {canReview === false && isAuthenticated && !isAdmin && (
+            <p className="text-[11px] text-slate-400">You have already reviewed this service.</p>
           )}
         </div>
 
         <p className="text-[11px] text-slate-300 pt-2 border-t border-slate-100">
-          Photo, edits, and reviews are stored in-memory only until connected to the backend. NOOR PLZ ADD BACK END SOON
+          Photo, edits, and reviews are stored in-memory only until connected to the backend. NOOR PLZ ADD BACK END SOON. POWDER THAT MAKES U SAY BACK END TOMORROW
         </p>
       </div>
 

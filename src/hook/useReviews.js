@@ -21,6 +21,7 @@ const SEED_REVIEWS = [
 export function useReviews() {
   const [reviews, setReviews] = useState(SEED_REVIEWS);
 
+  /* CRUD for the Reviews */
   // Most recent first, like Google Maps reviews
   const getReviewsFor = (listingId) =>
     reviews
@@ -43,5 +44,9 @@ export function useReviews() {
     setReviews(prev => prev.filter(r => r.id !== reviewId));
   };
 
-  return { getReviewsFor, addReview, deleteReview };
+  // user already post review check 
+  const hasUserReviewed = (listingId, userId) =>
+    reviews.some(r => r.listing_id === listingId && r.user_id === userId);
+
+  return { getReviewsFor, addReview, deleteReview, hasUserReviewed };
 }
