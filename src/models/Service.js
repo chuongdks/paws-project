@@ -62,6 +62,7 @@ export function createService(raw = {}) {
     tags:                Array.isArray(raw.tags)   ? raw.tags : [],
     // Temporary client-side only, NOOR add this in the DB
     image_url:           raw.image_url             ?? null,
+    hours:               normalizeHours(raw.hours), // { "mon": { "open": "09:00", "close": "17:00", "closed": false }, "tue": { "open": "09:00", "close": "17:00", "closed": false }"...": "..."}
   };
 }
 
@@ -88,3 +89,88 @@ export const getCategoryName = (id) => CATEGORIES.find(c => c.id === id)?.name ?
 // Builds an external Google Maps link. Uses the stored URL if the DB has one, otherwise falls back to a search query built from the address parts.
 // Was previously copy-pasted in App.jsx and ServiceDetailPanel.jsx.
 export const buildGoogleMapsLink = (s) => s.google_maps_url ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress(s))}`;
+
+// ── Hours of Operation ──────────────────────────────────────────────────────
+// Stored as an object keyed by day: { mon: { open: '09:00', close: '17:00', closed: false }, ... }
+// open/close are 24h "HH:MM" strings from <input type="time">. Empty strings mean "not set".
+export const DAYS_OF_WEEK = [
+  { key: 'mon', label: 'Monday',    short: 'Mon' },
+  { key: 'tue', label: 'Tuesday',   short: 'Tue' },
+  { key: 'wed', label: 'Wednesday', short: 'Wed' },
+  { key: 'thu', label: 'Thursday',  short: 'Thu' },
+  { key: 'fri', label: 'Friday',    short: 'Fri' },
+  { key: 'sat', label: 'Saturday',  short: 'Sat' },
+  { key: 'sun', label: 'Sunday',    short: 'Sun' },
+];
+
+const emptyDayHours = () => ({ open: '', close: '', closed: false });
+
+export const defaultHours = () =>
+  DAYS_OF_WEEK.reduce((acc, d) => ({ ...acc, [d.key]: emptyDayHours() }), {});  // { mon: { open: '', close: '', closed: false }, tue ...)
+
+// Merges raw hours data (may be missing, partial, or from legacy records) into the full 7-day shape
+export const normalizeHours = (raw) => {
+  const base = defaultHours();
+  if (!raw || typeof raw !== 'object') return base;
+  DAYS_OF_WEEK.forEach(({ key }) => {
+    if (raw[key]) base[key] = { ...emptyDayHours(), ...raw[key] };
+  });
+  return base;
+};
+
+// True if at least one day has been given actual hours or explicitly marked closed —
+// lets the UI hide the whole "Hours" section for listings (like helplines) that never filled it in
+export const hasHours = (s) =>
+  Object.values(s.hours ?? {}).some(d => d.closed || (d.open && d.close));
+
+// "14:30" -> "2:30 PM"
+export const formatTime12 = (t) => {
+  if (!t) return '';
+  const [h, m] = t.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+};
+
+const dayText = (d) => {
+  if (d.closed) return 'Closed';
+  if (d.open && d.close) return `${formatTime12(d.open)} – ${formatTime12(d.close)}`;
+  return 'Hours not listed';
+};
+
+// Groups consecutive days sharing identical hours for a compact display,
+// e.g. "Mon–Fri: 9:00 AM – 5:00 PM", "Sat: 10:00 AM – 2:00 PM", "Sun: Closed"
+export const groupedHoursDisplay = (s) => {
+  const hours = s.hours;
+  if (!hours) return [];
+  const sameDay = (a, b) => a.closed === b.closed && a.open === b.open && a.close === b.close;
+
+  const groups = [];
+  DAYS_OF_WEEK.forEach(({ key, short }) => {
+    const day = hours[key] ?? emptyDayHours();
+    const last = groups[groups.length - 1];
+    if (last && sameDay(last.hours, day)) {
+      last.days.push(short);
+    } else {
+      groups.push({ days: [short], hours: day });
+    }
+  });
+
+  return groups.map(g => ({
+    label: g.days.length > 1 ? `${g.days[0]}–${g.days[g.days.length - 1]}` : g.days[0],
+    text: dayText(g.hours),
+  }));
+};
+
+// Whether the service is open right now, based on the visitor's local day/time. Returns null if no hours are set at all.
+export const isOpenNow = (s) => {
+  if (!hasHours(s)) return null;
+  const now = new Date();
+  const todayKey = DAYS_OF_WEEK[(now.getDay() + 6) % 7].key; // JS Sunday=0 → align to our Mon-first array
+  const day = s.hours[todayKey];
+  if (!day || day.closed || !day.open || !day.close) return false;
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const [oh, om] = day.open.split(':').map(Number);
+  const [ch, cm] = day.close.split(':').map(Number);
+  return mins >= oh * 60 + om && mins < ch * 60 + cm;
+};

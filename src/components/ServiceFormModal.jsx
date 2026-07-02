@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Image as ImageIcon } from 'lucide-react';
-import { CATEGORIES, ASSIGNABLE_TAGS, emptyService } from '../models/Service.js';
+import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Image as ImageIcon, Clock } from 'lucide-react';
+import { CATEGORIES, ASSIGNABLE_TAGS, emptyService, DAYS_OF_WEEK } from '../models/Service.js';
 
 const VERIFICATION_OPTIONS = ['needs verification', 'verified', 'rejected', 'archived'];
 
@@ -41,6 +41,19 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
       ...f,
       tags: f.tags.includes(tag) ? f.tags.filter(t => t !== tag) : [...f.tags, tag],
     }));
+
+  // Patches a single day's hours, e.g. setDayHours('mon', { open: '09:00' })
+  const setDayHours = (day, patch) =>
+    setForm(f => ({ ...f, hours: { ...f.hours, [day]: { ...f.hours[day], ...patch } } }));
+
+  // Convenience: most listings share the same weekday hours, so let Monday fill Tue–Fri
+  const copyMondayToWeekdays = () => {
+    const mon = form.hours.mon;
+    setForm(f => ({
+      ...f,
+      hours: { ...f.hours, tue: { ...mon }, wed: { ...mon }, thu: { ...mon }, fri: { ...mon } },
+    }));
+  };
 
   const fileInputRef = useRef(null);
   const handleImageFile = (e) => {
@@ -148,7 +161,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
 
           {/* ── Location ── */}
           <Field label="Street Address" icon={MapPin}
-            hint="Leave blank for provincial / national helplines.">
+            hint="Leave blank for provincial / national helplines / performers artist.">
             <input className={inputCls} placeholder="123 Main Street"
               value={form.address ?? ''} onChange={e => set('address', e.target.value)} />
           </Field>
@@ -166,8 +179,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
 
           {/* Coordinates — side by side */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Latitude" error={errors.lat}
-              hint="Leave blank for helplines.">
+            <Field label="Latitude" error={errors.lat}>
               <input className={inputCls} placeholder="42.3044"
                 value={form.lat ?? ''} onChange={e => set('lat', e.target.value)} />
             </Field>
@@ -176,7 +188,21 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
                 value={form.lng ?? ''} onChange={e => set('lng', e.target.value)} />
             </Field>
           </div>
-
+          
+          <div className="space-y-1 bg-slate-50 border border-slate-100 rounded-lg p-3">
+            <p className="text-[11px] font-medium text-slate-500">
+              Leave blank for  provincial / national helplines / performers artist
+            </p>
+            <p className="text-[11px] font-medium text-slate-500">
+               You can find your Latitude and Longitude by:
+            </p>
+            <ul className="list-disc list-outside ml-4 text-left text-[11px] text-slate-400 space-y-1">
+              <li>Searching your location on Google Maps</li>
+              <li>Right-clicking on the map's red marker pin</li>
+              <li>Clicking the coordinates shown at the top of the menu to copy them</li>
+            </ul>
+          </div>
+          
           {/* ── Details ── */}
           <Field label="Description" icon={FileText}>
             <textarea className={`${inputCls} resize-none`} rows={3}
@@ -195,6 +221,46 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
             hint="Gender-inclusive or accessible washroom availability.">
             <input className={inputCls} placeholder="e.g. Gender-inclusive washroom available."
               value={form.washroom_info} onChange={e => set('washroom_info', e.target.value)} />
+          </Field>
+
+          {/* ── Hours of Operation ── */}
+          <Field label="Hours of Operation" icon={Clock}
+            hint="Leave times blank if not applicable. Checking 'Closed' will mark the entire day as unavailable.">
+            <div className="space-y-1.5">
+              {DAYS_OF_WEEK.map(({ key, short }) => {
+                const day = form.hours[key];
+                return (
+                  <div key={key} className="flex items-center gap-2">
+                    <span className="w-8 text-xs font-semibold text-slate-500 shrink-0">{short}</span>
+
+                    <label className="flex items-center gap-1.5 text-xs text-slate-500 shrink-0 w-16">
+                      <input type="checkbox" checked={day.closed}
+                        onChange={e => setDayHours(key, { closed: e.target.checked })}
+                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500/30" />
+                      Closed
+                    </label>
+
+                    {day.closed ? (
+                      <span className="flex-1 text-xs text-slate-300 italic">—</span>
+                    ) : (
+                      <>
+                        <input type="time" value={day.open}
+                          onChange={e => setDayHours(key, { open: e.target.value })}
+                          className={`${inputCls} py-1.5 flex-1`} />
+                        <span className="text-slate-300 text-xs shrink-0">–</span>
+                        <input type="time" value={day.close}
+                          onChange={e => setDayHours(key, { close: e.target.value })}
+                          className={`${inputCls} py-1.5 flex-1`} />
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <button type="button" onClick={copyMondayToWeekdays}
+              className="text-[11px] font-semibold text-blue-600 hover:underline pt-0.5">
+              Copy Monday's hours to Tue–Fri
+            </button>
           </Field>
 
           {/* ── Verification status ── */}

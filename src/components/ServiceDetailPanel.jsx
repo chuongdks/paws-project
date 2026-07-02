@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react';
 import {
   ArrowLeft, Pencil, Trash2, Globe, Phone, Mail, MapPin, ExternalLink,
-  FileText, Sparkles, DoorOpen, MessageSquare, Plus,
+  FileText, Sparkles, DoorOpen, MessageSquare, Plus, Clock,
   Image as ImageIcon, Upload
 } from 'lucide-react';
-import { getCategoryName, fullAddress, buildGoogleMapsLink } from '../models/Service.js';
+import { getCategoryName, fullAddress, buildGoogleMapsLink, hasHours, groupedHoursDisplay, isOpenNow } from '../models/Service.js';
 import { averageRating, formatReviewDate, getInitials } from '../models/Review.js';
 import VerificationBadge from './VerificationBadge.jsx';
 import StarRating from './StarRating.jsx';
@@ -189,10 +189,38 @@ export default function ServiceDetailPanel({
           {fullAddress(service) && (
             <a href={buildGoogleMapsLink(service)} target="_blank" rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors">
-              <ExternalLink className="h-3.5 w-3.5" /> Get Directions
+              <ExternalLink className="h-3.5 w-3.5" /> Open in Google Map
             </a>
           )}
         </div>
+
+        {/* Hours of Operation */}
+        {hasHours(service) && (
+          <div className="space-y-1.5 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <Clock className="h-3.5 w-3.5" /> Hours of Operation
+              </p>
+              {isOpenNow(service) !== null && (
+                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                  isOpenNow(service) ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {isOpenNow(service) ? 'Open now' : 'Closed now'}
+                </span>
+              )}
+            </div>
+            <div className="text-sm space-y-1">
+              {groupedHoursDisplay(service).map(({ label, text }) => (
+                <div key={label} className="flex items-center justify-between">
+                  <span className="text-slate-500">{label}</span>
+                  <span className={text === 'Closed' ? 'text-slate-400' : 'font-medium text-slate-700'}>
+                    {text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Description */}
         {service.description && (
@@ -274,7 +302,7 @@ export default function ServiceDetailPanel({
         </div>
 
         <p className="text-[11px] text-slate-300 pt-2 border-t border-slate-100">
-          Photo, edits, and reviews are stored in-memory only until connected to the backend. NOOR PLZ ADD BACK END SOON. POWDER THAT MAKES U SAY BACK END TOMORROW
+          Photo, edits, and reviews are stored in-memory only until connected to the backend. NOOR PLZ ADD BACK END SOON. <a href="https://storage.ghost.io/c/ce/b5/ceb5ab83-8bb7-4309-a274-8ad46a4a4524/content/images/size/w1000/2026/05/jG7ejMK.png" target="_blank" rel="noopener noreferrer">POWDER THAT MAKES U SAY BACK END TOMORROW</a>
         </p>
       </div>
 
