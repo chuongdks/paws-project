@@ -14,6 +14,7 @@ import LoginModal from './components/LoginModal.jsx';
 import ServiceDetailPanel from './components/ServiceDetailPanel.jsx';
 import ServiceFormModal from './components/ServiceFormModal.jsx';
 import Sidebar from './components/Sidebar.jsx';
+import Footer from './components/Footer.jsx';
 
 // ── Main App ───────────────────────────────────────────────────────────────────
 export default function App() {
@@ -144,6 +145,8 @@ export default function App() {
         </div>
       </div>
 
+      <Footer></Footer>
+      
       {/* ── Login modal ───────────────────────────────────────────────────────── */}
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
         
