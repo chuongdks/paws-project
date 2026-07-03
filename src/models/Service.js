@@ -58,7 +58,11 @@ export function createService(raw = {}) {
     inclusivity_notes:   raw.inclusivity_notes    ?? '',
     washroom_info:       raw.washroom_info         ?? '',
     verification_status: raw.verification_status  ?? 'needs verification',
+    // Not in the Front End but in the Back End, future implementation or just leave it
+    accessibility_notes: raw.accessibility_notes   ?? '',
+    last_verified_at:    raw.last_verified_at      ?? null,
     is_visible:          raw.is_visible            ?? 1,
+    // Noor add Array of Tags id in the listing table
     tags:                Array.isArray(raw.tags)   ? raw.tags : [],
     // Temporary client-side only, NOOR add this in the DB
     image_url:           raw.image_url             ?? null,

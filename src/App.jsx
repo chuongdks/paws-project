@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { useServiceDirectory } from './hook/useServiceDirectory.js';
 import { useServiceCRUD } from './hook/useServiceCRUD.js';
 import { useServiceSelection } from './hook/useServiceSelection.js';
@@ -27,7 +28,7 @@ export default function App() {
 
   // Services array + every create/update/delete/image operation
   const {
-    services,
+    services, loading, error,
     modal, openAdd, openEdit, closeModal,
     deleteTarget, setDeleteTarget,
     handleSave, handleDelete, handleUpdateImage,
@@ -99,12 +100,24 @@ export default function App() {
         isUser={isUser} onAddService={openAdd}
       />
 
+      {/* ── Error banner: only shows if the live API was unreachable ───────── */}
+      {error && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 sm:px-5 py-2 flex items-center gap-1.5 text-xs text-amber-700 shrink-0">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> {error}
+        </div>
+      )}
+
       {/* ── Body: sidebar -> detail panel + map (stacked on mobile, row on desktop) ───────────────────────────── */}
       <div className="flex flex-1 flex-col md:flex-row md:overflow-hidden">
 
-        {/* Left slot: List OR Detail, mutually exclusive */}
+        {/* Left slot: Loading API first then List OR Detail, mutually exclusive */}
         <div className="w-full md:w-[400px] shrink-0">
-          {selectedService ? (
+          {loading ? (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-400 text-sm border-r border-slate-200 bg-slate-50 py-16">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Loading services…
+            </div>
+          ) : selectedService ? (
             <ServiceDetailPanel
               service={selectedService}
               onClose={handleBackToResults}
