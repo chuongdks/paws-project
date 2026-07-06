@@ -82,7 +82,7 @@ export default function App() {
 
   return (
     /* HEADER, FILTER BAR, BODY and CRUD MODAL */
-    <div className="min-h-screen md:h-screen flex flex-col bg-slate-100 overflow-y-auto md:overflow-hidden">
+    <div className="min-h-screen md:h-screen flex flex-col bg-slate-100 dark:bg-slate-950 overflow-y-auto md:overflow-hidden">
 
       {/* ── Header: Website name, logo, and others and Logging In/Sign Out ─── */}
       <Header
