@@ -40,8 +40,8 @@ function MapController({ selectedService, markerRefs }) {
   const map = useMap();
 
   useEffect(() => {
-    if (!selectedService?.lat || !selectedService?.lng) return;
-    map.flyTo([selectedService.lat, selectedService.lng], 15, { duration: 0.7 });
+    if (!selectedService?.latitude || !selectedService?.longitude) return;
+    map.flyTo([selectedService.latitude, selectedService.longitude], 15, { duration: 0.7 });
 
     // Open the matching marker popup after the fly animation settles
     const timer = setTimeout(() => {
@@ -112,7 +112,7 @@ export default function LeafletTestMap({ services, selectedService, onSelectServ
           return (
             <Marker
               key={service.id}
-              position={[service.lat, service.lng]}
+              position={[service.latitude, service.longitude]}
               icon={isSelected ? selectedIcon : defaultIcon}
               ref={(ref) => { markerRefs.current[service.id] = ref; }}
               eventHandlers={{ click: () => onSelectService(service) }}

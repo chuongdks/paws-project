@@ -4,7 +4,7 @@ import servicesData from '../data/service.json';
 import api from '../api/axiosConfig.js';
 
 // Owns the services array and every create/update/delete/image operation.
-// IMPORTANT: Add/edit/delete are still in-memory only, WHEN it is ready swap handleSave/handleDelete for real POST/PUT/DELETE calls once those endpoints exist; nothing else here needs to change.
+// IMPORTANT: edit/delete are still in-memory only, WHEN it is ready swap those for real PUT/DELETE calls once those endpoints exist
 export function useServiceCRUD() {
   const [services, setServices] = useState(() => servicesData.map(createService));
   const [loading, setLoading]   = useState(true);
@@ -45,8 +45,9 @@ export function useServiceCRUD() {
 
   const handleSave = (formData) => {
     const normalized = createService(formData);
+
     if (modal.mode === 'add') {
-      // Temporary client-side ID — will be assigned by the DB on real save
+      // Temporary client-side ID, will be assigned by the DB on real POST request
       setServices(prev => [...prev, { ...normalized, id: Date.now() }]);
     } else {
       setServices(prev => prev.map(s => s.id === modal.service.id ? { ...normalized, id: s.id } : s));

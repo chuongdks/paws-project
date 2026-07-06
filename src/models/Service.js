@@ -52,8 +52,8 @@ export function createService(raw = {}) {
     email:               raw.email                ?? '',
     website_url:         raw.website_url          ?? '',
     google_maps_url:     raw.google_maps_url      ?? null,
-    lat:                 raw.lat  != null ? parseFloat(raw.lat)  : null,
-    lng:                 raw.lng  != null ? parseFloat(raw.lng)  : null,
+    latitude:            raw.latitude  != null ? parseFloat(raw.latitude)  : null,
+    longitude:           raw.longitude  != null ? parseFloat(raw.longitude)  : null,
     description:         raw.description          ?? '',
     inclusivity_notes:   raw.inclusivity_notes    ?? '',
     washroom_info:       raw.washroom_info         ?? '',
@@ -79,7 +79,7 @@ export const emptyService = () => createService({});
 export const fullAddress = (s) => [s.address, s.city, s.province].filter(Boolean).join(', ');
 
 // True if the service has coordinates for the Leaflet map
-export const isMappable = (s) => s.lat != null && s.lng != null;
+export const isMappable = (s) => s.latitude != null && s.longitude != null;
 
 // True if the service has a physical location (not a helpline)
 export const isInPerson = (s) => Boolean(s.address?.trim());

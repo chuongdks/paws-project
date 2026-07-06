@@ -68,10 +68,10 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
     const e = {};
     if (!form.name.trim())                          e.name        = 'Name is required.';
     if (!form.category_id)                          e.category_id = 'Category is required.';
-    if (form.lat  && isNaN(parseFloat(form.lat)))   e.lat  = 'Must be a valid number.';
-    if (form.lng  && isNaN(parseFloat(form.lng)))   e.lng  = 'Must be a valid number.';
-    if (form.lat && !form.lng)                      e.lng = 'Longitude is required when latitude is set.';
-    if (form.lng && !form.lat)                      e.lat = 'Latitude is required when longitude is set.';
+    if (form.latitude  && isNaN(parseFloat(form.latitude)))   e.latitude  = 'Must be a valid number.';
+    if (form.longitude  && isNaN(parseFloat(form.longitude)))   e.longitude  = 'Must be a valid number.';
+    if (form.latitude && !form.longitude)                      e.longitude = 'Longitude is required when latitude is set.';
+    if (form.longitude && !form.latitude)                      e.latitude = 'Latitude is required when longitude is set.';
     return e;
   };
 
@@ -81,8 +81,8 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
     onSave({
       ...form,
       category_id: Number(form.category_id),
-      lat: form.lat !== '' && form.lat != null ? parseFloat(form.lat) : null,
-      lng: form.lng !== '' && form.lng != null ? parseFloat(form.lng) : null,
+      latitude: form.latitude !== '' && form.latitude != null ? parseFloat(form.latitude) : null,
+      longitude: form.longitude !== '' && form.longitude != null ? parseFloat(form.longitude) : null,
     });
   };
 
@@ -179,13 +179,13 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
 
           {/* Coordinates — side by side */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Latitude" error={errors.lat}>
+            <Field label="Latitude" error={errors.latitude}>
               <input className={inputCls} placeholder="42.3044"
-                value={form.lat ?? ''} onChange={e => set('lat', e.target.value)} />
+                value={form.latitude ?? ''} onChange={e => set('latitude', e.target.value)} />
             </Field>
-            <Field label="Longitude" error={errors.lng}>
+            <Field label="Longitude" error={errors.longitude}>
               <input className={inputCls} placeholder="-83.0660"
-                value={form.lng ?? ''} onChange={e => set('lng', e.target.value)} />
+                value={form.longitude ?? ''} onChange={e => set('longitude', e.target.value)} />
             </Field>
           </div>
           
