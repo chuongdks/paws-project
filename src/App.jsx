@@ -82,7 +82,7 @@ export default function App() {
 
   return (
     /* HEADER, FILTER BAR, BODY and CRUD MODAL */
-    <div className="min-h-screen md:h-screen flex flex-col bg-slate-100 dark:bg-slate-950 overflow-y-auto md:overflow-hidden">
+    <div className="min-h-screen md:h-screen flex flex-col bg-app-bg overflow-y-auto md:overflow-hidden">
 
       {/* ── Header: Website name, logo, and others and Logging In/Sign Out ─── */}
       <Header
@@ -146,7 +146,7 @@ export default function App() {
         {/* Right slot: Map, always visible regardless of selection */}
         <div ref={mapSectionRef} className="relative w-full h-[400px] md:h-auto md:flex-1">
           {!selectedService && (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-white rounded-full shadow-lg border border-slate-200 px-4 py-2 text-sm text-slate-500">
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-surface-raised rounded-full shadow-lg border border-divider px-4 py-2 text-sm text-muted">
               Select a service or click a map pin to view full details
             </div>
           )}
@@ -173,7 +173,7 @@ export default function App() {
       {deleteTarget && (
         <DeleteConfirmModal
           title="Delete Service"
-          message={<>Are you sure you want to remove <span className="font-semibold text-slate-700">{deleteTarget.name}</span>? This cannot be undone.</>}
+          message={<>Are you sure you want to remove <span className="font-semibold text-secondary-strong">{deleteTarget.name}</span>? This cannot be undone.</>}
           onConfirm={() => handleDelete(deleteTarget)}
           onCancel={() => setDeleteTarget(null)}
         />

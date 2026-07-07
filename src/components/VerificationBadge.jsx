@@ -14,20 +14,20 @@ export default function VerificationBadge({ status, size = 'sm' }) {
   const s = SIZES[size] ?? SIZES.sm;
 
   if (status === 'verified') return (
-    <span className={`inline-flex items-center ${s.gap} ${s.text} font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 ${s.padding} rounded-full`}>
+    <span className={`inline-flex items-center ${s.gap} ${s.text} font-semibold text-success-text bg-success-soft border border-success-border ${s.padding} rounded-full`}>
       <BadgeCheck className={s.icon} /> Verified{size === 'lg' ? ' by PAWS' : ''}
     </span>
   );
 
   if (status === 'needs verification') return (
-    <span className={`inline-flex items-center ${s.gap} ${s.text} font-semibold text-amber-700 bg-amber-50 border border-amber-200 ${s.padding} rounded-full`}>
+    <span className={`inline-flex items-center ${s.gap} ${s.text} font-semibold text-warning-text bg-warning-soft border border-warning-border ${s.padding} rounded-full`}>
       <ShieldAlert className={s.icon} /> {size === 'lg' ? 'Needs Verification' : 'Unverified'}
     </span>
   );
 
   // Covers 'rejected' / 'archived' — only shown in the larger detail-panel context, matching the more complete of the two original implementations.
   if (size === 'lg') return (
-    <span className={`inline-flex items-center ${s.gap} ${s.text} font-semibold text-slate-500 bg-slate-100 border border-slate-200 ${s.padding} rounded-full`}>
+    <span className={`inline-flex items-center ${s.gap} ${s.text} font-semibold text-muted bg-surface-subtle border border-divider ${s.padding} rounded-full`}>
       {status}
     </span>
   );

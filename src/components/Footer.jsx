@@ -17,7 +17,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-white border-t border-slate-200 px-4 sm:px-5 py-5 shrink-0 space-y-4">
+    <footer className="bg-surface border-t border-divider-page px-4 sm:px-5 py-5 shrink-0 space-y-4">
 
       {/* Logo + socials */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -25,11 +25,11 @@ export default function Footer() {
           <img src={myLogo} alt="Paws in Recovery" className="h-14 sm:h-16 w-auto object-contain" />
         </a>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 text-secondary">
           Follow Us On Social Media
           {SOCIAL_LINKS.map(({ icon: Icon, href, label }) => (
             <a key={label} href={href} target="_blank" rel="noopener noreferrer" title={label}
-              className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+              className="p-2 rounded-lg text-faint hover:text-accent-text hover:bg-accent-soft transition-colors">
               <Icon className="h-4 w-4" />
             </a>
           ))}
@@ -37,28 +37,28 @@ export default function Footer() {
       </div>
 
       {/* Short disclaimer — always visible, links out to the full version */}
-      <p className="text-[11px] text-slate-400 leading-relaxed border-t border-slate-100 pt-4">
+      <p className="text-[11px] text-faint leading-relaxed border-t border-divider-subtle pt-4">
         Should I put anything here before the full disclosure? {' '} {' '}
         <button onClick={() => setShowDisclaimer(true)}
-          className="inline-flex items-center gap-0.5 font-semibold text-blue-600 hover:underline">
+          className="inline-flex items-center gap-0.5 font-semibold text-accent-text hover:underline">
           <Info className="h-3 w-3" /> Read full disclaimer
         </button>
       </p>
 
       {/* Copyright + signature */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[11px] text-slate-400">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[11px] text-faint">
         <span>© {year} PAWS in Recovery. All rights reserved.</span>
         <span className="flex items-center gap-1">
           Created by{' '}
-          <a href="#" className="font-semibold text-slate-500 hover:text-blue-600 transition-colors">
+          <a href="#" className="font-semibold text-muted hover:text-accent-text transition-colors">
             Noor
           </a>
           ,
-          <a href="#" className="font-semibold text-slate-500 hover:text-blue-600 transition-colors">
+          <a href="#" className="font-semibold text-muted hover:text-accent-text transition-colors">
             Parsia
           </a>
           and 
-          <a href="https://github.com/chuongdks" target="_blank" className="font-semibold text-slate-500 hover:text-blue-600 transition-colors">
+          <a href="https://github.com/chuongdks" target="_blank" className="font-semibold text-muted hover:text-accent-text transition-colors">
             Chuong Pham
           </a>
         </span>

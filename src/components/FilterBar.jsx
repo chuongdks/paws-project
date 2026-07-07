@@ -27,8 +27,8 @@ function FilterDropdown({ label, activeLabel, children }) {
         onClick={() => setOpen(o => !o)}
         className={`w-full sm:w-auto flex items-center justify-between sm:justify-start gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
           isFiltered
-            ? 'bg-blue-50 text-blue-700 border-blue-200'
-            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+            ? 'bg-accent-soft text-accent-text-strong border-accent-ring'
+            : 'bg-surface-raised text-secondary border-divider hover:border-divider-strong'
         }`}
       >
         <span className="truncate">{label}{isFiltered ? `: ${activeLabel}` : ''}</span>
@@ -36,7 +36,7 @@ function FilterDropdown({ label, activeLabel, children }) {
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg p-2 z-[1100] w-full sm:w-auto sm:min-w-[220px] max-h-72 overflow-y-auto">
+        <div className="absolute top-full left-0 mt-2 bg-surface-raised border border-divider rounded-xl shadow-lg p-2 z-[1100] w-full sm:w-auto sm:min-w-[220px] max-h-72 overflow-y-auto">
           {children}
         </div>
       )}
@@ -50,11 +50,11 @@ function DropdownOption({ label, active, onClick }) {
     <button
       onClick={onClick}
       className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm text-left transition-colors ${
-        active ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-50'
+        active ? 'bg-accent-soft text-accent-text-strong font-semibold' : 'text-secondary hover:bg-surface-subtle'
       }`}
     >
       <span className="truncate">{label}</span>
-      {active && <Check className="h-3.5 w-3.5 shrink-0 text-blue-600" />}
+      {active && <Check className="h-3.5 w-3.5 shrink-0 text-accent-text" />}
     </button>
   );
 }
@@ -81,20 +81,20 @@ export default function FilterBar({
   };
 
   return (
-    <div className="bg-white border-b border-slate-200 px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 shrink-0 z-10">
+    <div className="bg-surface border-b border-divider-page px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 shrink-0 z-10">
 
       {/* Search */}
       <div className="relative w-full sm:w-64 shrink-0">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+        <Search className="absolute left-3 top-2.5 h-4 w-4 text-faint" />
         <input
           type="text" placeholder="Search services..."
           value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-          className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+          className="w-full bg-surface-muted border border-divider rounded-lg pl-9 pr-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-focus-ring/20 focus:border-focus-ring transition-all"
         />
       </div>
 
       {/* Divider only appear once everything sits on one row */}
-      <div className="hidden sm:block h-6 w-px bg-slate-200" />
+      <div className="hidden sm:block h-6 w-px bg-divider" />
 
       <FilterDropdown label="Access" activeLabel={accessFilter}>
         {ACCESS_OPTIONS.map(opt => (
@@ -116,14 +116,14 @@ export default function FilterBar({
 
       {hasActiveFilters && (
         <button onClick={clearAll}
-          className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors">
+          className="flex items-center gap-1 text-xs text-faint hover:text-secondary-strong transition-colors">
           <X className="h-3.5 w-3.5" /> Clear filters
         </button>
       )}
 
       {isUser && (
         <button onClick={onAddService}
-          className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors shrink-0">
+          className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-accent hover:bg-accent-hover text-white text-sm font-semibold transition-colors shrink-0">
           <Plus className="h-4 w-4" /> Add Service
         </button>
       )}

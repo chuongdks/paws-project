@@ -1,26 +1,174 @@
 @import "tailwindcss";
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #0b0c0c;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+/* Switches `dark:` classes to activate via a .dark class on <html> (see ThemeContext.jsx + the toggle button in Header.jsx) */
+@custom-variant dark (&:where(.dark, .dark *));
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+/* ── Design tokens ────────────────────────────────────────────────────────────
+   Every color below is defined ONCE here, as a light value and a .dark override.
+   Components reference the semantic name (e.g. `bg-surface`, `text-muted`)
+   instead of a literal Tailwind color (e.g. `bg-white dark:bg-slate-900`) — so
+   restyling the whole site (client wants a different palette, brand refresh,
+   etc.) means editing values in this one block, not hunting through every file.
+
+   To retheme: change the hex values below. To add a new semantic color: add a
+   pair here, then map it in the @theme block underneath so Tailwind generates
+   the utility classes (bg-*, text-*, border-*, ring-*) for it. */
+:root {
+  /* Surfaces */
+  --app-bg: #f1f5f9;          /* page background, slate-100 */
+  --surface: #ffffff;         /* cards, modals, panels */
+  --surface-raised: #ffffff;  /* dropdowns, floating pills, unselected toggle tabs */
+  --surface-muted: #f8fafc;   /* input fields, slate-50 */
+  --surface-subtle: #f1f5f9;  /* badges/pills, hover backgrounds, slate-100 */
+
+  /* Dividers / borders */
+  --divider: #e2e8f0;         /* default component border, slate-200 */
+  --divider-page: #e2e8f0;    /* header/footer/sidebar page-chrome borders */
+  --divider-subtle: #f1f5f9;  /* internal dividers within a card/panel */
+  --divider-strong: #cbd5e1;  /* hover-emphasis borders, slate-300 */
+
+  /* Text */
+  --text-primary: #0f172a;         /* headings, names, slate-900 */
+  --text-secondary: #334155;       /* body text, slate-700 */
+  --text-secondary-strong: #1e293b;/* emphasized body text, slate-800 */
+  --text-muted: #64748b;           /* de-emphasized text, slate-500 */
+  --text-faint: #94a3b8;           /* placeholders, meta text, slate-400 */
+  --text-disabled: #cbd5e1;        /* disabled/empty-state text, slate-300 */
+  --icon-faint: #e2e8f0;           /* unfilled star icons etc, slate-200 */
+
+  /* Accent (brand blue) */
+  --accent: #2563eb;               /* solid buttons, blue-600 */
+  --accent-hover: #1d4ed8;         /* solid button hover, blue-700 */
+  --accent-text: #2563eb;          /* links, icon buttons */
+  --accent-text-strong: #1d4ed8;   /* tag pill text */
+  --accent-text-emphasis: #1e3a8a; /* callout box text, blue-900 */
+  --accent-soft: #eff6ff;          /* tag/badge backgrounds, blue-50 */
+  --accent-soft-strong: #dbeafe;   /* avatar circles, blue-100 */
+  --accent-border: #dbeafe;        /* tag/badge borders, blue-100 */
+  --accent-ring: #bfdbfe;          /* selected-card ring, blue-200 */
+
+  /* Focus rings (form inputs) */
+  --focus-ring: #3b82f6;      /* blue-500, static in both modes */
+
+  /* Status: success (verified, open now) */
+  --success-text: #047857;
+  --success-soft: #ecfdf5;
+  --success-border: #a7f3d0;
+
+  /* Status: warning (unverified, disclaimers) */
+  --warning-text: #b45309;
+  --warning-icon: #f59e0b;
+  --warning-soft: #fffbeb;
+  --warning-border: #fde68a;
+
+  /* Status: danger (delete actions, errors) */
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --danger-text: #ef4444;
+  --danger-soft: #fef2f2;
+
+  /* Status: admin (admin badge) */
+  --admin-text: #9333ea;
+  --admin-soft: #faf5ff;
+  --admin-border: #e9d5ff;
 }
 
-@custom-variant dark (&:where(.dark, .dark *));
+.dark {
+  --app-bg: #020617;          /* slate-950 */
+  --surface: #0f172a;         /* slate-900 */
+  --surface-raised: #1e293b;  /* slate-800 */
+  --surface-muted: #1e293b;   /* slate-800 */
+  --surface-subtle: #1e293b;  /* slate-800 */
+
+  --divider: #334155;         /* slate-700 */
+  --divider-page: #1e293b;    /* slate-800 */
+  --divider-subtle: #1e293b;  /* slate-800 */
+  --divider-strong: #475569;  /* slate-600 */
+
+  --text-primary: #f1f5f9;         /* slate-100 */
+  --text-secondary: #cbd5e1;       /* slate-300 */
+  --text-secondary-strong: #e2e8f0;/* slate-200 */
+  --text-muted: #94a3b8;           /* slate-400 */
+  --text-faint: #64748b;           /* slate-500 */
+  --text-disabled: #475569;        /* slate-600 */
+  --icon-faint: #334155;           /* slate-700 */
+
+  --accent-text: #60a5fa;          /* blue-400 */
+  --accent-text-strong: #93c5fd;   /* blue-300 */
+  --accent-text-emphasis: #bfdbfe; /* blue-200 */
+  --accent-soft: #172554;          /* blue-950 */
+  --accent-soft-strong: #172554;   /* blue-950 */
+  --accent-border: #1e3a8a;        /* blue-900 */
+  --accent-ring: #1e3a8a;          /* blue-900 */
+
+  --success-text: #6ee7b7;
+  --success-soft: #022c22;
+  --success-border: #064e3b;
+
+  --warning-text: #fcd34d;
+  --warning-icon: #fbbf24;
+  --warning-soft: #451a03;
+  --warning-border: #78350f;
+
+  --danger-text: #f87171;
+  --danger-soft: #450a0a;
+
+  --admin-text: #c084fc;
+  --admin-soft: #3b0764;
+  --admin-border: #581c87;
+}
+/* Registers the tokens above as real Tailwind color utilities, so `bg-surface`,
+   `text-muted`, `border-accent-border`, etc. work like any built-in color. */
+@theme {
+  --color-app-bg: var(--app-bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-subtle: var(--surface-subtle);
+
+  --color-divider: var(--divider);
+  --color-divider-page: var(--divider-page);
+  --color-divider-subtle: var(--divider-subtle);
+  --color-divider-strong: var(--divider-strong);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-secondary-strong: var(--text-secondary-strong);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-text-disabled: var(--text-disabled);
+  --color-icon-faint: var(--icon-faint);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-text: var(--accent-text);
+  --color-accent-text-strong: var(--accent-text-strong);
+  --color-accent-text-emphasis: var(--accent-text-emphasis);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-strong: var(--accent-soft-strong);
+  --color-accent-border: var(--accent-border);
+  --color-accent-ring: var(--accent-ring);
+
+  --color-focus-ring: var(--focus-ring);
+
+  --color-success-text: var(--success-text);
+  --color-success-soft: var(--success-soft);
+  --color-success-border: var(--success-border);
+
+  --color-warning-text: var(--warning-text);
+  --color-warning-icon: var(--warning-icon);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-border: var(--warning-border);
+
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-text: var(--danger-text);
+  --color-danger-soft: var(--danger-soft);
+
+  --color-admin-text: var(--admin-text);
+  --color-admin-soft: var(--admin-soft);
+  --color-admin-border: var(--admin-border);
+}
 
 body {
   margin: 0;
@@ -32,7 +180,6 @@ body {
   margin: 0;
   padding: 0;
   text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -82,4 +229,3 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
-
