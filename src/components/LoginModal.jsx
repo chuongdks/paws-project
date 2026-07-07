@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, LogIn, UserPlus, User, Mail, Lock, ShieldCheck } from 'lucide-react';
-import { useAuth } from '../context/AuthContext.jsx';
+import { X, LogIn, UserPlus, User, Mail, Lock, ShieldCheck, VenetianMask } from 'lucide-react';
+import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
 
 export default function LoginModal({ onClose }) {
   const { login, register, error, clearError } = useAuth();
@@ -9,6 +9,7 @@ export default function LoginModal({ onClose }) {
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
+  const [gender, setGender]     = useState('');
 
   // ── Helper Function ──────────────────────────────────────────────────────
   const switchMode = (next) => {
@@ -20,7 +21,7 @@ export default function LoginModal({ onClose }) {
     e.preventDefault();
     const success = mode === 'login'
       ? login(email, password)
-      : register(name, email, password);
+      : register(name, email, password, gender);
     if (success) onClose();
   };
 
@@ -99,6 +100,24 @@ export default function LoginModal({ onClose }) {
               className={inputCls}
             />
           </div>
+
+          {mode === 'register' && (
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-secondary uppercase tracking-wider flex items-center gap-1.5">
+                <VenetianMask className="h-3.5 w-3.5" /> Gender
+              </label>
+              <select
+                required value={gender}
+                onChange={e => { setGender(e.target.value); clearError(); }}
+                className={inputCls}
+              >
+                <option value="" disabled>Select an option...</option>
+                {GENDER_OPTIONS.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {error && <p className="text-xs text-danger-text">{error}</p>}
 

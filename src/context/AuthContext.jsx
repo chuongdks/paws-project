@@ -2,14 +2,26 @@ import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext(null);
 
+// Options shown in the registration form's gender dropdown.
+// Kept here (not in Service.js) since it's specific to the user/account model.
+export const GENDER_OPTIONS = [
+  'Woman',
+  'Man',
+  'Non-binary',
+  'Transgender',
+  'Genderqueer / Genderfluid',
+  'Prefer to self-describe',
+  'Prefer not to say',
+];
+
 // ── Mock user directory — stands in for POST /api/auth/login ────────────────
 // When the PHP backend is ready, replace the body of login() with:
 //   const res = await fetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
 //   const { token, user } = await res.json();
 //   localStorage.setItem('token', token);
 const INITIAL_USERS = [
-  { id: 1, name: 'PAWS Admin',       email: 'admin@pawsinrecovery.ca', password: 'admin123', role: 'admin' },
-  { id: 2, name: 'Community Member', email: 'user@pawsinrecovery.ca',  password: 'user123',  role: 'user'  },
+  { id: 1, name: 'PAWS Admin',       email: 'admin@pawsinrecovery.ca', password: 'admin123', role: 'admin', gender: 'Prefer not to say' },
+  { id: 2, name: 'Community Member', email: 'user@pawsinrecovery.ca',  password: 'user123',  role: 'user',  gender: 'Prefer not to say' },
 ];
 
 export function AuthProvider({ children }) {
@@ -24,17 +36,17 @@ export function AuthProvider({ children }) {
       return false;
     }
     setError(null);
-    setUser({ id: found.id, name: found.name, email: found.email, role: found.role });
+    setUser({ id: found.id, name: found.name, email: found.email, role: found.role, gender: found.gender });
     return true;
   };
 
   // Always creates role: 'user', nobody can self-register as admin.
   // Mirrors the planned PHP endpoint: POST /api/auth/register always inserts role='user'; granting admin access is a separate, privileged action (e.g. an existing admin updating the role in the database)
-  const register = (name, email, password) => {
+  const register = (name, email, password, gender) => {
     const trimmedName  = name.trim();
     const trimmedEmail = email.trim().toLowerCase();
 
-    if (!trimmedName || !trimmedEmail || !password) {
+    if (!trimmedName || !trimmedEmail || !password || !gender) {
       setError('Please fill out every field.');
       return false;
     }
@@ -47,15 +59,21 @@ export function AuthProvider({ children }) {
       return false;
     }
 
-    const newUser = { id: Date.now(), name: trimmedName, email: trimmedEmail, password, role: 'user' };
+    const newUser = { id: Date.now(), name: trimmedName, email: trimmedEmail, password, role: 'user', gender };
     setUsers(prev => [...prev, newUser]);
     setError(null);
     // Auto-login right after registering, like most sign-up flows
-    setUser({ id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role });
+    setUser({ id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role, gender: newUser.gender });
     return true;
   };
 
   const logout = () => setUser(null);
+
+  // Lets a signed-in user update their own gender from the Account modal.
+  const updateGender = (gender) => {
+    setUser(u => u ? { ...u, gender } : u);
+    setUsers(prev => prev.map(u => u.id === user?.id ? { ...u, gender } : u));
+  };
 
   const value = {
     user,
@@ -65,6 +83,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    updateGender,
     error,
     clearError: () => setError(null),
   };

@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext.jsx';
 
 const LOGO_URL = 'https://pawsinrecovery.ca/wp-content/uploads/2025/08/cropped-Logo-July-2025.jpg'; // URL from paws
 
-export default function Header({ resultCount, user, isAuthenticated, isAdmin, onSignIn, onLogout }) {
+export default function Header({ resultCount, user, isAuthenticated, isAdmin, onSignIn, onLogout, onOpenAccount }) {
   const { isDark, toggleTheme } = useTheme();
 
   return (
@@ -34,14 +34,17 @@ export default function Header({ resultCount, user, isAuthenticated, isAdmin, on
           {/* Log In / Sign Out */}
           {isAuthenticated ? (
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className={`text-xs font-semibold px-2 sm:px-2.5 py-1 rounded-full border whitespace-nowrap ${
-                isAdmin
-                  ? 'bg-admin-soft text-admin-text border-admin-border'
-                  : 'bg-surface-subtle text-secondary border-divider'
-              }`}>
-                {isAdmin ? 'Admin' : 'Member'}
-              </span>
-              <span className="text-sm text-secondary hidden md:inline">{user.name}</span>
+              <button onClick={onOpenAccount} title="View my account"
+                className="flex items-center gap-1.5 sm:gap-2 rounded-full hover:bg-surface-subtle px-1.5 py-1 transition-colors">
+                <span className={`text-xs font-semibold px-2 sm:px-2.5 py-1 rounded-full border whitespace-nowrap ${
+                  isAdmin
+                    ? 'bg-admin-soft text-admin-text border-admin-border'
+                    : 'bg-surface-subtle text-secondary border-divider'
+                }`}>
+                  {isAdmin ? 'Admin' : 'Member'}
+                </span>
+                <span className="text-sm text-secondary hidden md:inline">{user.name}</span>
+              </button>
               <button onClick={onLogout} title="Log out"
                 className="p-1.5 rounded-md text-faint hover:text-danger-text hover:bg-danger-soft transition-colors">
                 <LogOut className="h-4 w-4" />

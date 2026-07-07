@@ -7,6 +7,7 @@ import { useReviews } from './hook/useReviews.js';
 import { useAuth } from './context/AuthContext.jsx';
 import { CATEGORIES } from './models/Service.js';
 
+import AccountModal from './components/AccountModal.jsx';
 import DeleteConfirmModal from './components/DeleteConfirmModal.jsx';
 import FilterBar from './components/FilterBar.jsx';
 import Header from './components/Header.jsx';
@@ -21,6 +22,7 @@ import Footer from './components/Footer.jsx';
 export default function App() {
   const { user, isAuthenticated, isAdmin, isUser, logout } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
   const mapSectionRef = useRef(null);
 
   // Reviews — owns its own array, scoped per service via getReviewsFor
@@ -89,6 +91,7 @@ export default function App() {
         resultCount={filteredServices.length}
         user={user} isAuthenticated={isAuthenticated} isAdmin={isAdmin}
         onSignIn={() => setShowLogin(true)} onLogout={logout}
+        onOpenAccount={() => setShowAccount(true)}
       />
 
       {/* ── Filter bar: spans full width above all 3 columns ───────────────── */}
@@ -162,7 +165,10 @@ export default function App() {
       
       {/* ── Login modal ───────────────────────────────────────────────────────── */}
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
-        
+
+      {/* ── Account modal ─────────────────────────────────────────────────────── */}
+      {showAccount && <AccountModal onClose={() => setShowAccount(false)} />}
+
       {/* ── Add / Edit pop up modal ───────────────────────────────────────────────────────── */}
       {modal && (
         <ServiceFormModal mode={modal.mode} initial={modal.service ?? null}

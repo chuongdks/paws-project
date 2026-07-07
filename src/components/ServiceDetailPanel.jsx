@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import {
   ArrowLeft, Pencil, Trash2, Globe, Phone, Mail, MapPin, ExternalLink,
-  FileText, Sparkles, DoorOpen, MessageSquare, Plus, Clock,
+  FileText, Transgender, DoorOpen, MessageSquare, Plus, Clock,
   Image as ImageIcon, Upload
 } from 'lucide-react';
 import { getCategoryName, fullAddress, buildGoogleMapsLink, hasHours, groupedHoursDisplay, isOpenNow } from '../models/Service.js';
@@ -236,7 +236,7 @@ export default function ServiceDetailPanel({
         {service.inclusivity_notes && (
           <div className="space-y-1.5 bg-accent-soft/60 border border-accent-border rounded-xl p-3.5">
             <p className="flex items-center gap-1.5 text-xs font-semibold text-accent-text-strong uppercase tracking-wider">
-              <Sparkles className="h-3.5 w-3.5" /> Inclusivity Notes
+              <Transgender className="h-3.5 w-3.5" /> Inclusivity Notes
             </p>
             <p className="text-sm text-accent-text-emphasis/80 leading-relaxed">{service.inclusivity_notes}</p>
           </div>
