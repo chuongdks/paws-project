@@ -189,14 +189,14 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
             </Field>
           </div>
           
-          <div className="space-y-1 bg-slate-50 border border-slate-100 rounded-lg p-3">
-            <p className="text-[11px] font-medium text-slate-500">
+          <div className="space-y-1 bg-surface-subtle border border-divider rounded-lg p-3">
+            <p className="text-[11px] font-medium text-muted">
               Leave blank for  provincial / national helplines / performers artist
             </p>
-            <p className="text-[11px] font-medium text-slate-500">
+            <p className="text-[11px] font-medium text-muted">
                You can find your Latitude and Longitude by:
             </p>
-            <ul className="list-disc list-outside ml-4 text-left text-[11px] text-slate-400 space-y-1">
+            <ul className="list-disc list-outside ml-4 text-left text-[11px] text-faint space-y-1">
               <li>Searching your location on Google Maps</li>
               <li>Right-clicking on the map's red marker pin</li>
               <li>Clicking the coordinates shown at the top of the menu to copy them</li>

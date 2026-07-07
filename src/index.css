@@ -131,12 +131,12 @@
   --color-divider-subtle: var(--divider-subtle);
   --color-divider-strong: var(--divider-strong);
 
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-secondary-strong: var(--text-secondary-strong);
-  --color-text-muted: var(--text-muted);
-  --color-text-faint: var(--text-faint);
-  --color-text-disabled: var(--text-disabled);
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-secondary-strong: var(--text-secondary-strong);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+  --color-disabled: var(--text-disabled);
   --color-icon-faint: var(--icon-faint);
 
   --color-accent: var(--accent);

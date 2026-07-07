@@ -113,7 +113,7 @@ export default function App() {
         {/* Left slot: Loading API first then List OR Detail, mutually exclusive */}
         <div className="w-full md:w-[400px] shrink-0">
           {loading ? (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-400 text-sm border-r border-slate-200 bg-slate-50 py-16">
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-faint text-sm border-r border-divider bg-surface-subtle py-16">
               <Loader2 className="h-5 w-5 animate-spin" />
               Loading services…
             </div>
