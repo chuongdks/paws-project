@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Image as ImageIcon, Clock, Loader2 } from 'lucide-react';
-import { CATEGORIES, ASSIGNABLE_TAGS, DAYS_OF_WEEK, emptyService } from '../models/Service.js';
+import { DAYS_OF_WEEK, emptyService } from '../models/Service.js';
 
 const VERIFICATION_OPTIONS = ['needs verification', 'verified', 'rejected', 'archived'];
 
@@ -21,25 +21,36 @@ const inputCls = `w-full bg-surface-muted border border-divider rounded-lg px-3 
   text-sm text-primary focus:outline-none focus:ring-2 focus:ring-focus-ring/20
   focus:border-focus-ring transition-all`;
 
-export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
+export default function ServiceFormModal({ mode, initial, onSave, onClose, categories, tags }) {
   const [form, setForm]     = useState(emptyService());
   const [errors, setErrors] = useState({});
 
-  // Populate form when editing an existing service
+  // Populate form when editing an existing service. `initial.tags` comes in as
+  // [{ id, name }] (see Service.js normalizeTags) — the form itself works with
+  // plain tag ids, so convert here. Legacy/offline tags with no real id (id:
+  // null) get matched up by name against the live `tags` list as a bridge.
   useEffect(() => {
-    setForm(initial ? { ...emptyService(), ...initial } : emptyService());
+    if (initial) {
+      const tagIds = (initial.tags ?? [])
+        .map(t => t.id ?? tags.find(live => live.name === t.name)?.id ?? null)
+        .filter(id => id != null);
+      setForm({ ...emptyService(), ...initial, tags: tagIds });
+    } else {
+      setForm(emptyService());
+    }
     setErrors({});
-  }, [initial]);
+  }, [initial, tags]);
 
   const set = (field, value) => {
     setForm(f => ({ ...f, [field]: value }));
     if (errors[field]) setErrors(e => ({ ...e, [field]: null }));
   };
 
-  const toggleTag = (tag) =>
+  // form.tags is an array of tag ids
+  const toggleTag = (tagId) =>
     setForm(f => ({
       ...f,
-      tags: f.tags.includes(tag) ? f.tags.filter(t => t !== tag) : [...f.tags, tag],
+      tags: f.tags.includes(tagId) ? f.tags.filter(id => id !== tagId) : [...f.tags, tagId],
     }));
 
   // Patches a single day's hours, e.g. setDayHours('mon', { open: '09:00' })
@@ -136,7 +147,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
             <select className={inputCls} value={form.category_id ?? ''}
               onChange={e => set('category_id', e.target.value)}>
               <option value="">Select a category...</option>
-              {CATEGORIES.map(c => (
+              {categories.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
@@ -189,14 +200,14 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
             </Field>
           </div>
           
-          <div className="space-y-1 bg-surface-subtle border border-divider rounded-lg p-3">
-            <p className="text-[11px] font-medium text-muted">
+          <div className="space-y-1 bg-slate-50 border border-slate-100 rounded-lg p-3">
+            <p className="text-[11px] font-medium text-slate-500">
               Leave blank for  provincial / national helplines / performers artist
             </p>
-            <p className="text-[11px] font-medium text-muted">
+            <p className="text-[11px] font-medium text-slate-500">
                You can find your Latitude and Longitude by:
             </p>
-            <ul className="list-disc list-outside ml-4 text-left text-[11px] text-faint space-y-1">
+            <ul className="list-disc list-outside ml-4 text-left text-[11px] text-slate-400 space-y-1">
               <li>Searching your location on Google Maps</li>
               <li>Right-clicking on the map's red marker pin</li>
               <li>Clicking the coordinates shown at the top of the menu to copy them</li>
@@ -277,16 +288,16 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose }) {
           <Field label="PAWS Tags" icon={Tag}
             hint="Select all that apply. 'Verified by PAWS' should only be set after review.">
             <div className="flex flex-wrap gap-2 pt-1">
-              {ASSIGNABLE_TAGS.map(tag => {
-                const checked = form.tags.includes(tag);
+              {tags.map(tag => {
+                const checked = form.tags.includes(tag.id);
                 return (
-                  <button key={tag} type="button" onClick={() => toggleTag(tag)}
+                  <button key={tag.id} type="button" onClick={() => toggleTag(tag.id)}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                       checked
                         ? 'bg-accent text-white border-accent'
                         : 'bg-surface-raised text-secondary border-divider hover:border-divider-strong'
                     }`}>
-                    {tag}
+                    {tag.name}
                   </button>
                 );
               })}

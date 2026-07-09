@@ -5,7 +5,7 @@ import { useServiceCRUD } from './hook/useServiceCRUD.js';
 import { useServiceSelection } from './hook/useServiceSelection.js';
 import { useReviews } from './hook/useReviews.js';
 import { useAuth } from './context/AuthContext.jsx';
-import { CATEGORIES } from './models/Service.js';
+import { useTaxonomy } from './hook/useTaxonomy.js';
 
 import AccountModal from './components/AccountModal.jsx';
 import DeleteConfirmModal from './components/DeleteConfirmModal.jsx';
@@ -44,11 +44,14 @@ export default function App() {
     filteredServices,
   } = useServiceDirectory(services);
 
+  // Categories + tags — live from the API, falling back to the static lists offline
+  const { categories, assignableTags } = useTaxonomy();
+
   // Categories that actually have services in the current data (for filter pills)
   const activeCategories = useMemo(() => {
     const usedIds = [...new Set(services.map(s => s.category_id))];
-    return CATEGORIES.filter(c => usedIds.includes(c.id));
-  }, [services]);
+    return categories.filter(c => usedIds.includes(c.id));
+  }, [services, categories]);
 
   // Selection + scroll-to-card — selectedService is derived live from
   // `services`, so edits/photo updates show up immediately, no manual syncing
@@ -172,6 +175,7 @@ export default function App() {
       {/* ── Add / Edit pop up modal ───────────────────────────────────────────────────────── */}
       {modal && (
         <ServiceFormModal mode={modal.mode} initial={modal.service ?? null}
+          categories={categories} tags={assignableTags}
           onSave={handleSave} onClose={closeModal} />
       )}
 

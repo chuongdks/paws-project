@@ -9,6 +9,7 @@ export function useServiceCRUD() {
   const [services, setServices] = useState(() => servicesData.map(createService));
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
+  const [saveError, setSaveError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,22 +40,54 @@ export function useServiceCRUD() {
   const [modal, setModal]               = useState(null); // null | { mode: 'add'|'edit', service? }
   const [deleteTarget, setDeleteTarget] = useState(null); // service pending deletion confirmation
 
-  const openAdd    = ()        => setModal({ mode: 'add' });
-  const openEdit   = (service) => setModal({ mode: 'edit', service });
+  const openAdd    = ()        => { setSaveError(null); setModal({ mode: 'add' }); };
+  const openEdit   = (service) => { setSaveError(null); setModal({ mode: 'edit', service }); };
   const closeModal = ()        => setModal(null);
 
-  const handleSave = (formData) => {
-    const normalized = createService(formData);
+  // payload that the api services.php accepts
+  // trims off some client side fields (id, verification_status, is_visible, last_verified_at, etc.) that is on the normal form  but arent part of the write API.
+  const buildPayload = (formData) => ({
+    name:                formData.name,
+    category_id:         formData.category_id,
+    address:             formData.address,
+    city:                formData.city,
+    province:            formData.province,
+    phone:               formData.phone,
+    email:               formData.email,
+    website_url:         formData.website_url,
+    google_maps_url:     formData.google_maps_url,
+    latitude:            formData.latitude,
+    longitude:           formData.longitude,
+    description:         formData.description,
+    inclusivity_notes:   formData.inclusivity_notes,
+    washroom_info:       formData.washroom_info,
+    accessibility_notes: formData.accessibility_notes,
+    hours:               formData.hours,
+    image_url:           formData.image_url,
+    tags:                formData.tags, // already an array of tag ids (ServiceFormModal.jsx)
+  });
 
+  const handleSave = async (formData) => {
     if (modal.mode === 'add') {
-      // Temporary client-side ID, will be assigned by the DB on real POST request
-      setServices(prev => [...prev, { ...normalized, id: Date.now() }]);
+      try {
+        const response = await api.post('/services.php', buildPayload(formData));
+        const json = response.data;
+        if (!json.success) throw new Error(json.message || 'API returned success: false');
+        setServices(prev => [...prev, createService(json.data)]);
+        closeModal();
+      } catch (err) {
+        console.error('Failed to create service\n Full Error:', err);
+        setSaveError('Could not save the new service — please try again.');
+      }
     } else {
+      // Still in memory, swap for a real PUT soon
+      const normalized = createService(formData);
       setServices(prev => prev.map(s => s.id === modal.service.id ? { ...normalized, id: s.id } : s));
+      closeModal();
     }
-    closeModal();
   };
-
+  
+  // Still in memory, swap for a real PUT soon
   const handleDelete = (service) => {
     setServices(prev => prev.filter(s => s.id !== service.id));
     setDeleteTarget(null);
@@ -70,5 +103,6 @@ export function useServiceCRUD() {
     modal, openAdd, openEdit, closeModal,
     deleteTarget, setDeleteTarget,
     handleSave, handleDelete, handleUpdateImage,
+    saveError,
   };
 }

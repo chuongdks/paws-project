@@ -62,13 +62,25 @@ export function createService(raw = {}) {
     accessibility_notes: raw.accessibility_notes   ?? '',
     last_verified_at:    raw.last_verified_at      ?? null,
     is_visible:          raw.is_visible            ?? 1,
-    // Noor add Array of Tags id in the listing table
-    tags:                Array.isArray(raw.tags)   ? raw.tags : [],
-    // Temporary client-side only, NOOR add this in the DB
+    // Normalized to a consistent [{ id, name }] shape regardless of source:
+    // - live API sends [{ id, name, slug }]
+    // - local service.json / offline fallback only has plain name strings, so
+    //   those get id: null (can't be safely matched to a real DB id offline)
+    tags:                normalizeTags(raw.tags),
+    // Temporary client-side only
     image_url:           raw.image_url             ?? null,
     hours:               normalizeHours(raw.hours), // { "mon": { "open": "09:00", "close": "17:00", "closed": false }, "tue": { "open": "09:00", "close": "17:00", "closed": false }"...": "..."}
   };
 }
+
+// Normalizes tags from either shape (API objects or legacy name strings) into
+// a single consistent [{ id, name }] shape used everywhere in the app.
+const normalizeTags = (raw) => {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(t => (t && typeof t === 'object')
+    ? { id: t.id ?? null, name: t.name ?? '' }
+    : { id: null, name: String(t) });
+};
 
 // ── Blank service for the Add form ────────────────────────────────────────────
 export const emptyService = () => createService({});

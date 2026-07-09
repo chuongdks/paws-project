@@ -150,8 +150,8 @@ export default function ServiceDetailPanel({
         {service.tags?.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {service.tags.map(tag => (
-              <span key={tag} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent-soft text-accent-text border border-accent-border">
-                {tag}
+              <span key={tag.id ?? tag.name} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent-soft text-accent-text border border-accent-border">
+                {tag.name}
               </span>
             ))}
           </div>

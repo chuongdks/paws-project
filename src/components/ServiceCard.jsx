@@ -37,8 +37,8 @@ export default function ServiceCard({ service, isSelected, onClick, onEdit, onDe
       {service.tags?.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {service.tags.map(tag => (
-            <span key={tag} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent-soft text-accent-text border border-accent-border">
-              {tag}
+            <span key={tag.id ?? tag.name} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent-soft text-accent-text border border-accent-border">
+              {tag.name}
             </span>
           ))}
         </div>
