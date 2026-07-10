@@ -1,89 +1,131 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import api, { TOKEN_STORAGE_KEY, setUnauthorizedHandler } from '../api/axiosConfig.js';
 
 const AuthContext = createContext(null);
 
-// Options shown in the registration form's gender dropdown.
-// Kept here (not in Service.js) since it's specific to the user/account model.
-export const GENDER_OPTIONS = [
-  'Woman',
-  'Man',
-  'Non-binary',
-  'Transgender',
-  'Genderqueer / Genderfluid',
-  'Prefer to self-describe',
-  'Prefer not to say',
-];
-
-// ── Mock user directory — stands in for POST /api/auth/login ────────────────
-// When the PHP backend is ready, replace the body of login() with:
-//   const res = await fetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-//   const { token, user } = await res.json();
-//   localStorage.setItem('token', token);
-const INITIAL_USERS = [
-  { id: 1, name: 'PAWS Admin',       email: 'admin@pawsinrecovery.ca', password: 'admin123', role: 'admin', gender: 'Prefer not to say' },
-  { id: 2, name: 'Community Member', email: 'user@pawsinrecovery.ca',  password: 'user123',  role: 'user',  gender: 'Prefer not to say' },
-];
+// TODO: re-enable once the `users` table has a gender column and
+// register.php/me.php actually accept and return it. Left here (rather than
+// deleted) so the whole feature — options, form field, account modal row,
+// updateGender — can come back with minimal changes once the backend supports it.
+// export const GENDER_OPTIONS = [
+//   'Woman',
+//   'Man',
+//   'Non-binary',
+//   'Transgender',
+//   'Genderqueer / Genderfluid',
+//   'Prefer to self-describe',
+//   'Prefer not to say',
+// ];
 
 export function AuthProvider({ children }) {
-  const [users, setUsers] = useState(INITIAL_USERS);
-  const [user, setUser]   = useState(null);
-  const [error, setError] = useState(null);
+  const [user, setUser]               = useState(null);
+  const [error, setError]             = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);   // True only while checking for an existing session on first load
 
-  const login = (email, password) => {
-    const found = users.find(u => u.email === email && u.password === password);
-    if (!found) {
-      setError('Invalid email or password.');
+  // On mount: if a token is already in storage, validate it against /auth/me.php so refreshing the page doesn't silently log the person out.
+  useEffect(() => {
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!token) {
+      setAuthLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const response = await api.get('/auth/me.php');
+        const json = response.data;
+        if (cancelled) return;
+        if (!json.success) throw new Error(json.message || 'Session invalid.');
+        setUser(json.user);
+      } catch (err) {
+        if (cancelled) return;
+        console.error('Stored session is no longer valid, logging out\n Full Error:', err);
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        setUser(null);
+      } finally {
+        if (!cancelled) setAuthLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, []);
+
+  // If any request comes back 401 mid-session (expired/revoked token), clear the local session
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+      setUser(null);
+    });
+    return () => setUnauthorizedHandler(null);
+  }, []);
+
+  const login = async (email, password) => {
+    try {
+      const response = await api.post('/auth/login.php', { email, password });
+      const json = response.data;
+      if (!json.success) {
+        setError(json.message || 'Invalid email or password.');
+        return false;
+      }
+      localStorage.setItem(TOKEN_STORAGE_KEY, json.token);
+      setUser(json.user);
+      setError(null);
+      return true;
+    } catch (err) {
+      console.error('Login failed\n Full Error:', err);
+      setError(err.response?.data?.message || 'Could not log in — please try again.');
       return false;
     }
-    setError(null);
-    setUser({ id: found.id, name: found.name, email: found.email, role: found.role, gender: found.gender });
-    return true;
   };
 
-  // Always creates role: 'user', nobody can self-register as admin.
-  // Mirrors the planned PHP endpoint: POST /api/auth/register always inserts role='user'; granting admin access is a separate, privileged action (e.g. an existing admin updating the role in the database)
-  const register = (name, email, password, gender) => {
-    const trimmedName  = name.trim();
-    const trimmedEmail = email.trim().toLowerCase();
-
-    if (!trimmedName || !trimmedEmail || !password || !gender) {
-      setError('Please fill out every field.');
+  // Always creates role: 'user' server-side (see register.php). Admin can only be created through SUPA SPECIAL PRIVILAGE
+  const register = async (name, email, password) => {
+    try {
+      const response = await api.post('/auth/register.php', { name, email, password });
+      const json = response.data;
+      if (!json.success) {
+        setError(json.message || 'Could not create your account.');
+        return false;
+      }
+      localStorage.setItem(TOKEN_STORAGE_KEY, json.token);
+      setUser(json.user);
+      setError(null);
+      return true;
+    } catch (err) {
+      console.error('Registration failed\n Full Error:', err);
+      setError(err.response?.data?.message || 'Could not create your account — please try again.');
       return false;
     }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return false;
-    }
-    if (users.some(u => u.email.toLowerCase() === trimmedEmail)) {
-      setError('An account with that email already exists.');
-      return false;
-    }
-
-    const newUser = { id: Date.now(), name: trimmedName, email: trimmedEmail, password, role: 'user', gender };
-    setUsers(prev => [...prev, newUser]);
-    setError(null);
-    // Auto-login right after registering, like most sign-up flows
-    setUser({ id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role, gender: newUser.gender });
-    return true;
   };
 
-  const logout = () => setUser(null);
-
-  // Lets a signed-in user update their own gender from the Account modal.
-  const updateGender = (gender) => {
-    setUser(u => u ? { ...u, gender } : u);
-    setUsers(prev => prev.map(u => u.id === user?.id ? { ...u, gender } : u));
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout.php');
+    } catch (err) {
+      // Still clear the local session even if the server call itself fails —
+      // no reason to trap someone in a "logged in" UI over a network hiccup.
+      console.error('Logout request failed, clearing local session anyway\n Full Error:', err);
+    } finally {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+      setUser(null);
+    }
   };
+
+  // TODO: wire back up once the backend supports gender.
+  // const updateGender = (gender) => { ... };
 
   const value = {
     user,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     isUser: user?.role === 'user',
+    authLoading,
     login,
     register,
     logout,
-    updateGender,
+    // updateGender,
     error,
     clearError: () => setError(null),
   };

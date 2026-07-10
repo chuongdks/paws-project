@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { X, LogIn, UserPlus, User, Mail, Lock, ShieldCheck, VenetianMask } from 'lucide-react';
-import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
+import { X, LogIn, UserPlus, User, Mail, Lock, Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext.jsx';
+// TODO: re-import GENDER_OPTIONS from AuthContext once the backend supports gender.
+// import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
 
 export default function LoginModal({ onClose }) {
   const { login, register, error, clearError } = useAuth();
   const [mode, setMode] = useState('login');        // 'login' | 'register'
+  const [submitting, setSubmitting] = useState(false);
 
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [gender, setGender]     = useState('');
+  // const [gender, setGender]     = useState('');
 
   // ── Helper Function ──────────────────────────────────────────────────────
   const switchMode = (next) => {
@@ -17,11 +20,13 @@ export default function LoginModal({ onClose }) {
     clearError();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     const success = mode === 'login'
-      ? login(email, password)
-      : register(name, email, password, gender);
+      ? await login(email, password)
+      : await register(name, email, password /*, gender */);
+    setSubmitting(false);
     if (success) onClose();
   };
 
@@ -101,6 +106,7 @@ export default function LoginModal({ onClose }) {
             />
           </div>
 
+          {/* TODO: re-enable once the backend has a gender column on `users`.
           {mode === 'register' && (
             <div className="space-y-1">
               <label className="text-xs font-semibold text-secondary uppercase tracking-wider flex items-center gap-1.5">
@@ -118,30 +124,22 @@ export default function LoginModal({ onClose }) {
               </select>
             </div>
           )}
+          */}
 
           {error && <p className="text-xs text-danger-text">{error}</p>}
 
-          <button type="submit"
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-accent hover:bg-accent-hover text-white text-sm font-semibold transition-colors">
-            {mode === 'login' ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
-            {mode === 'login' ? 'Sign In' : 'Create Account'}
+          <button type="submit" disabled={submitting}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-accent hover:bg-accent-hover text-white text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+            {submitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : mode === 'login' ? (
+              <LogIn className="h-4 w-4" />
+            ) : (
+              <UserPlus className="h-4 w-4" />
+            )}
+            {submitting ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
-
-        {/* Demo credentials helper — remove once the real auth API exists */}
-        {mode === 'login' ? (
-          <div className="bg-surface-muted border border-divider rounded-lg p-3 space-y-1 text-[11px] text-muted">
-            <p className="flex items-center gap-1.5 font-semibold text-secondary">
-              <ShieldCheck className="h-3.5 w-3.5" /> Demo accounts
-            </p>
-            <p>Admin — admin@pawsinrecovery.ca / admin123</p>
-            <p>User — user@pawsinrecovery.ca / user123</p>
-          </div>
-        ) : (
-          <p className="text-[11px] text-faint text-center">
-            New accounts are always created as regular members, but how can admin right be granted if u cant create an admin by registering? Try InjectionSQL
-          </p>
-        )}
       </div>
     </div>
   );
