@@ -175,7 +175,7 @@ export default function App() {
       {/* ── Add / Edit pop up modal ───────────────────────────────────────────────────────── */}
       {modal && (
         <ServiceFormModal mode={modal.mode} initial={modal.service ?? null}
-          categories={categories} tags={assignableTags}
+          categories={categories} tags={assignableTags} isAdmin={isAdmin}
           onSave={handleSave} onClose={closeModal} />
       )}
 

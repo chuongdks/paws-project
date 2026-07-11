@@ -21,7 +21,7 @@ const inputCls = `w-full bg-surface-muted border border-divider rounded-lg px-3 
   text-sm text-primary focus:outline-none focus:ring-2 focus:ring-focus-ring/20
   focus:border-focus-ring transition-all`;
 
-export default function ServiceFormModal({ mode, initial, onSave, onClose, categories, tags }) {
+export default function ServiceFormModal({ mode, initial, onSave, onClose, categories, tags, isAdmin }) {
   const [form, setForm]     = useState(emptyService());
   const [errors, setErrors] = useState({});
 
@@ -275,14 +275,18 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
           </Field>
 
           {/* ── Verification status ── */}
-          <Field label="Verification Status">
-            <select className={inputCls} value={form.verification_status}
-              onChange={e => set('verification_status', e.target.value)}>
-              {VERIFICATION_OPTIONS.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </Field>
+          {/* Only admins can set verification status, and only when editing —
+              new services always start as 'needs verification' server-side. */}
+          {mode === 'edit' && isAdmin && (
+            <Field label="Verification Status">
+              <select className={inputCls} value={form.verification_status}
+                onChange={e => set('verification_status', e.target.value)}>
+                {VERIFICATION_OPTIONS.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </Field>
+          )}
 
           {/* ── PAWS Tags ── */}
           <Field label="PAWS Tags" icon={Tag}
