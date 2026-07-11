@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react';
 import {
   ArrowLeft, Pencil, Trash2, Globe, Phone, Mail, MapPin, ExternalLink,
-  FileText, Transgender, DoorOpen, MessageSquare, Plus, Clock,
+  FileText, Transgender, DoorOpen, MessageSquare, Plus, Clock, CalendarClock,
   Image as ImageIcon, Upload
 } from 'lucide-react';
-import { getCategoryName, fullAddress, buildGoogleMapsLink, hasHours, groupedHoursDisplay, isOpenNow } from '../models/Service.js';
+import { getCategoryName, fullAddress, buildGoogleMapsLink, hasHours, groupedHoursDisplay, isOpenNow, isAppointmentOnly } from '../models/Service.js';
 import { averageRating, formatReviewDate, getInitials } from '../models/Review.js';
 import VerificationBadge from './VerificationBadge.jsx';
 import StarRating from './StarRating.jsx';
@@ -194,14 +194,14 @@ export default function ServiceDetailPanel({
           )}
         </div>
 
-        {/* Hours of Operation */}
-        {hasHours(service) && (
+        {/* Hours of Operation — or an appointment-only note in place of the grid */}
+        {(hasHours(service) || isAppointmentOnly(service)) && (
           <div className="space-y-1.5 pt-2 border-t border-divider-subtle">
             <div className="flex items-center justify-between">
               <p className="flex items-center gap-1.5 text-xs font-semibold text-muted uppercase tracking-wider">
                 <Clock className="h-3.5 w-3.5" /> Hours of Operation
               </p>
-              {isOpenNow(service) !== null && (
+              {!isAppointmentOnly(service) && isOpenNow(service) !== null && (
                 <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
                   isOpenNow(service) ? 'bg-success-soft text-success-text' : 'bg-surface-subtle text-muted'
                 }`}>
@@ -209,16 +209,24 @@ export default function ServiceDetailPanel({
                 </span>
               )}
             </div>
-            <div className="text-sm space-y-1">
-              {groupedHoursDisplay(service).map(({ label, text }) => (
-                <div key={label} className="flex items-center justify-between">
-                  <span className="text-muted">{label}</span>
-                  <span className={text === 'Closed' ? 'text-faint' : 'font-medium text-secondary'}>
-                    {text}
-                  </span>
-                </div>
-              ))}
-            </div>
+
+            {isAppointmentOnly(service) ? (
+              <p className="flex items-center gap-1.5 text-sm text-secondary leading-relaxed">
+                <CalendarClock className="h-4 w-4 text-warning-icon shrink-0" />
+                By appointment only — contact this service directly to schedule.
+              </p>
+            ) : (
+              <div className="text-sm space-y-1">
+                {groupedHoursDisplay(service).map(({ label, text }) => (
+                  <div key={label} className="flex items-center justify-between">
+                    <span className="text-muted">{label}</span>
+                    <span className={text === 'Closed' ? 'text-faint' : 'font-medium text-secondary'}>
+                      {text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

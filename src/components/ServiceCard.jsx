@@ -1,6 +1,6 @@
 import React from 'react';
-import { MapPin, Phone, Globe, ExternalLink, Pencil, Trash2 } from 'lucide-react';
-import { getCategoryName, fullAddress, buildGoogleMapsLink, hasHours, isOpenNow } from '../models/Service.js';
+import { MapPin, Phone, Globe, ExternalLink, Pencil, Trash2, CalendarClock } from 'lucide-react';
+import { getCategoryName, fullAddress, buildGoogleMapsLink, hasHours, isOpenNow, isAppointmentOnly } from '../models/Service.js';
 import VerificationBadge from './VerificationBadge.jsx';
 
 // ── Sidebar card ───────────────────────────────────────────────────────────────
@@ -24,7 +24,11 @@ export default function ServiceCard({ service, isSelected, onClick, onEdit, onDe
           {getCategoryName(service.category_id)}
         </span>
         <VerificationBadge status={service.verification_status} size="sm" />
-        {hasHours(service) && (
+        {isAppointmentOnly(service) ? (
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 text-warning-text bg-warning-soft">
+            <CalendarClock className="h-3 w-3" /> By Appointment
+          </span>
+        ) : hasHours(service) && (
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
             isOpenNow(service) ? 'text-success-text bg-success-soft' : 'text-faint bg-surface-subtle'
           }`}>

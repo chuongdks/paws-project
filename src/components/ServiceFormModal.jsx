@@ -236,42 +236,57 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
 
           {/* ── Hours of Operation ── */}
           <Field label="Hours of Operation" icon={Clock}
-            hint="Leave times blank if not applicable. Checking 'Closed' will mark the entire day as unavailable.">
-            <div className="space-y-1.5">
-              {DAYS_OF_WEEK.map(({ key, short }) => {
-                const day = form.hours[key];
-                return (
-                  <div key={key} className="flex items-center gap-2">
-                    <span className="w-8 text-xs font-semibold text-muted shrink-0">{short}</span>
+            hint={form.by_appointment_only ? null : "Leave times blank if not applicable. Checking 'Closed' will mark the entire day as unavailable."}>
+            <label className="flex items-center gap-2 text-sm text-secondary pb-2">
+              <input type="checkbox" checked={form.by_appointment_only}
+                onChange={e => set('by_appointment_only', e.target.checked)}
+                className="rounded border-divider-strong text-accent focus:ring-focus-ring/30" />
+              This service is by appointment only (no fixed public hours)
+            </label>
 
-                    <label className="flex items-center gap-1.5 text-xs text-muted shrink-0 w-16">
-                      <input type="checkbox" checked={day.closed}
-                        onChange={e => setDayHours(key, { closed: e.target.checked })}
-                        className="rounded border-divider-strong text-accent focus:ring-focus-ring/30" />
-                      Closed
-                    </label>
+            {form.by_appointment_only ? (
+              <p className="text-xs text-faint italic">
+                Hours are hidden since this service is marked appointment-only.
+              </p>
+            ) : (
+              <>
+                <div className="space-y-1.5">
+                  {DAYS_OF_WEEK.map(({ key, short }) => {
+                    const day = form.hours[key];
+                    return (
+                      <div key={key} className="flex items-center gap-2">
+                        <span className="w-8 text-xs font-semibold text-muted shrink-0">{short}</span>
 
-                    {day.closed ? (
-                      <span className="flex-1 text-xs text-disabled italic">—</span>
-                    ) : (
-                      <>
-                        <input type="time" value={day.open}
-                          onChange={e => setDayHours(key, { open: e.target.value })}
-                          className={`${inputCls} py-1.5 flex-1`} />
-                        <span className="text-disabled text-xs shrink-0">–</span>
-                        <input type="time" value={day.close}
-                          onChange={e => setDayHours(key, { close: e.target.value })}
-                          className={`${inputCls} py-1.5 flex-1`} />
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <button type="button" onClick={copyMondayToWeekdays}
-              className="text-[11px] font-semibold text-accent-text hover:underline pt-0.5">
-              Copy Monday's hours to Tue–Fri
-            </button>
+                        <label className="flex items-center gap-1.5 text-xs text-muted shrink-0 w-16">
+                          <input type="checkbox" checked={day.closed}
+                            onChange={e => setDayHours(key, { closed: e.target.checked })}
+                            className="rounded border-divider-strong text-accent focus:ring-focus-ring/30" />
+                          Closed
+                        </label>
+
+                        {day.closed ? (
+                          <span className="flex-1 text-xs text-disabled italic">—</span>
+                        ) : (
+                          <>
+                            <input type="time" value={day.open}
+                              onChange={e => setDayHours(key, { open: e.target.value })}
+                              className={`${inputCls} py-1.5 flex-1`} />
+                            <span className="text-disabled text-xs shrink-0">–</span>
+                            <input type="time" value={day.close}
+                              onChange={e => setDayHours(key, { close: e.target.value })}
+                              className={`${inputCls} py-1.5 flex-1`} />
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <button type="button" onClick={copyMondayToWeekdays}
+                  className="text-[11px] font-semibold text-accent-text hover:underline pt-0.5">
+                  Copy Monday's hours to Tue–Fri
+                </button>
+              </>
+            )}
           </Field>
 
           {/* ── Verification status ── */}

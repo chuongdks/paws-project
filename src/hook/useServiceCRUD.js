@@ -11,6 +11,7 @@ export function useServiceCRUD() {
   const [error, setError]       = useState(null);
   const [saveError, setSaveError] = useState(null);
 
+  // Write a comments that has the Request and Response API form just like ur movie/steam project from the back end
   useEffect(() => {
     let cancelled = false;
 
@@ -44,8 +45,9 @@ export function useServiceCRUD() {
   const openEdit   = (service) => { setSaveError(null); setModal({ mode: 'edit', service }); };
   const closeModal = ()        => setModal(null);
 
-  // payload that the api services.php accepts
-  // trims off some client side fields (id, verification_status, is_visible, last_verified_at, etc.) that is on the normal form  but arent part of the write API.
+  // Builds the exact payload shape services.php accepts — trims off client-only
+  // fields (id, verification_status, is_visible, last_verified_at, etc.) that
+  // live on the normalized service/form object but aren't part of the write API.
   const buildPayload = (formData) => ({
     name:                formData.name,
     category_id:         formData.category_id,
@@ -63,10 +65,12 @@ export function useServiceCRUD() {
     washroom_info:       formData.washroom_info,
     accessibility_notes: formData.accessibility_notes,
     hours:               formData.hours,
+    by_appointment_only: formData.by_appointment_only,
     image_url:           formData.image_url,
     tags:                formData.tags, // already an array of tag ids (ServiceFormModal.jsx)
   });
 
+  // Write a comments that has the Request and Response API form just like ur movie/steam project from the back end
   const handleSave = async (formData) => {
     if (modal.mode === 'add') {
       try {
@@ -86,14 +90,13 @@ export function useServiceCRUD() {
       closeModal();
     }
   };
-  
-  // Still in memory, swap for a real PUT soon
+
   const handleDelete = (service) => {
     setServices(prev => prev.filter(s => s.id !== service.id));
     setDeleteTarget(null);
   };
 
-  // Updates a service's photo in-memory (temporary, until DB supports images)
+  // Still in memory, swap for a real DELETE soon
   const handleUpdateImage = (id, dataUrl) => {
     setServices(prev => prev.map(s => s.id === id ? { ...s, image_url: dataUrl } : s));
   };

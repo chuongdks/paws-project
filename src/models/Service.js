@@ -17,7 +17,6 @@ export const CATEGORIES = [
   { id: 15, name: 'Pet Services',                     slug: 'pet-services' },
   { id: 16, name: 'Local Businesses',                 slug: 'local-businesses' },
   { id: 17, name: 'Other Community Resources',        slug: 'other-community-resources' },
-  // NOOR add this in the DB
   { id: 18, name: 'Performers & Entertainers',        slug: 'performers-entertainers' },
 ];
 
@@ -58,18 +57,19 @@ export function createService(raw = {}) {
     inclusivity_notes:   raw.inclusivity_notes    ?? '',
     washroom_info:       raw.washroom_info         ?? '',
     verification_status: raw.verification_status  ?? 'needs verification',
+    image_url:           raw.image_url             ?? null,
+    hours:               normalizeHours(raw.hours), // { "mon": { "open": "09:00", "close": "17:00", "closed": false }, "tue": { "open": "09:00", "close": "17:00", "closed": false }"...": "..."}
     // Not in the Front End but in the Back End, future implementation or just leave it
     accessibility_notes: raw.accessibility_notes   ?? '',
     last_verified_at:    raw.last_verified_at      ?? null,
     is_visible:          raw.is_visible            ?? 1,
+    // True if this service has no fixed public hours and must be booked directly
+    by_appointment_only: raw.by_appointment_only === true || raw.by_appointment_only === 1 || raw.by_appointment_only === '1',
     // Normalized to a consistent [{ id, name }] shape regardless of source:
     // - live API sends [{ id, name, slug }]
     // - local service.json / offline fallback only has plain name strings, so
     //   those get id: null (can't be safely matched to a real DB id offline)
     tags:                normalizeTags(raw.tags),
-    // Temporary client-side only
-    image_url:           raw.image_url             ?? null,
-    hours:               normalizeHours(raw.hours), // { "mon": { "open": "09:00", "close": "17:00", "closed": false }, "tue": { "open": "09:00", "close": "17:00", "closed": false }"...": "..."}
   };
 }
 
@@ -98,6 +98,9 @@ export const isInPerson = (s) => Boolean(s.address?.trim());
 
 // True if the listing has been verified by PAWS staff
 export const isVerified = (s) => s.verification_status === 'verified';
+
+// True if this service has no fixed public hours — appointment-only, always
+export const isAppointmentOnly = (s) => Boolean(s.by_appointment_only);
 
 // Lookup a category name by id
 export const getCategoryName = (id) => CATEGORIES.find(c => c.id === id)?.name ?? 'Uncategorized';
@@ -178,8 +181,9 @@ export const groupedHoursDisplay = (s) => {
   }));
 };
 
-// Whether the service is open right now, based on the visitor's local day/time. Returns null if no hours are set at all.
+// Whether the service is open right now, based on the visitor's local day/time. Returns null if no hours are set at all, or if the service is appointment-only.
 export const isOpenNow = (s) => {
+  if (isAppointmentOnly(s)) return null;
   if (!hasHours(s)) return null;
   const now = new Date();
   const todayKey = DAYS_OF_WEEK[(now.getDay() + 6) % 7].key; // JS Sunday=0 → align to our Mon-first array

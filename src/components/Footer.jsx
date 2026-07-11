@@ -50,7 +50,7 @@ export default function Footer() {
         <span>© {year} PAWS in Recovery. All rights reserved.</span>
         <span className="flex items-center gap-1">
           Created by{' '}
-          <a href="http://www.linkedin.com/in/noorhaddadcs" className="font-semibold text-muted hover:text-accent-text transition-colors">
+          <a href="http://www.linkedin.com/in/noorhaddadcs" target="_blank" className="font-semibold text-muted hover:text-accent-text transition-colors">
             Noor
           </a>
           ,
