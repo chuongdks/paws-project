@@ -4,14 +4,14 @@ import servicesData from '../data/service.json';
 import api from '../api/axiosConfig.js';
 
 // Owns the services array and every create/update/delete/image operation.
-// IMPORTANT: edit/delete are still in-memory only, WHEN it is ready swap those for real PUT/DELETE calls once those endpoints exist
+// WARNING: photo updates are still in-memory only, since the backend has no image storage endpoint yet. We have GET/POST/PUT/DELETE ready
 export function useServiceCRUD() {
   const [services, setServices] = useState(() => servicesData.map(createService));
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
   const [saveError, setSaveError] = useState(null);
+  const [saving, setSaving]       = useState(false);
 
-  // Write a comments that has the Request and Response API form just like ur movie/steam project from the back end
   useEffect(() => {
     let cancelled = false;
 
@@ -39,15 +39,14 @@ export function useServiceCRUD() {
 
   // ── CRUD ──────────────────────────────────────────────────────────────────
   const [modal, setModal]               = useState(null); // null | { mode: 'add'|'edit', service? }
-  const [deleteTarget, setDeleteTarget] = useState(null); // service pending deletion confirmation
+  const [deleteTarget, setDeleteTargetRaw] = useState(null); // service pending deletion confirmation
 
   const openAdd    = ()        => { setSaveError(null); setModal({ mode: 'add' }); };
   const openEdit   = (service) => { setSaveError(null); setModal({ mode: 'edit', service }); };
   const closeModal = ()        => setModal(null);
+  const setDeleteTarget = (service) => { setDeleteError(null); setDeleteTargetRaw(service); };
 
-  // Builds the exact payload shape services.php accepts — trims off client-only
-  // fields (id, verification_status, is_visible, last_verified_at, etc.) that
-  // live on the normalized service/form object but aren't part of the write API.
+  // Builds the exact payload shape services.php accepts — trims off client-only fields 
   const buildPayload = (formData) => ({
     name:                formData.name,
     category_id:         formData.category_id,
@@ -68,10 +67,11 @@ export function useServiceCRUD() {
     by_appointment_only: formData.by_appointment_only,
     image_url:           formData.image_url,
     tags:                formData.tags, // already an array of tag ids (ServiceFormModal.jsx)
+    verification_status: formData.verification_status, // only ever changeable via the admin-only field in ServiceFormModal
   });
 
-  // Write a comments that has the Request and Response API form just like ur movie/steam project from the back end
   const handleSave = async (formData) => {
+    setSaving(true);
     if (modal.mode === 'add') {
       try {
         const response = await api.post('/services.php', buildPayload(formData));
@@ -82,21 +82,50 @@ export function useServiceCRUD() {
       } catch (err) {
         console.error('Failed to create service\n Full Error:', err);
         setSaveError('Could not save the new service — please try again.');
+      } finally {
+        setSaving(false);
       }
     } else {
-      // Still in memory, swap for a real PUT soon
-      const normalized = createService(formData);
-      setServices(prev => prev.map(s => s.id === modal.service.id ? { ...normalized, id: s.id } : s));
-      closeModal();
+      try {
+        const payload = { id: modal.service.id, ...buildPayload(formData) };
+        const response = await api.put('/services.php', payload);
+        const json = response.data;
+        if (!json.success) throw new Error(json.message || 'API returned success: false');
+        setServices(prev => prev.map(s => s.id === modal.service.id ? createService(json.data) : s));
+        closeModal();
+      } catch (err) {
+        console.error('Failed to update service\n Full Error:', err);
+        setSaveError('Could not save changes to this service — please try again.');
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
-  const handleDelete = (service) => {
-    setServices(prev => prev.filter(s => s.id !== service.id));
-    setDeleteTarget(null);
+  const [deleteError, setDeleteError] = useState(null);
+  const [deleting, setDeleting]       = useState(false);
+
+  const handleDelete = async (service) => {
+    setDeleting(true);
+    try {
+      // delete() takes a config object, not a body directly 
+      // { data } is how a request body gets attached to a DELETE
+      const response = await api.delete('/services.php', { data: { id: service.id } });
+      const json = response.data;
+      if (!json.success) throw new Error(json.message || 'API returned success: false');
+      // Soft delete server-side (is_visible = 0), the row still exists in the DB, it just won't come back from GET /services.php anymore. Mirror that locally.
+      setServices(prev => prev.filter(s => s.id !== service.id));
+      setDeleteError(null);
+      setDeleteTarget(null);
+    } catch (err) {
+      console.error('Failed to delete service\n Full Error:', err);
+      setDeleteError('Could not delete this service — please try again.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
-  // Still in memory, swap for a real DELETE soon
+  // Updates a service's photo in-memory (temporary, until DB supports images)
   const handleUpdateImage = (id, dataUrl) => {
     setServices(prev => prev.map(s => s.id === id ? { ...s, image_url: dataUrl } : s));
   };
@@ -106,6 +135,7 @@ export function useServiceCRUD() {
     modal, openAdd, openEdit, closeModal,
     deleteTarget, setDeleteTarget,
     handleSave, handleDelete, handleUpdateImage,
-    saveError,
+    saveError, saving,
+    deleteError, deleting,
   };
 }

@@ -21,14 +21,12 @@ const inputCls = `w-full bg-surface-muted border border-divider rounded-lg px-3 
   text-sm text-primary focus:outline-none focus:ring-2 focus:ring-focus-ring/20
   focus:border-focus-ring transition-all`;
 
-export default function ServiceFormModal({ mode, initial, onSave, onClose, categories, tags, isAdmin }) {
+export default function ServiceFormModal({ mode, initial, onSave, onClose, categories, tags, isAdmin, saveError, saving }) {
   const [form, setForm]     = useState(emptyService());
   const [errors, setErrors] = useState({});
 
-  // Populate form when editing an existing service. `initial.tags` comes in as
-  // [{ id, name }] (see Service.js normalizeTags) — the form itself works with
-  // plain tag ids, so convert here. Legacy/offline tags with no real id (id:
-  // null) get matched up by name against the live `tags` list as a bridge.
+  // Populate form when editing an existing service. `initial.tags` comes in as [{ id, name }] (see Service.js normalizeTags)
+  //  the form itself works with plain tag ids, so convert here. Legacy/offline tags with no real id (id:null) get matched up by name against the live `tags` list as a bridge.
   useEffect(() => {
     if (initial) {
       const tagIds = (initial.tags ?? [])
@@ -327,17 +325,16 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-divider-subtle space-y-2">
-            <p className="text-[11px] text-faint">
-              Changes are in-memory only until connected to the backend API. NOOR PLZ ADD BACK END SOON
-            </p>
+            {saveError && <p className="text-xs text-danger-text">{saveError}</p>}
             <div className="flex gap-2">
-              <button onClick={onClose}
+              <button onClick={onClose} disabled={saving}
                 className="px-4 py-2 text-sm font-medium text-secondary hover:bg-surface-subtle rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 Cancel
               </button>
-              <button onClick={handleSubmit}
+              <button onClick={handleSubmit} disabled={saving}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-                {mode === 'edit' ? 'Save Changes' : 'Add Service'}
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                {saving ? 'Saving…' : mode === 'edit' ? 'Save Changes' : 'Add Service'}
               </button>
           </div>
         </div>

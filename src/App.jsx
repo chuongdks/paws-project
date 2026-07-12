@@ -34,6 +34,8 @@ export default function App() {
     modal, openAdd, openEdit, closeModal,
     deleteTarget, setDeleteTarget,
     handleSave, handleDelete, handleUpdateImage,
+    saveError, saving,
+    deleteError, deleting,
   } = useServiceCRUD();
 
   // Search + access/category filtering
@@ -176,6 +178,7 @@ export default function App() {
       {modal && (
         <ServiceFormModal mode={modal.mode} initial={modal.service ?? null}
           categories={categories} tags={assignableTags} isAdmin={isAdmin}
+          saveError={saveError} saving={saving}
           onSave={handleSave} onClose={closeModal} />
       )}
 
@@ -184,6 +187,7 @@ export default function App() {
         <DeleteConfirmModal
           title="Delete Service"
           message={<>Are you sure you want to remove <span className="font-semibold text-secondary-strong">{deleteTarget.name}</span>? This cannot be undone.</>}
+          error={deleteError} confirming={deleting}
           onConfirm={() => handleDelete(deleteTarget)}
           onCancel={() => setDeleteTarget(null)}
         />
