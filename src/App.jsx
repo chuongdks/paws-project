@@ -105,7 +105,7 @@ export default function App() {
         accessFilter={accessFilter} setAccessFilter={setAccessFilter}
         categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
         activeCategories={activeCategories}
-        isUser={isUser} onAddService={openAdd}
+        isUser={isAdmin} onAddService={openAdd}
       />
 
       {/* ── Error banner: only shows if the live API was unreachable ───────── */}

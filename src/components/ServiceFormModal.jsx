@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Image as ImageIcon, Clock, Loader2 } from 'lucide-react';
-import { DAYS_OF_WEEK, emptyService } from '../models/Service.js';
+import { DAYS_OF_WEEK, emptyService, defaultHours } from '../models/Service.js';
 
 const VERIFICATION_OPTIONS = ['needs verification', 'verified', 'rejected', 'archived'];
 
@@ -237,7 +237,15 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
             hint={form.by_appointment_only ? null : "Leave times blank if not applicable. Checking 'Closed' will mark the entire day as unavailable."}>
             <label className="flex items-center gap-2 text-sm text-secondary pb-2">
               <input type="checkbox" checked={form.by_appointment_only}
-                onChange={e => set('by_appointment_only', e.target.checked)}
+                onChange={e => {
+                  const checked = e.target.checked;
+                  // clear hours if the 'by_appointment_only' option is checked
+                  setForm(f => ({
+                    ...f,
+                    by_appointment_only: checked,
+                    hours: checked ? defaultHours() : f.hours,
+                  }));
+                }}
                 className="rounded border-divider-strong text-accent focus:ring-focus-ring/30" />
               This service is by appointment only (no fixed public hours)
             </label>
