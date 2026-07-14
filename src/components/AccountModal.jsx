@@ -1,10 +1,7 @@
 import React from 'react';
-import { X, User, Mail, ShieldCheck } from 'lucide-react';
-import { useAuth } from '../context/AuthContext.jsx';
-// TODO: re-import once the backend supports gender.
-// import { X, User, Mail, ShieldCheck, VenetianMask, Pencil, Check } from 'lucide-react';
-// import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
-// import { useState } from 'react';
+import { X, User, Mail, ShieldCheck, VenetianMask, Pencil, Check } from 'lucide-react';
+import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
+import { useState } from 'react';
 
 // ── Small read-only row, matches the style used in ServiceDetailPanel's InfoRow ──
 function InfoRow({ icon: Icon, label, children }) {
@@ -20,20 +17,18 @@ function InfoRow({ icon: Icon, label, children }) {
 }
 
 export default function AccountModal({ onClose }) {
-  const { user, isAdmin } = useAuth();
-  // TODO: re-enable once the backend supports gender.
-  // const { user, isAdmin, updateGender } = useAuth();
-  // const [editingGender, setEditingGender] = useState(false);
-  // const [genderDraft, setGenderDraft]     = useState(user?.gender ?? '');
+  const { user, isAdmin, updateGender } = useAuth();
+  const [editingGender, setEditingGender] = useState(false);
+  const [genderDraft, setGenderDraft]     = useState(user?.gender ?? '');
 
   if (!user) return null;
 
-  // const saveGender = () => {
-  //   updateGender(genderDraft);
-  //   setEditingGender(false);
-  // };
+  const saveGender = () => {
+    updateGender(genderDraft);
+    setEditingGender(false);
+  };
 
-  // const inputCls = "w-full bg-surface-muted border border-divider text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring/20 focus:border-focus-ring transition-all";
+  const inputCls = "w-full bg-surface-muted border border-divider text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring/20 focus:border-focus-ring transition-all";
 
   return (
     <div
@@ -75,7 +70,6 @@ export default function AccountModal({ onClose }) {
           <InfoRow icon={Mail} label="Email">{user.email}</InfoRow>
           <InfoRow icon={ShieldCheck} label="Role">{isAdmin ? 'Administrator' : 'Community Member'}</InfoRow>
 
-          {/* TODO: re-enable once the backend supports gender.
           <InfoRow icon={VenetianMask} label="Gender">
             {editingGender ? (
               <div className="flex items-center gap-2 pt-1">
@@ -103,7 +97,6 @@ export default function AccountModal({ onClose }) {
               </div>
             )}
           </InfoRow>
-          */}
         </div>
 
         <button onClick={onClose}

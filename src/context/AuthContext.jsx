@@ -3,19 +3,15 @@ import api, { TOKEN_STORAGE_KEY, setUnauthorizedHandler } from '../api/axiosConf
 
 const AuthContext = createContext(null);
 
-// TODO: re-enable once the `users` table has a gender column and
-// register.php/me.php actually accept and return it. Left here (rather than
-// deleted) so the whole feature — options, form field, account modal row,
-// updateGender — can come back with minimal changes once the backend supports it.
-// export const GENDER_OPTIONS = [
-//   'Woman',
-//   'Man',
-//   'Non-binary',
-//   'Transgender',
-//   'Genderqueer / Genderfluid',
-//   'Prefer to self-describe',
-//   'Prefer not to say',
-// ];
+export const GENDER_OPTIONS = [
+  'Woman',
+  'Man',
+  'Non-binary',
+  'Transgender',
+  'Genderqueer / Genderfluid',
+  'Prefer to self-describe',
+  'Prefer not to say',
+];
 
 export function AuthProvider({ children }) {
   const [user, setUser]               = useState(null);
@@ -81,9 +77,9 @@ export function AuthProvider({ children }) {
   };
 
   // Always creates role: 'user' server-side (see register.php). Admin can only be created through SUPA SPECIAL PRIVILAGE
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, gender) => {
     try {
-      const response = await api.post('/auth/register.php', { name, email, password });
+      const response = await api.post('/auth/register.php', { name, email, password, gender });
       const json = response.data;
       if (!json.success) {
         setError(json.message || 'Could not create your account.');
@@ -104,8 +100,7 @@ export function AuthProvider({ children }) {
     try {
       await api.post('/auth/logout.php');
     } catch (err) {
-      // Still clear the local session even if the server call itself fails —
-      // no reason to trap someone in a "logged in" UI over a network hiccup.
+      // clear the local session even if the server call itself fails, dont trap user in login UI cuz network fucked up
       console.error('Logout request failed, clearing local session anyway\n Full Error:', err);
     } finally {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
@@ -113,8 +108,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // TODO: wire back up once the backend supports gender.
-  // const updateGender = (gender) => { ... };
+  // Update gender after registerting
+  const updateGender = (gender) => {
+    setUser((prevUser) => prevUser ? { ...prevUser, gender } : null);
+  };
 
   const value = {
     user,
@@ -125,7 +122,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
-    // updateGender,
+    updateGender,
     error,
     clearError: () => setError(null),
   };

@@ -213,7 +213,7 @@ export default function ServiceDetailPanel({
             {isAppointmentOnly(service) ? (
               <p className="flex items-center gap-1.5 text-sm text-secondary leading-relaxed">
                 <CalendarClock className="h-4 w-4 text-warning-icon shrink-0" />
-                By appointment only — contact this service directly to schedule.
+                By appointment only. Please contact this service directly to schedule.
               </p>
             ) : (
               <div className="text-sm space-y-1">
@@ -293,7 +293,7 @@ export default function ServiceDetailPanel({
             </div>
           ) : (
             <p className="text-sm text-faint italic py-2">
-              No reviews yet — be the first to share your experience.
+              No reviews yet. Be the first to share your experience.
             </p>
           )}
 

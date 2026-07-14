@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { X, LogIn, UserPlus, User, Mail, Lock, Loader2 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext.jsx';
-// TODO: re-import GENDER_OPTIONS from AuthContext once the backend supports gender.
-// import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
+import { X, LogIn, UserPlus, User, Mail, Lock, Loader2, VenetianMask } from 'lucide-react';
+import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
 
 export default function LoginModal({ onClose }) {
   const { login, register, error, clearError } = useAuth();
@@ -12,7 +10,7 @@ export default function LoginModal({ onClose }) {
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  // const [gender, setGender]     = useState('');
+  const [gender, setGender]     = useState('');
 
   // ── Helper Function ──────────────────────────────────────────────────────
   const switchMode = (next) => {
@@ -25,7 +23,7 @@ export default function LoginModal({ onClose }) {
     setSubmitting(true);
     const success = mode === 'login'
       ? await login(email, password)
-      : await register(name, email, password /*, gender */);
+      : await register(name, email, password , gender);
     setSubmitting(false);
     if (success) onClose();
   };
@@ -106,7 +104,6 @@ export default function LoginModal({ onClose }) {
             />
           </div>
 
-          {/* TODO: re-enable once the backend has a gender column on `users`.
           {mode === 'register' && (
             <div className="space-y-1">
               <label className="text-xs font-semibold text-secondary uppercase tracking-wider flex items-center gap-1.5">
@@ -124,7 +121,6 @@ export default function LoginModal({ onClose }) {
               </select>
             </div>
           )}
-          */}
 
           {error && <p className="text-xs text-danger-text">{error}</p>}
 
