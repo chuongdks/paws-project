@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { useServiceDirectory } from './hook/useServiceDirectory.js';
 import { useServiceCRUD } from './hook/useServiceCRUD.js';
@@ -26,7 +26,12 @@ export default function App() {
   const mapSectionRef = useRef(null);
 
   // Reviews — owns its own array, scoped per service via getReviewsFor
-  const { getReviewsFor, addReview, deleteReview, hasUserReviewed } = useReviews();
+  const {
+    fetchReviews, getReviewsFor, isLoading: reviewsLoading,
+    addReview, deleteReview,
+    approveReview, rejectReview,
+    hasUserReviewed,
+  } = useReviews();
 
   // Services array + every create/update/delete/image operation
   const {
@@ -62,6 +67,11 @@ export default function App() {
     cardRefs, scrollContainerRef,
     handleSelectService,
   } = useServiceSelection(services, filteredServices);
+
+  // Load this service's approved reviews as soon as it's opened
+  useEffect(() => {
+    if (selectedService) fetchReviews(selectedService.id, 'approved');
+  }, [selectedService?.id]);
 
   // Clear all filter function
   const clearAllFilters = () => {
@@ -134,10 +144,16 @@ export default function App() {
               onUpdateImage={handleUpdateImage}
               isAdmin={isAdmin}
               isAuthenticated={isAuthenticated}
-              reviews={getReviewsFor(selectedService.id)}
+              reviews={getReviewsFor(selectedService.id, 'approved')}
               canReview={!isAdmin && isAuthenticated && !hasUserReviewed(selectedService.id, user?.id)}
-              onAddReview={(formData) => addReview(selectedService.id, formData, user)}
-              onDeleteReview={deleteReview}
+              onAddReview={(formData) => addReview(selectedService.id, formData)}
+              onDeleteReview={(reviewId, listingId) => deleteReview(reviewId, listingId, 'approved')}
+              // Admin-only pending review moderation queue
+              pendingReviews={getReviewsFor(selectedService.id, 'pending')}
+              pendingLoading={reviewsLoading(selectedService.id, 'pending')}
+              onFetchPendingReviews={(listingId) => fetchReviews(listingId, 'pending')}
+              onApproveReview={approveReview}
+              onRejectReview={rejectReview}
             />
           ) : (
             <Sidebar

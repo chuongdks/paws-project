@@ -1,8 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   ArrowLeft, Pencil, Trash2, Globe, Phone, Mail, MapPin, ExternalLink,
   FileText, Transgender, DoorOpen, MessageSquare, Plus, Clock, CalendarClock,
-  Image as ImageIcon, Upload
+  Image as ImageIcon, Upload, ShieldQuestion, Check, X as XIcon
 } from 'lucide-react';
 import { getCategoryName, fullAddress, buildGoogleMapsLink, hasHours, groupedHoursDisplay, isOpenNow, isAppointmentOnly } from '../models/Service.js';
 import { averageRating, formatReviewDate, getInitials } from '../models/Review.js';
@@ -61,6 +61,26 @@ function InfoRow({ icon: Icon, children }) {
   );
 }
 
+// ── Compact 3-rating readout (overall/respect/inclusivity), skips any that are null ──
+function SubRatings({ review }) {
+  const rows = [
+    { label: 'Respect',      value: review.respect_rating },
+    { label: 'Inclusivity',  value: review.inclusivity_rating },
+  ].filter(r => r.value != null);
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="flex items-center gap-3 pt-0.5">
+      {rows.map(r => (
+        <span key={r.label} className="flex items-center gap-1 text-[11px] text-faint">
+          {r.label}: <StarRating rating={r.value} size="h-2.5 w-2.5" />
+        </span>
+      ))}
+    </div>
+  );
+}
+
 // ── Single review row ───────────────────────────────────────────────────────────
 function ReviewCard({ review, isAdmin, onDelete }) {
   return (
@@ -85,6 +105,7 @@ function ReviewCard({ review, isAdmin, onDelete }) {
       </div>
 
       <StarRating rating={review.overall_rating} size="h-3.5 w-3.5" />
+      <SubRatings review={review} />
 
       {review.comment && (
         <p className="text-sm text-secondary leading-relaxed">{review.comment}</p>
@@ -93,13 +114,61 @@ function ReviewCard({ review, isAdmin, onDelete }) {
   );
 }
 
+// ── Admin only moderation row for a pending review: approve or reject the review ────────────
+function PendingReviewCard({ review, onApprove, onReject, busy }) {
+  return (
+    <div className="space-y-2 p-3 rounded-lg border border-warning-border bg-warning-soft/50">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-sm font-semibold text-secondary-strong leading-tight">{review.reviewer_name}</p>
+          <p className="text-[11px] text-faint">{formatReviewDate(review.created_at)}</p>
+        </div>
+        <StarRating rating={review.overall_rating} size="h-3.5 w-3.5" />
+      </div>
+      <SubRatings review={review} />
+      {review.comment && <p className="text-sm text-secondary leading-relaxed">{review.comment}</p>}
+      <div className="flex gap-2 pt-1">
+        <button onClick={() => onApprove(review)} disabled={busy}
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-success-text bg-success-soft hover:bg-success-soft/80 border border-success-border rounded-lg transition-colors disabled:opacity-60">
+          <Check className="h-3.5 w-3.5" /> Approve
+        </button>
+        <button onClick={() => onReject(review)} disabled={busy}
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-danger-text bg-danger-soft hover:bg-danger-soft/80 border border-danger-border rounded-lg transition-colors disabled:opacity-60">
+          <XIcon className="h-3.5 w-3.5" /> Reject
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Main export ────────────────────────────────────────────────────────────────
 export default function ServiceDetailPanel({
   service, onClose, onEdit, onDelete, onUpdateImage, isAdmin,
   isAuthenticated, canReview, reviews, onAddReview, onDeleteReview,
+  pendingReviews = [], pendingLoading = false,   
+  onFetchPendingReviews, onApproveReview, onRejectReview,
 }) {
   const [showReviewForm, setShowReviewForm]         = useState(false);
   const [deleteReviewTarget, setDeleteReviewTarget] = useState(null);
+  const [submittedMsg, setSubmittedMsg]             = useState(false);
+  const [moderationTarget, setModerationTarget]     = useState(null); // review being approved/rejected
+
+  // Admins get a pending-review queue for whichever listing is open
+  useEffect(() => {
+    if (isAdmin && service?.id) onFetchPendingReviews?.(service.id);
+  }, [isAdmin, service?.id]);
+
+  const handleApprove = async (review) => {
+    setModerationTarget(review.id);
+    await onApproveReview?.(review.id, service.id);
+    setModerationTarget(null);
+  };
+
+  const handleReject = async (review) => {
+    setModerationTarget(review.id);
+    await onRejectReview?.(review.id, service.id);
+    setModerationTarget(null);
+  };
 
   return (
     <aside className="w-full h-full shrink-0 flex flex-col border-r border-divider-page bg-surface overflow-hidden">
@@ -260,6 +329,38 @@ export default function ServiceDetailPanel({
           </div>
         )}
 
+        {/* Admin-only: pending review moderation queue for this listing */}
+        {isAdmin && (
+          <div className="space-y-3 pt-2 border-t border-divider-subtle">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-warning-text uppercase tracking-wider">
+              <ShieldQuestion className="h-3.5 w-3.5" /> Pending Reviews
+              {pendingReviews.length > 0 && (
+                <span className="text-[10px] font-bold bg-warning-soft text-warning-text px-1.5 py-0.5 rounded-full">
+                  {pendingReviews.length}
+                </span>
+              )}
+            </p>
+
+            {pendingLoading ? (
+              <p className="text-xs text-faint italic">Loading pending reviews…</p>
+            ) : pendingReviews.length > 0 ? (
+              <div className="space-y-2">
+                {pendingReviews.map(review => (
+                  <PendingReviewCard
+                    key={review.id}
+                    review={review}
+                    onApprove={handleApprove}
+                    onReject={handleReject}
+                    busy={moderationTarget === review.id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-faint italic">Nothing waiting on review right now.</p>
+            )}
+          </div>
+        )}
+
         {/* Reviews — Google Maps style */}
         <div className="space-y-3 pt-2 border-t border-divider-subtle">
           <div className="flex items-center justify-between">
@@ -267,12 +368,18 @@ export default function ServiceDetailPanel({
               <MessageSquare className="h-3.5 w-3.5" /> Reviews
             </p>
             {canReview && (
-              <button onClick={() => setShowReviewForm(true)}
+              <button onClick={() => { setShowReviewForm(true); setSubmittedMsg(false); }}
                 className="flex items-center gap-1 text-xs font-semibold text-accent-text hover:underline">
                 <Plus className="h-3.5 w-3.5" /> Write a Review
               </button>
             )}
           </div>
+
+          {submittedMsg && (
+            <p className="text-xs font-medium text-success-text bg-success-soft border border-success-border rounded-lg px-3 py-2">
+              Thanks! Your review was submitted and is awaiting approval.
+            </p>
+          )}
 
           {reviews.length > 0 && (
             <div className="flex items-center gap-2">
@@ -308,27 +415,30 @@ export default function ServiceDetailPanel({
             <p className="text-[11px] text-faint">You have already reviewed this service.</p>
           )}
         </div>
-
-        <p className="text-[11px] text-disabled pt-2 border-t border-divider-subtle">
-          Photo, edits, and reviews are stored in-memory only until connected to the backend. NOOR PLZ ADD BACK END SOON. POWDER THAT MAKES U SAY BACK END TOMORROW
-        </p>
       </div>
 
-      {/* Write a review modal */}
+      {/* Await the API call before hiding the form */}
       {showReviewForm && (
         <ReviewFormModal
           serviceName={service.name}
           onClose={() => setShowReviewForm(false)}
-          onSave={(formData) => { onAddReview(formData); setShowReviewForm(false); }}
+          onSave={async (formData) => {
+            const ok = await onAddReview(formData);
+            setShowReviewForm(false);
+            if (ok) setSubmittedMsg(true);
+          }}
         />
       )}
 
-      {/* Delete review confirmation */}
+      {/* Await the API call before removing the target */}
       {deleteReviewTarget && (
         <DeleteConfirmModal
           title="Delete Review"
           message="Are you sure you want to remove this review? This cannot be undone."
-          onConfirm={() => { onDeleteReview(deleteReviewTarget.id); setDeleteReviewTarget(null); }}
+          onConfirm={async () => {
+            await onDeleteReview(deleteReviewTarget.id, service.id);
+            setDeleteReviewTarget(null);
+          }}
           onCancel={() => setDeleteReviewTarget(null)}
         />
       )}
