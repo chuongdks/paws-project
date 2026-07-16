@@ -81,7 +81,44 @@ export function useReviews() {
     }
   };
 
-  // PUT: admin approve/reject moderation. Refreshes both the pending queue and the public approved list 
+  // PUT: the review's own author edits its content (rating/comment).
+  // WARNING for BACKEND: reviews.php's current PUT handler
+  // (updateReviewStatus()) only reads/writes `status` and is gated behind
+  // requireAdminUser(). For this to actually work, the backend needs to:
+  //   1. Allow the request through when the caller is either an admin OR the
+  //      review's own user_id (not admin-only).
+  //   2. Accept overall_rating / respect_rating / inclusivity_rating / comment
+  //      in the PUT body and update those columns when present.
+  //   3. When a non-admin author edits their own review, force status back
+  //      to 'pending' regardless of what's in the request body (so an edit
+  //      can't be used to silently re-approve without re-review). Admins
+  //      changing status directly should keep working exactly as today.
+  // Until that's in place, this call will 403 for non-admins.
+  const updateReview = async (reviewId, listingId, { rating, respect_rating, inclusivity_rating, comment }) => {
+    try {
+      const response = await api.put('/reviews.php', {
+        id: reviewId,
+        overall_rating: rating,
+        respect_rating: respect_rating || null,
+        inclusivity_rating: inclusivity_rating || null,
+        comment,
+        status: 'pending', // resubmits for admin approval
+      });
+      if (response.data.success) {
+        await Promise.all([
+          fetchReviews(listingId, 'approved'),
+          fetchReviews(listingId, 'pending'),
+        ]);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to update review:', err);
+      return false;
+    }
+  };
+
+  // PUT: admin approve/reject moderation
   const updateReviewStatus = async (reviewId, status, listingId) => {
     try {
       const response = await api.put('/reviews.php', { id: reviewId, status });
@@ -111,7 +148,7 @@ export function useReviews() {
 
   return {
     fetchReviews, getReviewsFor, isLoading, error,
-    addReview, deleteReview,
+    addReview, updateReview, deleteReview,
     updateReviewStatus, approveReview, rejectReview,
     hasUserReviewed,
   };

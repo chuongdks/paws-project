@@ -82,7 +82,7 @@ function SubRatings({ review }) {
 }
 
 // ── Single review row ───────────────────────────────────────────────────────────
-function ReviewCard({ review, isAdmin, onDelete }) {
+function ReviewCard({ review, isAdmin, isOwnReview, onEdit, onDelete }) {
   return (
     <div className="space-y-2 pb-4 border-b border-divider-subtle last:border-0 last:pb-0">
       <div className="flex items-start justify-between gap-2">
@@ -96,12 +96,20 @@ function ReviewCard({ review, isAdmin, onDelete }) {
           </div>
         </div>
 
-        {isAdmin && (
-          <button onClick={() => onDelete(review)} title="Delete review"
-            className="p-1 rounded-md text-disabled hover:text-danger-text hover:bg-danger-soft transition-colors shrink-0">
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-        )}
+        <div className="flex items-center gap-0.5 shrink-0">
+          {isOwnReview && (
+            <button onClick={() => onEdit(review)} title="Edit your review"
+              className="p-1 rounded-md text-disabled hover:text-accent-text hover:bg-accent-soft transition-colors">
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {isAdmin && (
+            <button onClick={() => onDelete(review)} title="Delete review"
+              className="p-1 rounded-md text-disabled hover:text-danger-text hover:bg-danger-soft transition-colors">
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       <StarRating rating={review.overall_rating} size="h-3.5 w-3.5" />
@@ -114,7 +122,7 @@ function ReviewCard({ review, isAdmin, onDelete }) {
   );
 }
 
-// ── Admin only moderation row for a pending review: approve or reject the review ────────────
+// ── Admin-only moderation row for a pending review — approve or reject ────────────
 function PendingReviewCard({ review, onApprove, onReject, busy }) {
   return (
     <div className="space-y-2 p-3 rounded-lg border border-warning-border bg-warning-soft/50">
@@ -144,19 +152,30 @@ function PendingReviewCard({ review, onApprove, onReject, busy }) {
 // ── Main export ────────────────────────────────────────────────────────────────
 export default function ServiceDetailPanel({
   service, onClose, onEdit, onDelete, onUpdateImage, isAdmin,
-  isAuthenticated, canReview, reviews, onAddReview, onDeleteReview,
-  pendingReviews = [], pendingLoading = false,   
+  isAuthenticated, currentUserId, canReview, reviews, onAddReview, onUpdateReview, onDeleteReview,
+  // New: admin moderation queue for this listing
+  pendingReviews = [], pendingLoading = false,
   onFetchPendingReviews, onApproveReview, onRejectReview,
 }) {
   const [showReviewForm, setShowReviewForm]         = useState(false);
+  const [editReviewTarget, setEditReviewTarget]     = useState(null); // the caller's own review being edited
   const [deleteReviewTarget, setDeleteReviewTarget] = useState(null);
   const [submittedMsg, setSubmittedMsg]             = useState(false);
+  const [editSubmittedMsg, setEditSubmittedMsg]     = useState(false);
   const [moderationTarget, setModerationTarget]     = useState(null); // review being approved/rejected
 
   // Admins get a pending-review queue for whichever listing is open
   useEffect(() => {
     if (isAdmin && service?.id) onFetchPendingReviews?.(service.id);
   }, [isAdmin, service?.id]);
+
+  // clear "submitted, awaiting approval" confirmation when user logged out
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setSubmittedMsg(false);
+      setEditSubmittedMsg(false);
+    }
+  }, [isAuthenticated]);
 
   const handleApprove = async (review) => {
     setModerationTarget(review.id);
@@ -381,6 +400,12 @@ export default function ServiceDetailPanel({
             </p>
           )}
 
+          {editSubmittedMsg && (
+            <p className="text-xs font-medium text-success-text bg-success-soft border border-success-border rounded-lg px-3 py-2">
+              Your edit was saved and sent back for admin approval.
+            </p>
+          )}
+
           {reviews.length > 0 && (
             <div className="flex items-center gap-2">
               <StarRating rating={averageRating(reviews)} />
@@ -395,6 +420,8 @@ export default function ServiceDetailPanel({
             <div className="space-y-4 pt-1">
               {reviews.map(review => (
                 <ReviewCard key={review.id} review={review} isAdmin={isAdmin}
+                  isOwnReview={currentUserId != null && review.user_id === currentUserId}
+                  onEdit={(r) => { setEditReviewTarget(r); setEditSubmittedMsg(false); }}
                   onDelete={setDeleteReviewTarget} />
               ))}
             </div>
@@ -426,6 +453,20 @@ export default function ServiceDetailPanel({
             const ok = await onAddReview(formData);
             setShowReviewForm(false);
             if (ok) setSubmittedMsg(true);
+          }}
+        />
+      )}
+
+      {/* Edit an existing (approved) review — resubmits it as 'pending' for re-approval */}
+      {editReviewTarget && (
+        <ReviewFormModal
+          serviceName={service.name}
+          initialReview={editReviewTarget}
+          onClose={() => setEditReviewTarget(null)}
+          onSave={async (formData) => {
+            const ok = await onUpdateReview(editReviewTarget.id, service.id, formData);
+            setEditReviewTarget(null);
+            if (ok) setEditSubmittedMsg(true);
           }}
         />
       )}

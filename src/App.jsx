@@ -28,7 +28,7 @@ export default function App() {
   // Reviews — owns its own array, scoped per service via getReviewsFor
   const {
     fetchReviews, getReviewsFor, isLoading: reviewsLoading,
-    addReview, deleteReview,
+    addReview, updateReview, deleteReview,
     approveReview, rejectReview,
     hasUserReviewed,
   } = useReviews();
@@ -146,8 +146,11 @@ export default function App() {
               isAuthenticated={isAuthenticated}
               reviews={getReviewsFor(selectedService.id, 'approved')}
               canReview={!isAdmin && isAuthenticated && !hasUserReviewed(selectedService.id, user?.id)}
+              currentUserId={user?.id}
               onAddReview={(formData) => addReview(selectedService.id, formData)}
+              onUpdateReview={(reviewId, listingId, formData) => updateReview(reviewId, listingId, formData)}
               onDeleteReview={(reviewId, listingId) => deleteReview(reviewId, listingId, 'approved')}
+
               // Admin-only pending review moderation queue
               pendingReviews={getReviewsFor(selectedService.id, 'pending')}
               pendingLoading={reviewsLoading(selectedService.id, 'pending')}
