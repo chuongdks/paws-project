@@ -1,0 +1,137 @@
+import { useState, useCallback } from 'react';
+import { createRecommendation } from '../models/Recommendation.js';
+import api from '../api/axiosConfig.js';
+
+//   - createSuggestion(): public, no auth required. POST /recommendations.php
+//   - fetchRecommendations(status): admin only. GET /recommendations.php?status=...
+//   - approve() / reject(): admin only. PUT /recommendations.php, approving makes the backend create a real `listings` row automatically
+//   - remove(): admin only. DELETE /recommendations.php (for spam/dupes, kept separate from reject so rejected-but-kept-for-records stays intact)
+export function useRecommendations() {
+  const [recommendations, setRecommendations] = useState([]); // whatever status was last fetched
+  const [loading, setLoading]                 = useState(false);
+  const [error, setError]                     = useState(null);
+
+  const [submitting, setSubmitting]           = useState(false);
+  const [submitError, setSubmitError]         = useState(null);
+
+  const [actioningId, setActioningId]         = useState(null); // review row currently being approved/rejected/deleted
+
+  // Admin moderation queue. status: 'new' | 'reviewing' | 'approved' | 'rejected' | 'all'
+  const fetchRecommendations = useCallback(async (status = 'new') => {
+    setLoading(true);
+    try {
+      const response = await api.get('/recommendations.php', { params: { status } });
+      if (response.data.success) {
+        setRecommendations(response.data.data.map(createRecommendation));
+        setError(null);
+      }
+    } catch (err) {
+      console.error('Failed to fetch recommendations:', err);
+      setError('Could not load pending suggestions.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Public submission (Works for non logged in user)
+  // If logged in, the backend fills recommended_by_name/email from the token automatically when they're omitted here.
+  const createSuggestion = async (formData) => {
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const response = await api.post('/recommendations.php', {
+        recommended_name:     formData.name,
+        category_id:          Number(formData.category_id),
+        address:               formData.address || null,
+        city:                  formData.city || null,
+        province:              formData.province || null,
+        phone:                 formData.phone || null,
+        email:                 formData.email || null,
+        website_url:           formData.website_url || null,
+        description:           formData.description || null,
+        inclusivity_notes:     formData.inclusivity_notes || null,
+        washroom_info:         formData.washroom_info || null,
+        hours:                 formData.hours,
+        by_appointment_only:   formData.by_appointment_only,
+        image_url:             formData.image_url || null,
+        tag_ids:               formData.tags,
+        recommended_by_name:   formData.recommender_name || null,
+        recommended_by_email:  formData.recommender_email || null,
+        message:               formData.message || null,
+        latitude:              formData.latitude,
+        longitude:             formData.longitude,
+      });
+      if (!response.data.success) {
+        setSubmitError(response.data.message || 'Could not submit this suggestion.');
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.error('Failed to submit suggestion:', err);
+      setSubmitError(err.response?.data?.message || 'Could not submit this suggestion — please try again.');
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // PUT: approve by admin, backend creates the real listing and stamps, approved_listing_id back onto this row.
+  const approve = async (id, adminNotes = null) => {
+    setActioningId(id);
+    try {
+      const response = await api.put('/recommendations.php', { id, status: 'approved', admin_notes: adminNotes });
+      if (response.data.success) {
+        setRecommendations(prev => prev.filter(r => r.id !== id));
+        return { ok: true, listingId: response.data.listing_id };
+      }
+      return { ok: false };
+    } catch (err) {
+      console.error('Failed to approve recommendation:', err);
+      return { ok: false };
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  // PUT: reject, marked rejected and kept for records (not deleted).
+  const reject = async (id, adminNotes = null) => {
+    setActioningId(id);
+    try {
+      const response = await api.put('/recommendations.php', { id, status: 'rejected', admin_notes: adminNotes });
+      if (response.data.success) {
+        setRecommendations(prev => prev.filter(r => r.id !== id));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to reject recommendation:', err);
+      return false;
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  // DELETE: fully remove a recommendation row (spam/duplicates). FYI: not the same as reject which keeps the service row around
+  const remove = async (id) => {
+    setActioningId(id);
+    try {
+      const response = await api.delete('/recommendations.php', { data: { id } });
+      if (response.data.success) {
+        setRecommendations(prev => prev.filter(r => r.id !== id));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to delete recommendation:', err);
+      return false;
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  return {
+    recommendations, loading, error, fetchRecommendations,
+    createSuggestion, submitting, submitError,
+    approve, reject, remove, actioningId,
+  };
+}
