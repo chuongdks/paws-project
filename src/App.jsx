@@ -4,6 +4,7 @@ import { useServiceDirectory } from './hook/useServiceDirectory.js';
 import { useServiceCRUD } from './hook/useServiceCRUD.js';
 import { useServiceSelection } from './hook/useServiceSelection.js';
 import { useReviews } from './hook/useReviews.js';
+import { useRecommendations } from './hook/useRecommendations.js';
 import { useAuth } from './context/AuthContext.jsx';
 import { useTaxonomy } from './hook/useTaxonomy.js';
 
@@ -13,6 +14,7 @@ import FilterBar from './components/FilterBar.jsx';
 import Header from './components/Header.jsx';
 import LeafletTestMap from './components/LeafletTestMap.jsx';
 import LoginModal from './components/LoginModal.jsx';
+import RecommendServiceModal from './components/RecommendServiceModal.jsx';
 import ServiceDetailPanel from './components/ServiceDetailPanel.jsx';
 import ServiceFormModal from './components/ServiceFormModal.jsx';
 import Sidebar from './components/Sidebar.jsx';
@@ -23,6 +25,7 @@ export default function App() {
   const { user, isAuthenticated, isAdmin, isUser, logout } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const [showSuggestForm, setShowSuggestForm] = useState(false);
   const mapSectionRef = useRef(null);
 
   // Reviews — owns its own array, scoped per service via getReviewsFor
@@ -33,9 +36,16 @@ export default function App() {
     hasUserReviewed,
   } = useReviews();
 
+  // Public "suggest a service" submissions + admin moderation queue
+  const {
+    recommendations, loading: recommendationsLoading, actioningId: recommendationActioningId,
+    fetchRecommendations, createSuggestion, submitting: suggestSubmitting, submitError: suggestError,
+    approve: approveRecommendation, reject: rejectRecommendation, remove: removeRecommendation,
+  } = useRecommendations();
+
   // Services array + every create/update/delete/image operation
   const {
-    services, loading, error,
+    services, loading, error, refetchServices,
     modal, openAdd, openEdit, closeModal,
     deleteTarget, setDeleteTarget,
     handleSave, handleDelete, handleUpdateImage,
@@ -69,9 +79,25 @@ export default function App() {
   } = useServiceSelection(services, filteredServices);
 
   // Load this service's approved reviews as soon as it's opened
+  // (GET /reviews.php requires listing_id, so this happens per-selection
+  // rather than once for every service up front)
   useEffect(() => {
     if (selectedService) fetchReviews(selectedService.id, 'approved');
   }, [selectedService?.id]);
+
+  // Admins get the pending-suggestions queue for the Sidebar's Suggestions tab
+  useEffect(() => {
+    if (isAdmin) fetchRecommendations('new');
+  }, [isAdmin]);
+
+  // Approving a suggestion has the backend create a real listing — refetch
+  // the services list afterward so it shows up without a page reload.
+  const handleApproveRecommendation = async (rec) => {
+    const result = await approveRecommendation(rec.id);
+    if (result.ok) await refetchServices();
+  };
+  const handleRejectRecommendation = (rec) => rejectRecommendation(rec.id);
+  const handleDeleteRecommendation = (rec) => removeRecommendation(rec.id);
 
   // Clear all filter function
   const clearAllFilters = () => {
@@ -115,7 +141,8 @@ export default function App() {
         accessFilter={accessFilter} setAccessFilter={setAccessFilter}
         categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
         activeCategories={activeCategories}
-        isUser={isAdmin} onAddService={openAdd}
+        isAdmin={isAdmin} onAddService={openAdd}
+        onSuggestService={() => setShowSuggestForm(true)}
       />
 
       {/* ── Error banner: only shows if the live API was unreachable ───────── */}
@@ -166,6 +193,13 @@ export default function App() {
               onEdit={openEdit} onDelete={setDeleteTarget} isAdmin={isAdmin}
               cardRefs={cardRefs} scrollContainerRef={scrollContainerRef}
               onClearFilters={clearAllFilters}
+
+              recommendations={recommendations}
+              recommendationsLoading={recommendationsLoading}
+              recommendationActioningId={recommendationActioningId}
+              onApproveRecommendation={handleApproveRecommendation}
+              onRejectRecommendation={handleRejectRecommendation}
+              onDeleteRecommendation={handleDeleteRecommendation}
             />
           )}
         </div>
@@ -199,6 +233,17 @@ export default function App() {
           categories={categories} tags={assignableTags} isAdmin={isAdmin}
           saveError={saveError} saving={saving}
           onSave={handleSave} onClose={closeModal} />
+      )}
+
+      {/* ── Public "Suggest a Service" modal — no login required ──────────────── */}
+      {showSuggestForm && (
+        <RecommendServiceModal
+          categories={categories} tags={assignableTags}
+          currentUser={isAuthenticated ? user : null}
+          submitting={suggestSubmitting} submitError={suggestError}
+          onSave={createSuggestion}
+          onClose={() => setShowSuggestForm(false)}
+        />
       )}
 
       {/* ── Delete confirmation modal ─────────────────────────────────────────── */}

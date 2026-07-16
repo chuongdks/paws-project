@@ -65,7 +65,7 @@ export default function FilterBar({
   accessFilter, setAccessFilter,
   categoryFilter, setCategoryFilter,
   activeCategories,
-  isUser, onAddService,
+  isAdmin, onAddService, onSuggestService,
 }) {
   const ACCESS_OPTIONS = ['All', 'In-Person', 'No Fixed Location'];
   const categoryLabel = categoryFilter === 'All'
@@ -121,10 +121,15 @@ export default function FilterBar({
         </button>
       )}
 
-      {isUser && (
+      {isAdmin ? (
         <button onClick={onAddService}
           className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-accent hover:bg-accent-hover text-white text-sm font-semibold transition-colors shrink-0">
           <Plus className="h-4 w-4" /> Add Service
+        </button>
+      ) : (
+        <button onClick={onSuggestService}
+          className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-accent hover:bg-accent-hover text-white text-sm font-semibold transition-colors shrink-0">
+          <Plus className="h-4 w-4" /> Suggest Service
         </button>
       )}
     </div>

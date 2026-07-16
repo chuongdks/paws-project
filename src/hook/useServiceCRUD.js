@@ -12,6 +12,25 @@ export function useServiceCRUD() {
   const [saveError, setSaveError] = useState(null);
   const [saving, setSaving]       = useState(false);
 
+  // approving a recommended service creates listing server side and the list needs to be updated without a page reload.
+  const loadServices = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/services.php');
+      const json = response.data;
+      if (!json.success) throw new Error(json.message || 'API returned success: false');
+      setServices(json.data.map(createService));
+      setError(null);
+    } catch (err) {
+      // use the classic service.json offline mode
+      console.error('Failed to load services from the API, falling back to local data\n Full Error:', err);
+      setServices(servicesData.map(createService));
+      setError('Could not reach the live directory — showing sample data instead.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -132,6 +151,7 @@ export function useServiceCRUD() {
 
   return {
     services, loading, error,
+    refetchServices: loadServices,
     modal, openAdd, openEdit, closeModal,
     deleteTarget, setDeleteTarget,
     handleSave, handleDelete, handleUpdateImage,
