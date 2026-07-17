@@ -39,7 +39,8 @@ export default function App() {
   // Public "suggest a service" submissions + admin moderation queue
   const {
     recommendations, loading: recommendationsLoading, actioningId: recommendationActioningId,
-    fetchRecommendations, createSuggestion, submitting: suggestSubmitting, submitError: suggestError,
+    fetchRecommendations, statusFilter: recommendationStatusFilter, pendingCount: pendingRecommendationCount,
+    createSuggestion, submitting: suggestSubmitting, submitError: suggestError,
     approve: approveRecommendation, reject: rejectRecommendation, remove: removeRecommendation,
   } = useRecommendations();
 
@@ -197,6 +198,9 @@ export default function App() {
               recommendations={recommendations}
               recommendationsLoading={recommendationsLoading}
               recommendationActioningId={recommendationActioningId}
+              recommendationStatusFilter={recommendationStatusFilter}
+              onChangeRecommendationStatusFilter={fetchRecommendations}
+              pendingRecommendationCount={pendingRecommendationCount}
               onApproveRecommendation={handleApproveRecommendation}
               onRejectRecommendation={handleRejectRecommendation}
               onDeleteRecommendation={handleDeleteRecommendation}

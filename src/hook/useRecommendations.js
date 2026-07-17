@@ -8,8 +8,11 @@ import api from '../api/axiosConfig.js';
 //   - remove(): admin only. DELETE /recommendations.php (for spam/dupes, kept separate from reject so rejected-but-kept-for-records stays intact)
 export function useRecommendations() {
   const [recommendations, setRecommendations] = useState([]); // whatever status was last fetched
+  const [statusFilter, setStatusFilter]       = useState('new'); // 'new' | 'reviewing' | 'approved' | 'rejected' | 'all'
   const [loading, setLoading]                 = useState(false);
   const [error, setError]                     = useState(null);
+
+  const [pendingCount, setPendingCount]       = useState(0); // count of status='new', independent of statusFilter — this is what the Sidebar tab badge shows
 
   const [submitting, setSubmitting]           = useState(false);
   const [submitError, setSubmitError]         = useState(null);
@@ -18,18 +21,33 @@ export function useRecommendations() {
 
   // Admin moderation queue. status: 'new' | 'reviewing' | 'approved' | 'rejected' | 'all'
   const fetchRecommendations = useCallback(async (status = 'new') => {
+    setStatusFilter(status);
     setLoading(true);
     try {
       const response = await api.get('/recommendations.php', { params: { status } });
       if (response.data.success) {
-        setRecommendations(response.data.data.map(createRecommendation));
+        const mapped = response.data.data.map(createRecommendation);
+        setRecommendations(mapped);
         setError(null);
+        // new fetch to keep the badge count in sync without an extra request
+        if (status === 'new') setPendingCount(mapped.length);
       }
     } catch (err) {
       console.error('Failed to fetch recommendations:', err);
-      setError('Could not load pending suggestions.');
+      setError('Could not load suggestions.');
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  // Refreshes just the pending badge count — used after an approve/reject so
+  // the count stays accurate even while browsing a different status filter.
+  const refreshPendingCount = useCallback(async () => {
+    try {
+      const response = await api.get('/recommendations.php', { params: { status: 'new' } });
+      if (response.data.success) setPendingCount(response.data.data.length);
+    } catch (err) {
+      console.error('Failed to refresh pending suggestion count:', err);
     }
   }, []);
 
@@ -81,7 +99,7 @@ export function useRecommendations() {
     try {
       const response = await api.put('/recommendations.php', { id, status: 'approved', admin_notes: adminNotes });
       if (response.data.success) {
-        setRecommendations(prev => prev.filter(r => r.id !== id));
+        await Promise.all([fetchRecommendations(statusFilter), refreshPendingCount()]);
         return { ok: true, listingId: response.data.listing_id };
       }
       return { ok: false };
@@ -99,7 +117,7 @@ export function useRecommendations() {
     try {
       const response = await api.put('/recommendations.php', { id, status: 'rejected', admin_notes: adminNotes });
       if (response.data.success) {
-        setRecommendations(prev => prev.filter(r => r.id !== id));
+        await Promise.all([fetchRecommendations(statusFilter), refreshPendingCount()]);
         return true;
       }
       return false;
@@ -118,6 +136,7 @@ export function useRecommendations() {
       const response = await api.delete('/recommendations.php', { data: { id } });
       if (response.data.success) {
         setRecommendations(prev => prev.filter(r => r.id !== id));
+        await refreshPendingCount();
         return true;
       }
       return false;
@@ -130,7 +149,8 @@ export function useRecommendations() {
   };
 
   return {
-    recommendations, loading, error, fetchRecommendations,
+    recommendations, loading, error, statusFilter,
+    fetchRecommendations, pendingCount,
     createSuggestion, submitting, submitError,
     approve, reject, remove, actioningId,
   };

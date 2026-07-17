@@ -10,6 +10,8 @@ export default function Sidebar({
   onClearFilters,
   // Admin-only "Suggestions" tab
   recommendations = [], recommendationsLoading = false, recommendationActioningId = null,
+  recommendationStatusFilter = 'new', onChangeRecommendationStatusFilter,
+  pendingRecommendationCount = 0,
   onApproveRecommendation, onRejectRecommendation, onDeleteRecommendation,
 }) {
   const [activeTab, setActiveTab] = useState('services'); // 'services' | 'suggestions'
@@ -31,12 +33,29 @@ export default function Sidebar({
               activeTab === 'suggestions' ? 'bg-surface-raised text-primary shadow-sm' : 'text-muted hover:text-secondary-strong'
             }`}>
             <Inbox className="h-3.5 w-3.5" /> Suggestions
-            {recommendations.length > 0 && (
+            {pendingRecommendationCount > 0 && (
               <span className="text-[10px] font-bold bg-warning-soft text-warning-text px-1.5 py-0.5 rounded-full">
-                {recommendations.length}
+                {pendingRecommendationCount}
               </span>
             )}
           </button>
+        </div>
+      )}
+
+      {/* Status filter — only shown while browsing Suggestions */}
+      {isAdmin && activeTab === 'suggestions' && (
+        <div className="px-3 pt-3 shrink-0">
+          <select
+            value={recommendationStatusFilter}
+            onChange={e => onChangeRecommendationStatusFilter?.(e.target.value)}
+            className="w-full bg-surface-muted border border-divider rounded-lg px-3 py-1.5 text-xs font-medium text-secondary focus:outline-none focus:ring-2 focus:ring-focus-ring/20 focus:border-focus-ring transition-all"
+          >
+            <option value="new">New</option>
+            <option value="reviewing">Reviewing</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="all">All</option>
+          </select>
         </div>
       )}
 
@@ -59,7 +78,9 @@ export default function Sidebar({
           ) : (
             <div className="text-center text-faint text-sm py-12">
               <Inbox className="h-8 w-8 mx-auto mb-2 text-disabled" />
-              No pending suggestions right now.
+              {recommendationStatusFilter === 'new'
+                ? 'No pending suggestions right now.'
+                : `No ${recommendationStatusFilter} suggestions.`}
             </div>
           )
         ) : filteredServices.length > 0 ? (

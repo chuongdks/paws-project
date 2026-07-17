@@ -32,9 +32,9 @@ const emptySuggestion = () => ({
 });
 
 // ── Main export ────────────────────────────────────────────────────────────────
-// currentUser: optional { name, email } — pre-fills the "your info" section
-// for a logged-in visitor without forcing them to retype it. Anonymous
-// visitors can still submit; recommended_by_name/email are simply omitted.
+// currentUser: optional { name, email } 
+// pre-fills YOUR NAME section for a logged-in user without forcing them to retype it
+// not logged in user can still submit
 export default function RecommendServiceModal({ onSave, onClose, categories, tags, currentUser, submitError, submitting }) {
   const [form, setForm]     = useState(() => ({
     ...emptySuggestion(),

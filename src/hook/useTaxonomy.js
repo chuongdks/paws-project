@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api/axiosConfig.js';
 import { CATEGORIES as FALLBACK_CATEGORIES, PAWS_TAGS as FALLBACK_TAG_NAMES } from '../models/Service.js';
 
-// Tags that a regular admin can assign from the form — mirrors the exclusion
-// the old static ASSIGNABLE_TAGS used (everything except the two system-managed
-// tags, which should only ever be set by an admin reviewing a listing directly).
+// Tags that a regular admin can assign from the form
 const ADMIN_ONLY_TAG_NAMES = ['Verified by PAWS', 'Needs verification'];
 
 // Only used if categories.php/tags.php are unreachable — keeps the Add/Edit

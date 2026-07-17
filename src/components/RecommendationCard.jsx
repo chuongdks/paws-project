@@ -1,19 +1,40 @@
 import React from 'react';
-import { MapPin, Phone, Globe, Check, X, Trash2, MessageCircleHeart, Loader2 } from 'lucide-react';
+import { MapPin, Phone, Globe, Check, X, Trash2, MessageCircleHeart, Loader2, CircleCheck, CircleX } from 'lucide-react';
 import { getCategoryName } from '../models/Service.js';
+
+const STATUS_STYLES = {
+  new:       { label: 'New',       card: 'border-warning-border bg-warning-soft/40' },
+  reviewing: { label: 'Reviewing', card: 'border-warning-border bg-warning-soft/40' },
+  approved:  { label: 'Approved',  card: 'border-success-border bg-success-soft/30' },
+  rejected:  { label: 'Rejected',  card: 'border-divider bg-surface-subtle' },
+};
 
 // ── Sidebar card for the admin "Suggestions" tab ────────────────────────────────
 export default function RecommendationCard({ recommendation, onApprove, onReject, onDelete, busy }) {
   const address = [recommendation.address, recommendation.city, recommendation.province].filter(Boolean).join(', ');
+  const style = STATUS_STYLES[recommendation.status] ?? STATUS_STYLES.new;
+  const isPending = recommendation.status === 'new' || recommendation.status === 'reviewing';
 
   return (
-    <article className="rounded-xl border border-warning-border bg-warning-soft/40 p-4 space-y-2.5">
+    <article className={`rounded-xl border p-4 space-y-2.5 ${style.card}`}>
 
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-semibold text-primary text-sm leading-snug">{recommendation.recommended_name}</h3>
-        <span className="text-[10px] font-semibold text-muted bg-surface-subtle px-2 py-0.5 rounded-full shrink-0">
-          {recommendation.category_name ?? getCategoryName(recommendation.category_id)}
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[10px] font-semibold text-muted bg-surface-subtle px-2 py-0.5 rounded-full">
+            {recommendation.category_name ?? getCategoryName(recommendation.category_id)}
+          </span>
+          {!isPending && (
+            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+              recommendation.status === 'approved'
+                ? 'text-success-text bg-success-soft border border-success-border'
+                : 'text-muted bg-surface-subtle border border-divider'
+            }`}>
+              {recommendation.status === 'approved' ? <CircleCheck className="h-3 w-3" /> : <CircleX className="h-3 w-3" />}
+              {style.label}
+            </span>
+          )}
+        </div>
       </div>
 
       {address && (
@@ -52,18 +73,28 @@ export default function RecommendationCard({ recommendation, onApprove, onReject
         </p>
       )}
 
+      {!isPending && recommendation.reviewed_at && (
+        <p className="text-[11px] text-faint">
+          {style.label} on {new Date(recommendation.reviewed_at).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' })}
+        </p>
+      )}
+
       <div className="flex items-center gap-1.5 pt-1 border-t border-divider-subtle">
-        <button onClick={() => onApprove(recommendation)} disabled={busy}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-success-text bg-success-soft hover:bg-success-soft/80 border border-success-border rounded-lg transition-colors disabled:opacity-60">
-          {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />} Approve
-        </button>
-        <button onClick={() => onReject(recommendation)} disabled={busy}
-          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-danger-text bg-danger-soft hover:bg-danger-soft/80 border border-danger-border rounded-lg transition-colors disabled:opacity-60">
-          <X className="h-3.5 w-3.5" /> Reject
-        </button>
+        {isPending && (
+          <>
+            <button onClick={() => onApprove(recommendation)} disabled={busy}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-success-text bg-success-soft hover:bg-success-soft/80 border border-success-border rounded-lg transition-colors disabled:opacity-60">
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />} Approve
+            </button>
+            <button onClick={() => onReject(recommendation)} disabled={busy}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-danger-text bg-danger-soft hover:bg-danger-soft/80 border border-danger-border rounded-lg transition-colors disabled:opacity-60">
+              <X className="h-3.5 w-3.5" /> Reject
+            </button>
+          </>
+        )}
         <button onClick={() => onDelete(recommendation)} title="Delete permanently (spam/duplicate)" disabled={busy}
-          className="p-1.5 rounded-lg text-faint hover:text-danger-text hover:bg-danger-soft transition-colors disabled:opacity-60 shrink-0">
-          <Trash2 className="h-3.5 w-3.5" />
+          className={`${isPending ? 'shrink-0' : 'flex-1 flex items-center justify-center gap-1.5'} p-1.5 rounded-lg text-faint hover:text-danger-text hover:bg-danger-soft transition-colors disabled:opacity-60`}>
+          <Trash2 className="h-3.5 w-3.5" /> {!isPending && <span className="text-xs font-semibold">Delete</span>}
         </button>
       </div>
     </article>
