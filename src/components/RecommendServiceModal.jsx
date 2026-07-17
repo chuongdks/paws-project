@@ -100,7 +100,7 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
           <div>
             <h2 className="text-base font-bold text-primary">Suggest a Service</h2>
             <p className="text-[11px] text-faint mt-0.5">
-              Know a great 2SLGBTQIA+-friendly service? Let us know — an admin will review it before it goes live.
+              Know a great 2SLGBTQIA+ friendly service? Let us know. An admin will review and approve it before your service goes live
             </p>
           </div>
           <button onClick={onClose} disabled={submitting}
