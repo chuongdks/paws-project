@@ -15,6 +15,7 @@ import Header from './components/Header.jsx';
 import LeafletTestMap from './components/LeafletTestMap.jsx';
 import LoginModal from './components/LoginModal.jsx';
 import RecommendServiceModal from './components/RecommendServiceModal.jsx';
+import RecommendationDetailPanel from './components/RecommendationDetailPanel.jsx';
 import ServiceDetailPanel from './components/ServiceDetailPanel.jsx';
 import ServiceFormModal from './components/ServiceFormModal.jsx';
 import Sidebar from './components/Sidebar.jsx';
@@ -26,6 +27,7 @@ export default function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [showSuggestForm, setShowSuggestForm] = useState(false);
+  const [selectedRecommendation, setSelectedRecommendation] = useState(null);
   const mapSectionRef = useRef(null);
 
   // Reviews — owns its own array, scoped per service via getReviewsFor
@@ -93,12 +95,25 @@ export default function App() {
 
   // Approving a suggestion has the backend create a real listing — refetch
   // the services list afterward so it shows up without a page reload.
-  const handleApproveRecommendation = async (rec) => {
-    const result = await approveRecommendation(rec.id);
+  const handleApproveRecommendation = async (rec, adminNotes) => {
+    const result = await approveRecommendation(rec.id, adminNotes);
     if (result.ok) await refetchServices();
+    setSelectedRecommendation(null);
   };
-  const handleRejectRecommendation = (rec) => rejectRecommendation(rec.id);
-  const handleDeleteRecommendation = (rec) => removeRecommendation(rec.id);
+  const handleRejectRecommendation = async (rec, adminNotes) => {
+    await rejectRecommendation(rec.id, adminNotes);
+    setSelectedRecommendation(null);
+  };
+  const handleDeleteRecommendation = async (rec) => {
+    await removeRecommendation(rec.id);
+    setSelectedRecommendation(null);
+  };
+
+  // Opening a recommendation's full detail closes any open service detail and vice versa
+  const handleSelectRecommendation = (rec) => {
+    setSelectedRecommendation(rec);
+    setSelectedService(null);
+  };
 
   // Clear all filter function
   const clearAllFilters = () => {
@@ -111,6 +126,7 @@ export default function App() {
   // call requestAnimationFrame() twice to wait for the detail panel to render first. NOTE: need better way to do this
   const handleSelectServiceAndScroll = (service) => {
     handleSelectService(service);
+    setSelectedRecommendation(null);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -186,6 +202,16 @@ export default function App() {
               onApproveReview={approveReview}
               onRejectReview={rejectReview}
             />
+          ) : selectedRecommendation ? (
+            <RecommendationDetailPanel
+              recommendation={selectedRecommendation}
+              tags={assignableTags}
+              busy={recommendationActioningId === selectedRecommendation.id}
+              onApprove={handleApproveRecommendation}
+              onReject={handleRejectRecommendation}
+              onDelete={handleDeleteRecommendation}
+              onClose={() => setSelectedRecommendation(null)}
+            />
           ) : (
             <Sidebar
               filteredServices={filteredServices}
@@ -201,6 +227,7 @@ export default function App() {
               recommendationStatusFilter={recommendationStatusFilter}
               onChangeRecommendationStatusFilter={fetchRecommendations}
               pendingRecommendationCount={pendingRecommendationCount}
+              onSelectRecommendation={handleSelectRecommendation}
               onApproveRecommendation={handleApproveRecommendation}
               onRejectRecommendation={handleRejectRecommendation}
               onDeleteRecommendation={handleDeleteRecommendation}
@@ -210,7 +237,7 @@ export default function App() {
 
         {/* Right slot: Map, always visible regardless of selection */}
         <div ref={mapSectionRef} className="relative w-full h-[400px] md:h-auto md:flex-1">
-          {!selectedService && (
+          {!selectedService && !selectedRecommendation && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-surface-raised rounded-full shadow-lg border border-divider px-4 py-2 text-sm text-muted">
               Select a service or click a map pin to view full details
             </div>

@@ -10,13 +10,14 @@ const STATUS_STYLES = {
 };
 
 // ── Sidebar card for the admin "Suggestions" tab ────────────────────────────────
-export default function RecommendationCard({ recommendation, onApprove, onReject, onDelete, busy }) {
+export default function RecommendationCard({ recommendation, onSelect, onApprove, onReject, onDelete, busy }) {
   const address = [recommendation.address, recommendation.city, recommendation.province].filter(Boolean).join(', ');
   const style = STATUS_STYLES[recommendation.status] ?? STATUS_STYLES.new;
   const isPending = recommendation.status === 'new' || recommendation.status === 'reviewing';
 
   return (
-    <article className={`rounded-xl border p-4 space-y-2.5 ${style.card}`}>
+    <article onClick={() => onSelect?.(recommendation)}
+      className={`rounded-xl border p-4 space-y-2.5 cursor-pointer transition-shadow hover:shadow-sm ${style.card}`}>
 
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-semibold text-primary text-sm leading-snug">{recommendation.recommended_name}</h3>
@@ -79,7 +80,8 @@ export default function RecommendationCard({ recommendation, onApprove, onReject
         </p>
       )}
 
-      <div className="flex items-center gap-1.5 pt-1 border-t border-divider-subtle">
+      <div className="flex items-center gap-1.5 pt-1 border-t border-divider-subtle"
+        onClick={e => e.stopPropagation()}>
         {isPending && (
           <>
             <button onClick={() => onApprove(recommendation)} disabled={busy}
