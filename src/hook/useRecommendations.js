@@ -12,12 +12,28 @@ export function useRecommendations() {
   const [loading, setLoading]                 = useState(false);
   const [error, setError]                     = useState(null);
 
-  const [pendingCount, setPendingCount]       = useState(0); // count of status='new', independent of statusFilter — this is what the Sidebar tab badge shows
+  const [pendingCount, setPendingCount]       = useState(0); // count of status IN ('new','reviewing') — the Sidebar tab badge
 
   const [submitting, setSubmitting]           = useState(false);
   const [submitError, setSubmitError]         = useState(null);
 
   const [actioningId, setActioningId]         = useState(null); // review row currently being approved/rejected/deleted
+
+  // 'pending' means anything an admin still needs to act on: 'new' + 'reviewing'.
+  // The backend only filters by a single status per request, so this fires both and sums them rather than trying to fetch a combined status.
+  const refreshPendingCount = useCallback(async () => {
+    try {
+      const [newRes, reviewingRes] = await Promise.all([
+        api.get('/recommendations.php', { params: { status: 'new' } }),
+        api.get('/recommendations.php', { params: { status: 'reviewing' } }),
+      ]);
+      const newCount = newRes.data.success ? newRes.data.data.length : 0;
+      const reviewingCount = reviewingRes.data.success ? reviewingRes.data.data.length : 0;
+      setPendingCount(newCount + reviewingCount);
+    } catch (err) {
+      console.error('Failed to refresh pending suggestion count:', err);
+    }
+  }, []);
 
   // Admin moderation queue. status: 'new' | 'reviewing' | 'approved' | 'rejected' | 'all'
   const fetchRecommendations = useCallback(async (status = 'new') => {
@@ -26,11 +42,8 @@ export function useRecommendations() {
     try {
       const response = await api.get('/recommendations.php', { params: { status } });
       if (response.data.success) {
-        const mapped = response.data.data.map(createRecommendation);
-        setRecommendations(mapped);
+        setRecommendations(response.data.data.map(createRecommendation));
         setError(null);
-        // new fetch to keep the badge count in sync without an extra request
-        if (status === 'new') setPendingCount(mapped.length);
       }
     } catch (err) {
       console.error('Failed to fetch recommendations:', err);
@@ -38,18 +51,8 @@ export function useRecommendations() {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  // Refreshes just the pending badge count — used after an approve/reject so
-  // the count stays accurate even while browsing a different status filter.
-  const refreshPendingCount = useCallback(async () => {
-    try {
-      const response = await api.get('/recommendations.php', { params: { status: 'new' } });
-      if (response.data.success) setPendingCount(response.data.data.length);
-    } catch (err) {
-      console.error('Failed to refresh pending suggestion count:', err);
-    }
-  }, []);
+    refreshPendingCount();
+  }, [refreshPendingCount]);
 
   // Public submission (Works for non logged in user)
   // If logged in, the backend fills recommended_by_name/email from the token automatically when they're omitted here.
@@ -93,7 +96,26 @@ export function useRecommendations() {
     }
   };
 
-  // PUT: approve by admin, backend creates the real listing and stamps, approved_listing_id back onto this row.
+  // PUT: mark as being looked at — 'new' → 'reviewing'. 
+  // Still pending (shows up in the badge, Approve/Reject still available), just signals to other admins that someone has picked it up.
+  const markReviewing = async (id, adminNotes = null) => {
+    setActioningId(id);
+    try {
+      const response = await api.put('/recommendations.php', { id, status: 'reviewing', admin_notes: adminNotes });
+      if (response.data.success) {
+        await Promise.all([fetchRecommendations(statusFilter), refreshPendingCount()]);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to mark recommendation as reviewing:', err);
+      return false;
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  // PUT: approve, backend creates the real listing and stamps approved_listing_id back onto this row.
   const approve = async (id, adminNotes = null) => {
     setActioningId(id);
     try {
@@ -152,6 +174,6 @@ export function useRecommendations() {
     recommendations, loading, error, statusFilter,
     fetchRecommendations, pendingCount,
     createSuggestion, submitting, submitError,
-    approve, reject, remove, actioningId,
+    markReviewing, approve, reject, remove, actioningId,
   };
 }

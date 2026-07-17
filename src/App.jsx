@@ -43,7 +43,7 @@ export default function App() {
     recommendations, loading: recommendationsLoading, actioningId: recommendationActioningId,
     fetchRecommendations, statusFilter: recommendationStatusFilter, pendingCount: pendingRecommendationCount,
     createSuggestion, submitting: suggestSubmitting, submitError: suggestError,
-    approve: approveRecommendation, reject: rejectRecommendation, remove: removeRecommendation,
+    markReviewing, approve: approveRecommendation, reject: rejectRecommendation, remove: removeRecommendation,
   } = useRecommendations();
 
   // Services array + every create/update/delete/image operation
@@ -92,6 +92,15 @@ export default function App() {
   useEffect(() => {
     if (isAdmin) fetchRecommendations('new');
   }, [isAdmin]);
+
+  // Marking as 'reviewing'
+  // keep the detail panel open afterward so the admin can continue straight into Approve/Reject.
+  const handleStartReviewRecommendation = async (rec, adminNotes) => {
+    const ok = await markReviewing(rec.id, adminNotes);
+    if (ok) {
+      setSelectedRecommendation(prev => (prev && prev.id === rec.id) ? { ...prev, status: 'reviewing' } : prev);
+    }
+  };
 
   // Approving a suggestion has the backend create a real listing — refetch
   // the services list afterward so it shows up without a page reload.
@@ -207,6 +216,7 @@ export default function App() {
               recommendation={selectedRecommendation}
               tags={assignableTags}
               busy={recommendationActioningId === selectedRecommendation.id}
+              onStartReview={handleStartReviewRecommendation}
               onApprove={handleApproveRecommendation}
               onReject={handleRejectRecommendation}
               onDelete={handleDeleteRecommendation}
@@ -228,6 +238,7 @@ export default function App() {
               onChangeRecommendationStatusFilter={fetchRecommendations}
               pendingRecommendationCount={pendingRecommendationCount}
               onSelectRecommendation={handleSelectRecommendation}
+              onStartReviewRecommendation={handleStartReviewRecommendation}
               onApproveRecommendation={handleApproveRecommendation}
               onRejectRecommendation={handleRejectRecommendation}
               onDeleteRecommendation={handleDeleteRecommendation}

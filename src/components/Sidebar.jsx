@@ -13,7 +13,7 @@ export default function Sidebar({
   recommendationStatusFilter = 'new', onChangeRecommendationStatusFilter,
   pendingRecommendationCount = 0,
   onSelectRecommendation,
-  onApproveRecommendation, onRejectRecommendation, onDeleteRecommendation,
+  onStartReviewRecommendation, onApproveRecommendation, onRejectRecommendation, onDeleteRecommendation,
 }) {
   const [activeTab, setActiveTab] = useState('services'); // 'services' | 'suggestions'
 
@@ -72,6 +72,7 @@ export default function Sidebar({
                 recommendation={rec}
                 busy={recommendationActioningId === rec.id}
                 onSelect={onSelectRecommendation}
+                onStartReview={onStartReviewRecommendation}
                 onApprove={onApproveRecommendation}
                 onReject={onRejectRecommendation}
                 onDelete={onDeleteRecommendation}

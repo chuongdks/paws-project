@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Phone, Globe, Check, X, Trash2, MessageCircleHeart, Loader2, CircleCheck, CircleX } from 'lucide-react';
+import { MapPin, Phone, Globe, Check, X, Trash2, MessageCircleHeart, Loader2, CircleCheck, CircleX, Eye } from 'lucide-react';
 import { getCategoryName } from '../models/Service.js';
 
 const STATUS_STYLES = {
@@ -10,10 +10,11 @@ const STATUS_STYLES = {
 };
 
 // ── Sidebar card for the admin "Suggestions" tab ────────────────────────────────
-export default function RecommendationCard({ recommendation, onSelect, onApprove, onReject, onDelete, busy }) {
+export default function RecommendationCard({ recommendation, onSelect, onStartReview, onApprove, onReject, onDelete, busy }) {
   const address = [recommendation.address, recommendation.city, recommendation.province].filter(Boolean).join(', ');
   const style = STATUS_STYLES[recommendation.status] ?? STATUS_STYLES.new;
   const isPending = recommendation.status === 'new' || recommendation.status === 'reviewing';
+  const isNew = recommendation.status === 'new';
 
   return (
     <article onClick={() => onSelect?.(recommendation)}
@@ -25,13 +26,17 @@ export default function RecommendationCard({ recommendation, onSelect, onApprove
           <span className="text-[10px] font-semibold text-muted bg-surface-subtle px-2 py-0.5 rounded-full">
             {recommendation.category_name ?? getCategoryName(recommendation.category_id)}
           </span>
-          {!isPending && (
+          {!isNew && (
             <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
               recommendation.status === 'approved'
                 ? 'text-success-text bg-success-soft border border-success-border'
-                : 'text-muted bg-surface-subtle border border-divider'
+                : recommendation.status === 'rejected'
+                ? 'text-muted bg-surface-subtle border border-divider'
+                : 'text-warning-text bg-warning-soft border border-warning-border'
             }`}>
-              {recommendation.status === 'approved' ? <CircleCheck className="h-3 w-3" /> : <CircleX className="h-3 w-3" />}
+              {recommendation.status === 'approved' && <CircleCheck className="h-3 w-3" />}
+              {recommendation.status === 'rejected' && <CircleX className="h-3 w-3" />}
+              {recommendation.status === 'reviewing' && <Eye className="h-3 w-3" />}
               {style.label}
             </span>
           )}
@@ -74,7 +79,7 @@ export default function RecommendationCard({ recommendation, onSelect, onApprove
         </p>
       )}
 
-      {!isPending && recommendation.reviewed_at && (
+      {recommendation.status !== 'new' && recommendation.reviewed_at && (
         <p className="text-[11px] text-faint">
           {style.label} on {new Date(recommendation.reviewed_at).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' })}
         </p>
@@ -82,6 +87,12 @@ export default function RecommendationCard({ recommendation, onSelect, onApprove
 
       <div className="flex items-center gap-1.5 pt-1 border-t border-divider-subtle"
         onClick={e => e.stopPropagation()}>
+        {isNew && (
+          <button onClick={() => onStartReview(recommendation)} disabled={busy} title="Mark as being reviewed"
+            className="flex items-center justify-center gap-1.5 py-1.5 px-2 text-xs font-semibold text-warning-text bg-warning-soft hover:bg-warning-soft/80 border border-warning-border rounded-lg transition-colors disabled:opacity-60 shrink-0">
+            <Eye className="h-3.5 w-3.5" />
+          </button>
+        )}
         {isPending && (
           <>
             <button onClick={() => onApprove(recommendation)} disabled={busy}

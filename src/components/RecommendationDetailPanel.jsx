@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   ArrowLeft, Check, X, Trash2, Phone, Mail, Globe, MapPin, ExternalLink,
   FileText, DoorOpen, Clock, CalendarClock, MessageCircleHeart, User,
-  Loader2, CircleCheck, CircleX, StickyNote,
+  Loader2, CircleCheck, CircleX, StickyNote, Eye,
 } from 'lucide-react';
 import { getCategoryName, fullAddress, buildGoogleMapsLink, hasHours, groupedHoursDisplay, isAppointmentOnly } from '../models/Service.js';
 
@@ -27,12 +27,13 @@ const STATUS_STYLES = {
 
 export default function RecommendationDetailPanel({
   recommendation, onClose, tags = [],
-  onApprove, onReject, onDelete, busy,
+  onStartReview, onApprove, onReject, onDelete, busy,
 }) {
   const [adminNotes, setAdminNotes] = useState(recommendation.admin_notes ?? '');
 
   const style = STATUS_STYLES[recommendation.status] ?? STATUS_STYLES.new;
   const isPending = recommendation.status === 'new' || recommendation.status === 'reviewing';
+  const isNew = recommendation.status === 'new';
   const recTags = tags.filter(t => recommendation.tag_ids.includes(t.id));
 
   return (
@@ -195,6 +196,12 @@ export default function RecommendationDetailPanel({
 
       {/* Action bar */}
       <div className="px-5 py-4 border-t border-divider-subtle shrink-0 space-y-2">
+        {isNew && (
+          <button onClick={() => onStartReview(recommendation, adminNotes)} disabled={busy}
+            className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-semibold text-warning-text bg-warning-soft hover:bg-warning-soft/80 border border-warning-border rounded-lg transition-colors disabled:opacity-60">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />} Mark as Reviewing
+          </button>
+        )}
         {isPending ? (
           <div className="flex gap-2">
             <button onClick={() => onApprove(recommendation, adminNotes)} disabled={busy}
