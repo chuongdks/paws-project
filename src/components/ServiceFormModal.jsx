@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Image as ImageIcon, Clock, Loader2 } from 'lucide-react';
-import { DAYS_OF_WEEK, emptyService, defaultHours } from '../models/Service.js';
+import { DAYS_OF_WEEK, emptyService, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat } from '../models/Service.js';
 
 const VERIFICATION_OPTIONS = ['needs verification', 'verified', 'rejected', 'archived'];
 
@@ -77,6 +77,8 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
     const e = {};
     if (!form.name.trim())                          e.name        = 'Name is required.';
     if (!form.category_id)                          e.category_id = 'Category is required.';
+    if (form.phone && !isValidPhoneFormat(form.phone)) e.phone     = 'Phone must be in XXX-XXX-XXXX format.';
+    if (form.email && !isValidEmailFormat(form.email)) e.email     = 'Please enter a valid email address.';
     if (form.latitude  && isNaN(parseFloat(form.latitude)))   e.latitude  = 'Must be a valid number.';
     if (form.longitude  && isNaN(parseFloat(form.longitude)))   e.longitude  = 'Must be a valid number.';
     if (form.latitude && !form.longitude)                      e.longitude = 'Longitude is required when latitude is set.';
@@ -153,12 +155,12 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
 
           {/* ── Contact ── */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Phone" icon={Phone}>
-              <input className={inputCls} placeholder="519-000-0000"
-                value={form.phone} onChange={e => set('phone', e.target.value)} />
+            <Field label="Phone" icon={Phone} error={errors.phone}>
+              <input className={inputCls} placeholder="519-000-0000" type="tel" inputMode="numeric" maxLength={12}
+                value={form.phone} onChange={e => set('phone', formatPhoneInput(e.target.value))} />
             </Field>
-            <Field label="Email" icon={Mail}>
-              <input className={inputCls} placeholder="info@example.org"
+            <Field label="Email" icon={Mail} error={errors.email}>
+              <input className={inputCls} placeholder="info@example.org" type="email"
                 value={form.email} onChange={e => set('email', e.target.value)} />
             </Field>
           </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Clock, User, Loader2, MessageCircleHeart } from 'lucide-react';
-import { DAYS_OF_WEEK, defaultHours } from '../models/Service.js';
+import { DAYS_OF_WEEK, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat } from '../models/Service.js';
 
 function Field({ label, icon: Icon, hint, error, children }) {
   return (
@@ -69,6 +69,9 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
     const e = {};
     if (!form.name.trim())      e.name        = 'Name is required.';
     if (!form.category_id)      e.category_id = 'Category is required.';
+    if (form.phone && !isValidPhoneFormat(form.phone)) e.phone = 'Phone must be in XXX-XXX-XXXX format.';
+    if (form.email && !isValidEmailFormat(form.email)) e.email = 'Please enter a valid email address.';
+    if (form.recommender_email && !isValidEmailFormat(form.recommender_email)) e.recommender_email = 'Please enter a valid email address.';
     if (form.latitude && isNaN(parseFloat(form.latitude)))   e.latitude  = 'Must be a valid number.';
     if (form.longitude && isNaN(parseFloat(form.longitude))) e.longitude = 'Must be a valid number.';
     if (form.latitude && !form.longitude) e.longitude = 'Longitude is required when latitude is set.';
@@ -100,7 +103,7 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
           <div>
             <h2 className="text-base font-bold text-primary">Suggest a Service</h2>
             <p className="text-[11px] text-faint mt-0.5">
-              Know a great 2SLGBTQIA+ friendly service? Let us know. An admin will review and approve it before your service goes live
+              Know a great 2SLGBTQIA+-friendly service? Let us know — an admin will review it before it goes live.
             </p>
           </div>
           <button onClick={onClose} disabled={submitting}
@@ -128,12 +131,12 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Phone" icon={Phone}>
-              <input className={inputCls} placeholder="519-000-0000"
-                value={form.phone} onChange={e => set('phone', e.target.value)} />
+            <Field label="Phone" icon={Phone} error={errors.phone}>
+              <input className={inputCls} placeholder="519-000-0000" type="tel" inputMode="numeric" maxLength={12}
+                value={form.phone} onChange={e => set('phone', formatPhoneInput(e.target.value))} />
             </Field>
-            <Field label="Email" icon={Mail}>
-              <input className={inputCls} placeholder="info@example.org"
+            <Field label="Email" icon={Mail} error={errors.email}>
+              <input className={inputCls} placeholder="info@example.org" type="email"
                 value={form.email} onChange={e => set('email', e.target.value)} />
             </Field>
           </div>
@@ -285,8 +288,8 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
                 <input className={inputCls} placeholder="Jordan"
                   value={form.recommender_name} onChange={e => set('recommender_name', e.target.value)} />
               </Field>
-              <Field label="Your Email">
-                <input className={inputCls} placeholder="you@example.com"
+              <Field label="Your Email" error={errors.recommender_email}>
+                <input className={inputCls} placeholder="you@example.com" type="email"
                   value={form.recommender_email} onChange={e => set('recommender_email', e.target.value)} />
               </Field>
             </div>

@@ -1,3 +1,19 @@
+// ── Phone / email format helpers (Canadian phone, XXX-XXX-XXXX, no +1) ──────────
+// Strips anything non-numeric as the person types and inserts dashes at the right spots, capping at 10 digits
+export const formatPhoneInput = (raw) => {
+  const digits = String(raw ?? '').replace(/\D/g, '').slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+
+// Empty is valid (phone is optional) — only enforce the shape once something's been entered.
+export const isValidPhoneFormat = (value) => !value || /^\d{3}-\d{3}-\d{4}$/.test(value);
+
+// Structural check only (has an @ and a . after it) — not full RFC validation,
+// intentionally: catches typos like missing "@" without over-verifying deliverability.
+export const isValidEmailFormat = (value) => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
 // ── Categories — mirrors the `categories` table exactly ───────────────────────
 export const CATEGORIES = [
   { id: 1,  name: 'Restaurants',                     slug: 'restaurants' },
