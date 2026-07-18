@@ -28,6 +28,7 @@ export default function App() {
   const [showAccount, setShowAccount] = useState(false);
   const [showSuggestForm, setShowSuggestForm] = useState(false);
   const [selectedRecommendation, setSelectedRecommendation] = useState(null);
+  const [sidebarTab, setSidebarTab] = useState('services'); // 'services' | 'suggestions'
   const mapSectionRef = useRef(null);
 
   // Reviews — owns its own array, scoped per service via getReviewsFor
@@ -122,6 +123,7 @@ export default function App() {
   const handleSelectRecommendation = (rec) => {
     setSelectedRecommendation(rec);
     setSelectedService(null);
+    setSidebarTab('suggestions');
   };
 
   // Clear all filter function
@@ -230,7 +232,7 @@ export default function App() {
               onEdit={openEdit} onDelete={setDeleteTarget} isAdmin={isAdmin}
               cardRefs={cardRefs} scrollContainerRef={scrollContainerRef}
               onClearFilters={clearAllFilters}
-
+              activeTab={sidebarTab} onChangeTab={setSidebarTab}
               recommendations={recommendations}
               recommendationsLoading={recommendationsLoading}
               recommendationActioningId={recommendationActioningId}

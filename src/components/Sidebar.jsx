@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { MapPin, ListChecks, Inbox } from 'lucide-react';
 import ServiceCard from './ServiceCard.jsx';
 import RecommendationCard from './RecommendationCard.jsx';
@@ -8,6 +8,7 @@ export default function Sidebar({
   onEdit, onDelete, isAdmin,
   cardRefs, scrollContainerRef,
   onClearFilters,
+  activeTab = 'services', onChangeTab,    // Tab is controlled from App.jsx (not local state). Sidebar unmounts when detail panel open --> local state would reset to 'services'
   // Admin-only "Suggestions" tab
   recommendations = [], recommendationsLoading = false, recommendationActioningId = null,
   recommendationStatusFilter = 'new', onChangeRecommendationStatusFilter,
@@ -15,21 +16,19 @@ export default function Sidebar({
   onSelectRecommendation,
   onStartReviewRecommendation, onApproveRecommendation, onRejectRecommendation, onDeleteRecommendation,
 }) {
-  const [activeTab, setActiveTab] = useState('services'); // 'services' | 'suggestions'
-
   return (
     <aside className="w-full h-full shrink-0 flex flex-col border-r border-divider-page bg-app-bg overflow-hidden">
 
       {/* Tab switcher — only admins have anything to moderate here */}
       {isAdmin && (
         <div className="flex bg-surface-subtle p-1 m-3 mb-0 rounded-lg shrink-0">
-          <button onClick={() => setActiveTab('services')}
+          <button onClick={() => onChangeTab?.('services')}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
               activeTab === 'services' ? 'bg-surface-raised text-primary shadow-sm' : 'text-muted hover:text-secondary-strong'
             }`}>
             <ListChecks className="h-3.5 w-3.5" /> Services
           </button>
-          <button onClick={() => setActiveTab('suggestions')}
+          <button onClick={() => onChangeTab?.('suggestions')}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
               activeTab === 'suggestions' ? 'bg-surface-raised text-primary shadow-sm' : 'text-muted hover:text-secondary-strong'
             }`}>

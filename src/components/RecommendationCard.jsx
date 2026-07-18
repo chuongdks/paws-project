@@ -89,24 +89,24 @@ export default function RecommendationCard({ recommendation, onSelect, onStartRe
         onClick={e => e.stopPropagation()}>
         {isNew && (
           <button onClick={() => onStartReview(recommendation)} disabled={busy} title="Mark as being reviewed"
-            className="flex items-center justify-center gap-1.5 py-1.5 px-2 text-xs font-semibold text-warning-text bg-warning-soft hover:bg-warning-soft/80 border border-warning-border rounded-lg transition-colors disabled:opacity-60 shrink-0">
+            className="flex items-center justify-center gap-1.5 py-1.5 px-2 text-xs font-semibold text-warning-text bg-warning-soft hover:bg-warning-soft-strong border border-warning-border rounded-lg transition-all cursor-pointer active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 shrink-0">
             <Eye className="h-3.5 w-3.5" />
           </button>
         )}
         {isPending && (
           <>
             <button onClick={() => onApprove(recommendation)} disabled={busy}
-              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-success-text bg-success-soft hover:bg-success-soft/80 border border-success-border rounded-lg transition-colors disabled:opacity-60">
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-success-text bg-success-soft hover:bg-success-soft-strong border border-success-border rounded-lg transition-all cursor-pointer active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100">
               {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />} Approve
             </button>
             <button onClick={() => onReject(recommendation)} disabled={busy}
-              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-danger-text bg-danger-soft hover:bg-danger-soft/80 border border-danger-border rounded-lg transition-colors disabled:opacity-60">
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-danger-text bg-danger-soft hover:bg-danger-soft-strong border border-danger-border rounded-lg transition-all cursor-pointer active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100">
               <X className="h-3.5 w-3.5" /> Reject
             </button>
           </>
         )}
         <button onClick={() => onDelete(recommendation)} title="Delete permanently (spam/duplicate)" disabled={busy}
-          className={`${isPending ? 'shrink-0' : 'flex-1 flex items-center justify-center gap-1.5'} p-1.5 rounded-lg text-faint hover:text-danger-text hover:bg-danger-soft transition-colors disabled:opacity-60`}>
+          className={`${isPending ? 'shrink-0' : 'flex-1 flex items-center justify-center gap-1.5'} p-1.5 rounded-lg text-faint hover:text-danger-text hover:bg-danger-soft transition-all cursor-pointer active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100`}>
           <Trash2 className="h-3.5 w-3.5" /> {!isPending && <span className="text-xs font-semibold">Delete</span>}
         </button>
       </div>

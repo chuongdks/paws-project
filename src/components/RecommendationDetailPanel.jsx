@@ -198,18 +198,18 @@ export default function RecommendationDetailPanel({
       <div className="px-5 py-4 border-t border-divider-subtle shrink-0 space-y-2">
         {isNew && (
           <button onClick={() => onStartReview(recommendation, adminNotes)} disabled={busy}
-            className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-semibold text-warning-text bg-warning-soft hover:bg-warning-soft/80 border border-warning-border rounded-lg transition-colors disabled:opacity-60">
+            className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-semibold text-warning-text bg-warning-soft hover:bg-warning-soft-strong border border-warning-border rounded-lg transition-all cursor-pointer active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />} Mark as Reviewing
           </button>
         )}
         {isPending ? (
           <div className="flex gap-2">
             <button onClick={() => onApprove(recommendation, adminNotes)} disabled={busy}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-semibold text-success-text bg-success-soft hover:bg-success-soft/80 border border-success-border rounded-lg transition-colors disabled:opacity-60">
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-semibold text-success-text bg-success-soft hover:bg-success-soft-strong border border-success-border rounded-lg transition-all cursor-pointer active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100">
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Approve
             </button>
             <button onClick={() => onReject(recommendation, adminNotes)} disabled={busy}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-semibold text-danger-text bg-danger-soft hover:bg-danger-soft/80 border border-danger-border rounded-lg transition-colors disabled:opacity-60">
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-semibold text-danger-text bg-danger-soft hover:bg-danger-soft-strong border border-danger-border rounded-lg transition-all cursor-pointer active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100">
               <X className="h-4 w-4" /> Reject
             </button>
           </div>
@@ -219,7 +219,7 @@ export default function RecommendationDetailPanel({
           </p>
         )}
         <button onClick={() => onDelete(recommendation)} disabled={busy}
-          className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-faint hover:text-danger-text hover:bg-danger-soft rounded-lg transition-colors disabled:opacity-60">
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-faint hover:text-danger-text hover:bg-danger-soft rounded-lg transition-all cursor-pointer active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100">
           <Trash2 className="h-3.5 w-3.5" /> Delete Permanently
         </button>
       </div>
