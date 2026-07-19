@@ -196,7 +196,7 @@ export default function App() {
         {/* Left slot host: sized to its animated child's content, so the floating handle (a sibling, not a descendant of the clipping box) tracks the edge smoothly without ever being clipped itself */}
         <div className="relative shrink-0">
           <div className={`w-full overflow-hidden transition-all duration-300 ease-in-out ${
-            sidebarCollapsed ? 'md:w-0 h-0' : 'md:w-[400px]'
+            sidebarCollapsed ? 'md:w-0 h-0' : 'md:w-[400px] md:h-full'
           }`}>
             <div className="w-full md:w-[400px] h-full">
               {loading ? (
@@ -262,7 +262,7 @@ export default function App() {
               )}
             </div>
           </div>
-          
+
           {/* Desktop only floating handle: sits right on the boundary between sidebar and map; positioned relative to the host above (not the clipping box), so it's never cut off mid-animation */}
           <button onClick={() => setSidebarCollapsed(c => !c)}
             title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
