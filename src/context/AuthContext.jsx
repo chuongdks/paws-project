@@ -16,6 +16,7 @@ export const GENDER_OPTIONS = [
 export function AuthProvider({ children }) {
   const [user, setUser]               = useState(null);
   const [error, setError]             = useState(null);
+  const [profileError, setProfileError] = useState(null); // separate from login/register error
   const [authLoading, setAuthLoading] = useState(true);   // True only while checking for an existing session on first load
 
   // On mount: if a token is already in storage, validate it against /auth/me.php so refreshing the page doesn't silently log the person out.
@@ -108,9 +109,25 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Update gender after registerting
-  const updateGender = (gender) => {
-    setUser((prevUser) => prevUser ? { ...prevUser, gender } : null);
+  // Persists the gender change server-side. 
+  // WARNING: relies on a PUT/PATCH handler on /auth/me.php that doesn't exist yet
+  // me.php rejects anything but GET with a 405. Local only for now
+  const updateGender = async (gender) => {
+    try {
+      const response = await api.put('/auth/me.php', { gender });
+      const json = response.data;
+      if (!json.success) {
+        setProfileError(json.message || 'Could not update your profile.');
+        return false;
+      }
+      setUser(prevUser => prevUser ? { ...prevUser, gender } : null);
+      setProfileError(null);
+      return true;
+    } catch (err) {
+      console.error('Failed to update gender\n Full Error:', err);
+      setProfileError(err.response?.data?.message || 'Could not update your profile — please try again.');
+      return false;
+    }
   };
 
   const value = {
@@ -125,6 +142,8 @@ export function AuthProvider({ children }) {
     updateGender,
     error,
     clearError: () => setError(null),
+    profileError,
+    clearProfileError: () => setProfileError(null),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

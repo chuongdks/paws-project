@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, User, Mail, ShieldCheck, VenetianMask, Pencil, Check } from 'lucide-react';
+import { X, User, Mail, ShieldCheck, VenetianMask, Pencil, Check, Loader2 } from 'lucide-react';
 import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
 import { useState } from 'react';
 
@@ -17,15 +17,18 @@ function InfoRow({ icon: Icon, label, children }) {
 }
 
 export default function AccountModal({ onClose }) {
-  const { user, isAdmin, updateGender } = useAuth();
+  const { user, isAdmin, updateGender, profileError, clearProfileError } = useAuth();
   const [editingGender, setEditingGender] = useState(false);
   const [genderDraft, setGenderDraft]     = useState(user?.gender ?? '');
+  const [savingGender, setSavingGender]   = useState(false);
 
   if (!user) return null;
 
-  const saveGender = () => {
-    updateGender(genderDraft);
-    setEditingGender(false);
+  const saveGender = async () => {
+    setSavingGender(true);
+    const ok = await updateGender(genderDraft);
+    setSavingGender(false);
+    if (ok) setEditingGender(false);
   };
 
   const inputCls = "w-full bg-surface-muted border border-divider text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring/20 focus:border-focus-ring transition-all";
@@ -72,25 +75,29 @@ export default function AccountModal({ onClose }) {
 
           <InfoRow icon={VenetianMask} label="Gender">
             {editingGender ? (
-              <div className="flex items-center gap-2 pt-1">
-                <select
-                  value={genderDraft}
-                  onChange={e => setGenderDraft(e.target.value)}
-                  className={inputCls}
-                >
-                  {GENDER_OPTIONS.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-                <button onClick={saveGender} title="Save"
-                  className="p-2 rounded-lg text-success-text hover:bg-success-soft transition-colors shrink-0">
-                  <Check className="h-4 w-4" />
-                </button>
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center gap-2">
+                  <select
+                    value={genderDraft}
+                    onChange={e => setGenderDraft(e.target.value)}
+                    disabled={savingGender}
+                    className={inputCls}
+                  >
+                    {GENDER_OPTIONS.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                  <button onClick={saveGender} title="Save" disabled={savingGender}
+                    className="p-2 rounded-lg text-success-text hover:bg-success-soft transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed">
+                    {savingGender ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  </button>
+                </div>
+                {profileError && <p className="text-xs text-danger-text">{profileError}</p>}
               </div>
             ) : (
               <div className="flex items-center gap-1.5">
                 <span>{user.gender || 'Not set'}</span>
-                <button onClick={() => { setGenderDraft(user.gender ?? ''); setEditingGender(true); }} title="Edit"
+                <button onClick={() => { setGenderDraft(user.gender ?? ''); clearProfileError(); setEditingGender(true); }} title="Edit"
                   className="p-1 rounded-md text-faint hover:text-accent-text hover:bg-accent-soft transition-colors">
                   <Pencil className="h-3 w-3" />
                 </button>
@@ -99,7 +106,7 @@ export default function AccountModal({ onClose }) {
           </InfoRow>
         </div>
 
-        <button onClick={onClose}
+        <button onClick={() => { clearProfileError(); onClose(); }}
           className="w-full py-2.5 rounded-lg bg-surface-subtle hover:bg-divider text-secondary text-sm font-semibold transition-colors">
           Close
         </button>

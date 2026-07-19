@@ -1,5 +1,7 @@
 // ── Phone / email format helpers (Canadian phone, XXX-XXX-XXXX, no +1) ──────────
-// Strips anything non-numeric as the person types and inserts dashes at the right spots, capping at 10 digits
+// Strips anything non-numeric as the person types and inserts dashes at the
+// right spots, capping at 10 digits — so it's impossible to type an invalid
+// shape in the first place rather than only catching it on submit.
 export const formatPhoneInput = (raw) => {
   const digits = String(raw ?? '').replace(/\D/g, '').slice(0, 10);
   if (digits.length <= 3) return digits;
@@ -13,6 +15,19 @@ export const isValidPhoneFormat = (value) => !value || /^\d{3}-\d{3}-\d{4}$/.tes
 // Structural check only (has an @ and a . after it) — not full RFC validation,
 // intentionally: catches typos like missing "@" without over-verifying deliverability.
 export const isValidEmailFormat = (value) => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+// similar to the backend lat/long range check (services.php / recommendations.php validateCoordinates()) 
+export const isValidLatitude = (value) => {
+  if (value === '' || value == null) return true;
+  const n = parseFloat(value);
+  return !isNaN(n) && n >= -90 && n <= 90;
+};
+
+export const isValidLongitude = (value) => {
+  if (value === '' || value == null) return true;
+  const n = parseFloat(value);
+  return !isNaN(n) && n >= -180 && n <= 180;
+};
 
 // ── Categories — mirrors the `categories` table exactly ───────────────────────
 export const CATEGORIES = [

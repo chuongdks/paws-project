@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import { useServiceDirectory } from './hook/useServiceDirectory.js';
 import { useServiceCRUD } from './hook/useServiceCRUD.js';
 import { useServiceSelection } from './hook/useServiceSelection.js';
@@ -29,6 +29,7 @@ export default function App() {
   const [showSuggestForm, setShowSuggestForm] = useState(false);
   const [selectedRecommendation, setSelectedRecommendation] = useState(null);
   const [sidebarTab, setSidebarTab] = useState('services'); // 'services' | 'suggestions'
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const mapSectionRef = useRef(null);
 
   // Reviews — owns its own array, scoped per service via getReviewsFor
@@ -124,6 +125,7 @@ export default function App() {
     setSelectedRecommendation(rec);
     setSelectedService(null);
     setSidebarTab('suggestions');
+    setSidebarCollapsed(false);
   };
 
   // Clear all filter function
@@ -138,6 +140,7 @@ export default function App() {
   const handleSelectServiceAndScroll = (service) => {
     handleSelectService(service);
     setSelectedRecommendation(null);
+    setSidebarCollapsed(false);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -183,69 +186,89 @@ export default function App() {
       {/* ── Body: sidebar -> detail panel + map (stacked on mobile, row on desktop) ───────────────────────────── */}
       <div className="flex flex-1 flex-col md:flex-row md:overflow-hidden">
 
-        {/* Left slot: Loading API first then List OR Detail, mutually exclusive */}
-        <div className="w-full md:w-[400px] shrink-0">
-          {loading ? (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-faint text-sm border-r border-divider bg-surface-subtle py-16">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Loading services…
-            </div>
-          ) : selectedService ? (
-            <ServiceDetailPanel
-              service={selectedService}
-              onClose={handleBackToResults}
-              onEdit={openEdit}
-              onDelete={setDeleteTarget}
-              onUpdateImage={handleUpdateImage}
-              isAdmin={isAdmin}
-              isAuthenticated={isAuthenticated}
-              reviews={getReviewsFor(selectedService.id, 'approved')}
-              canReview={!isAdmin && isAuthenticated && !hasUserReviewed(selectedService.id, user?.id)}
-              currentUserId={user?.id}
-              onAddReview={(formData) => addReview(selectedService.id, formData)}
-              onUpdateReview={(reviewId, listingId, formData) => updateReview(reviewId, listingId, formData)}
-              onDeleteReview={(reviewId, listingId) => deleteReview(reviewId, listingId, 'approved')}
+        {/* Mobile only bar: always visible, since there's no floating edge handle to grab in the stacked layout */}
+        <button onClick={() => setSidebarCollapsed(c => !c)}
+          className="md:hidden w-full shrink-0 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-muted bg-surface-subtle border-b border-divider-page hover:text-secondary-strong transition-colors cursor-pointer">
+          {sidebarCollapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
+          {sidebarCollapsed ? 'Show list' : 'Hide list'}
+        </button>
 
-              // Admin-only pending review moderation queue
-              pendingReviews={getReviewsFor(selectedService.id, 'pending')}
-              pendingLoading={reviewsLoading(selectedService.id, 'pending')}
-              onFetchPendingReviews={(listingId) => fetchReviews(listingId, 'pending')}
-              onApproveReview={approveReview}
-              onRejectReview={rejectReview}
-            />
-          ) : selectedRecommendation ? (
-            <RecommendationDetailPanel
-              recommendation={selectedRecommendation}
-              tags={assignableTags}
-              busy={recommendationActioningId === selectedRecommendation.id}
-              onStartReview={handleStartReviewRecommendation}
-              onApprove={handleApproveRecommendation}
-              onReject={handleRejectRecommendation}
-              onDelete={handleDeleteRecommendation}
-              onClose={() => setSelectedRecommendation(null)}
-            />
-          ) : (
-            <Sidebar
-              filteredServices={filteredServices}
-              selectedService={selectedService}
-              onSelectService={handleSelectServiceAndScroll}
-              onEdit={openEdit} onDelete={setDeleteTarget} isAdmin={isAdmin}
-              cardRefs={cardRefs} scrollContainerRef={scrollContainerRef}
-              onClearFilters={clearAllFilters}
-              activeTab={sidebarTab} onChangeTab={setSidebarTab}
-              recommendations={recommendations}
-              recommendationsLoading={recommendationsLoading}
-              recommendationActioningId={recommendationActioningId}
-              recommendationStatusFilter={recommendationStatusFilter}
-              onChangeRecommendationStatusFilter={fetchRecommendations}
-              pendingRecommendationCount={pendingRecommendationCount}
-              onSelectRecommendation={handleSelectRecommendation}
-              onStartReviewRecommendation={handleStartReviewRecommendation}
-              onApproveRecommendation={handleApproveRecommendation}
-              onRejectRecommendation={handleRejectRecommendation}
-              onDeleteRecommendation={handleDeleteRecommendation}
-            />
-          )}
+        {/* Left slot host: sized to its animated child's content, so the floating handle (a sibling, not a descendant of the clipping box) tracks the edge smoothly without ever being clipped itself */}
+        <div className="relative shrink-0">
+          <div className={`w-full overflow-hidden transition-all duration-300 ease-in-out ${
+            sidebarCollapsed ? 'md:w-0 h-0' : 'md:w-[400px]'
+          }`}>
+            <div className="w-full md:w-[400px] h-full">
+              {loading ? (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-faint text-sm border-r border-divider bg-surface-subtle py-16">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Loading services…
+                </div>
+              ) : selectedService ? (
+                <ServiceDetailPanel
+                  service={selectedService}
+                  onClose={handleBackToResults}
+                  onEdit={openEdit}
+                  onDelete={setDeleteTarget}
+                  onUpdateImage={handleUpdateImage}
+                  isAdmin={isAdmin}
+                  isAuthenticated={isAuthenticated}
+                  reviews={getReviewsFor(selectedService.id, 'approved')}
+                  canReview={!isAdmin && isAuthenticated && !hasUserReviewed(selectedService.id, user?.id)}
+                  currentUserId={user?.id}
+                  onAddReview={(formData) => addReview(selectedService.id, formData)}
+                  onUpdateReview={(reviewId, listingId, formData) => updateReview(reviewId, listingId, formData)}
+                  onDeleteReview={(reviewId, listingId) => deleteReview(reviewId, listingId, 'approved')}
+
+                  // Admin-only pending review moderation queue
+                  pendingReviews={getReviewsFor(selectedService.id, 'pending')}
+                  pendingLoading={reviewsLoading(selectedService.id, 'pending')}
+                  onFetchPendingReviews={(listingId) => fetchReviews(listingId, 'pending')}
+                  onApproveReview={approveReview}
+                  onRejectReview={rejectReview}
+                />
+              ) : selectedRecommendation ? (
+                <RecommendationDetailPanel
+                  recommendation={selectedRecommendation}
+                  tags={assignableTags}
+                  busy={recommendationActioningId === selectedRecommendation.id}
+                  onStartReview={handleStartReviewRecommendation}
+                  onApprove={handleApproveRecommendation}
+                  onReject={handleRejectRecommendation}
+                  onDelete={handleDeleteRecommendation}
+                  onClose={() => setSelectedRecommendation(null)}
+                />
+              ) : (
+                <Sidebar
+                  filteredServices={filteredServices}
+                  selectedService={selectedService}
+                  onSelectService={handleSelectServiceAndScroll}
+                  onEdit={openEdit} onDelete={setDeleteTarget} isAdmin={isAdmin}
+                  cardRefs={cardRefs} scrollContainerRef={scrollContainerRef}
+                  onClearFilters={clearAllFilters}
+                  activeTab={sidebarTab} onChangeTab={setSidebarTab}
+                  recommendations={recommendations}
+                  recommendationsLoading={recommendationsLoading}
+                  recommendationActioningId={recommendationActioningId}
+                  recommendationStatusFilter={recommendationStatusFilter}
+                  onChangeRecommendationStatusFilter={fetchRecommendations}
+                  pendingRecommendationCount={pendingRecommendationCount}
+                  onSelectRecommendation={handleSelectRecommendation}
+                  onStartReviewRecommendation={handleStartReviewRecommendation}
+                  onApproveRecommendation={handleApproveRecommendation}
+                  onRejectRecommendation={handleRejectRecommendation}
+                  onDeleteRecommendation={handleDeleteRecommendation}
+                />
+              )}
+            </div>
+          </div>
+          
+          {/* Desktop only floating handle: sits right on the boundary between sidebar and map; positioned relative to the host above (not the clipping box), so it's never cut off mid-animation */}
+          <button onClick={() => setSidebarCollapsed(c => !c)}
+            title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+            className="hidden md:flex absolute top-1/2 -right-3 -translate-y-1/2 z-20 items-center justify-center w-6 h-12 rounded-full bg-surface-raised border border-divider shadow-md hover:bg-surface-subtle hover:shadow-lg transition-all cursor-pointer active:scale-95">
+            {sidebarCollapsed ? <ChevronRight className="h-4 w-4 text-muted" /> : <ChevronLeft className="h-4 w-4 text-muted" />}
+          </button>
         </div>
 
         {/* Right slot: Map, always visible regardless of selection */}

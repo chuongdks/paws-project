@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Image as ImageIcon, Clock, Loader2 } from 'lucide-react';
-import { DAYS_OF_WEEK, emptyService, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat } from '../models/Service.js';
+import { DAYS_OF_WEEK, emptyService, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat, isValidLatitude, isValidLongitude } from '../models/Service.js';
 
 const VERIFICATION_OPTIONS = ['needs verification', 'verified', 'rejected', 'archived'];
 
@@ -79,8 +79,8 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
     if (!form.category_id)                          e.category_id = 'Category is required.';
     if (form.phone && !isValidPhoneFormat(form.phone)) e.phone     = 'Phone must be in XXX-XXX-XXXX format.';
     if (form.email && !isValidEmailFormat(form.email)) e.email     = 'Please enter a valid email address.';
-    if (form.latitude  && isNaN(parseFloat(form.latitude)))   e.latitude  = 'Must be a valid number.';
-    if (form.longitude  && isNaN(parseFloat(form.longitude)))   e.longitude  = 'Must be a valid number.';
+    if (form.latitude  && !isValidLatitude(form.latitude))    e.latitude  = 'Latitude must be a number between -90 and 90.';
+    if (form.longitude && !isValidLongitude(form.longitude))  e.longitude = 'Longitude must be a number between -180 and 180.';
     if (form.latitude && !form.longitude)                      e.longitude = 'Longitude is required when latitude is set.';
     if (form.longitude && !form.latitude)                      e.latitude = 'Latitude is required when longitude is set.';
     return e;
