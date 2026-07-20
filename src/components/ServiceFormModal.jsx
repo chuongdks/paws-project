@@ -23,23 +23,30 @@ const inputCls = `w-full bg-surface-muted border border-divider rounded-lg px-3 
   focus:border-focus-ring transition-all`;
 
 export default function ServiceFormModal({ mode, initial, onSave, onClose, categories, tags, isAdmin, saveError, saving }) {
-  const panelRef = useModalA11y(onClose);
   const [form, setForm]     = useState(emptyService());
   const [errors, setErrors] = useState({});
+  const initialSnapshotRef  = useRef(JSON.stringify(emptyService()));
 
   // Populate form when editing an existing service. `initial.tags` comes in as [{ id, name }] (see Service.js normalizeTags)
   //  the form itself works with plain tag ids, so convert here. Legacy/offline tags with no real id (id:null) get matched up by name against the live `tags` list as a bridge.
   useEffect(() => {
+    let seeded;
     if (initial) {
       const tagIds = (initial.tags ?? [])
         .map(t => t.id ?? tags.find(live => live.name === t.name)?.id ?? null)
         .filter(id => id != null);
-      setForm({ ...emptyService(), ...initial, tags: tagIds });
+      seeded = { ...emptyService(), ...initial, tags: tagIds };
     } else {
-      setForm(emptyService());
+      seeded = emptyService();
     }
+    setForm(seeded);
+    initialSnapshotRef.current = JSON.stringify(seeded); // baseline for the dirty-check below
     setErrors({});
   }, [initial, tags]);
+
+  // True once the form differs from whatever it was seeded with 
+  const isDirty = JSON.stringify(form) !== initialSnapshotRef.current;
+  const panelRef = useModalA11y(onClose, true, !isDirty);
 
   const set = (field, value) => {
     setForm(f => ({ ...f, [field]: value }));
@@ -104,7 +111,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
     <div
       className="fixed inset-0 z-[2000] flex items-center justify-center p-4"
       style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(2px)' }}
-      onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
+      onMouseDown={e => { if (e.target === e.currentTarget && !isDirty) onClose(); }} // prevent accidental closing if clicking outside the modal
     >
       {/* Modal panel */}
       <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="service-form-title"

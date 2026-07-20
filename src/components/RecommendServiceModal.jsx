@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Clock, User, Loader2, MessageCircleHeart } from 'lucide-react';
 import { DAYS_OF_WEEK, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat, isValidLatitude, isValidLongitude } from '../models/Service.js';
 import { useModalA11y } from '../hook/useModalA11y.js';
@@ -37,13 +37,19 @@ const emptySuggestion = () => ({
 // pre-fills YOUR NAME section for a logged-in user without forcing them to retype it
 // not logged in user can still submit
 export default function RecommendServiceModal({ onSave, onClose, categories, tags, currentUser, submitError, submitting }) {
-  const panelRef = useModalA11y(onClose, !submitting);
-  const [form, setForm]     = useState(() => ({
+  const getInitialForm = () => ({
     ...emptySuggestion(),
     recommender_name: currentUser?.name ?? '',
     recommender_email: currentUser?.email ?? '',
-  }));
+  });
+
+  const [form, setForm]     = useState(getInitialForm);
   const [errors, setErrors] = useState({});
+  const initialSnapshotRef  = useRef(JSON.stringify(getInitialForm()));
+
+  // True once the form differs from its starting point 
+  const isDirty = JSON.stringify(form) !== initialSnapshotRef.current;
+  const panelRef = useModalA11y(onClose, !submitting, !isDirty);
 
   const set = (field, value) => {
     setForm(f => ({ ...f, [field]: value }));
@@ -96,7 +102,7 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
     <div
       className="fixed inset-0 z-[2000] flex items-center justify-center p-4"
       style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(2px)' }}
-      onMouseDown={e => { if (e.target === e.currentTarget && !submitting) onClose(); }}
+      onMouseDown={e => { if (e.target === e.currentTarget && !submitting && !isDirty) onClose(); }}  // prevent accidental closing if clicking outside the modal
     >
       <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="suggest-service-title"
         className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden outline-none">
