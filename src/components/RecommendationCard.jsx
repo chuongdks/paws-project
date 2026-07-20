@@ -68,7 +68,7 @@ export default function RecommendationCard({ recommendation, onSelect, onStartRe
       {recommendation.message && (
         <div className="flex items-start gap-1.5 text-xs text-secondary italic bg-surface/60 rounded-lg p-2">
           <MessageCircleHeart className="h-3.5 w-3.5 shrink-0 mt-0.5 text-faint" />
-          <span className="leading-snug">{recommendation.message}</span>
+          <span className="text-[14px] leading-snug">{recommendation.message}</span>
         </div>
       )}
 

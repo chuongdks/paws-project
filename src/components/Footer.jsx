@@ -22,7 +22,7 @@ export default function Footer() {
       {/* Logo + socials */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <a href="https://pawsinrecovery.ca/" target="_blank" rel="noopener noreferrer" className="shrink-0">
-          <img src={myLogo} alt="Paws in Recovery" className="h-8 sm:h-10 w-auto object-contain" />
+          <img src={myLogo} alt="Paws in Recovery" className="h-14 sm:h-10 w-auto object-contain" />
         </a>
 
         <div className="flex items-center gap-1 text-secondary">
@@ -38,7 +38,6 @@ export default function Footer() {
 
       {/* Short disclaimer, always visible, links out to the full version */}
       <p className="text-[11px] text-faint leading-relaxed border-t border-divider-subtle pt-2">
-        Should I put anything here before the full disclosure? {' '} {' '}
         <button onClick={() => setShowDisclaimer(true)}
           className="inline-flex items-center gap-0.5 font-semibold text-accent-text hover:underline">
           <Info className="h-3 w-3" /> Read full disclaimer
@@ -51,11 +50,11 @@ export default function Footer() {
         <span className="flex items-center gap-1">
           Created by{' '}
           <a href="http://www.linkedin.com/in/noorhaddadcs" target="_blank" className="font-semibold text-muted hover:text-accent-text transition-colors">
-            Noor
+            Noor Haddad
           </a>
           ,
           <a href="#" className="font-semibold text-muted hover:text-accent-text transition-colors">
-            Parsia
+            Parsia Zahedimazandarani
           </a>
           and 
           <a href="https://github.com/chuongdks" target="_blank" className="font-semibold text-muted hover:text-accent-text transition-colors">

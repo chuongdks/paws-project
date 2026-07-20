@@ -71,7 +71,7 @@ export default function ServiceCard({ service, isSelected, onClick, onEdit, onDe
 
       {/* Inclusivity notes */}
       {service.inclusivity_notes && (
-        <p className="text-[11px] text-faint italic leading-snug line-clamp-2">
+        <p className="text-[15px] text-faint italic leading-snug line-clamp-2">
           {service.inclusivity_notes}
         </p>
       )}
@@ -90,7 +90,7 @@ export default function ServiceCard({ service, isSelected, onClick, onEdit, onDe
           {fullAddress(service) && (
             <a href={buildGoogleMapsLink(service)} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs text-muted hover:text-secondary-strong">
-              <ExternalLink className="h-3 w-3" /> Directions
+              <ExternalLink className="h-3 w-3" /> Google Map Direction
             </a>
           )}
         </div>

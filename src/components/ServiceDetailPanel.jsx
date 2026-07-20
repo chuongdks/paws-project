@@ -475,7 +475,7 @@ export default function ServiceDetailPanel({
       {deleteReviewTarget && (
         <DeleteConfirmModal
           title="Delete Review"
-          message="Are you sure you want to remove this review? This cannot be undone."
+          message="Are you sure you want to remove the review? This action cannot be undone."
           onConfirm={async () => {
             await onDeleteReview(deleteReviewTarget.id, service.id);
             setDeleteReviewTarget(null);

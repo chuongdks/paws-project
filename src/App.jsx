@@ -317,7 +317,7 @@ export default function App() {
       {deleteTarget && (
         <DeleteConfirmModal
           title="Delete Service"
-          message={<>Are you sure you want to remove <span className="font-semibold text-secondary-strong">{deleteTarget.name}</span>? This cannot be undone.</>}
+          message={<>Are you sure you want to remove <span className="font-semibold text-secondary-strong">{deleteTarget.name}</span>? This action cannot be undone.</>}
           error={deleteError} confirming={deleting}
           onConfirm={() => handleDelete(deleteTarget)}
           onCancel={() => setDeleteTarget(null)}
