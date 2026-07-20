@@ -2,6 +2,7 @@ import React from 'react';
 import { X, User, Mail, ShieldCheck, VenetianMask, Pencil, Check, Loader2 } from 'lucide-react';
 import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
 import { useState } from 'react';
+import { useModalA11y } from '../hook/useModalA11y.js';
 
 // ── Small read-only row, matches the style used in ServiceDetailPanel's InfoRow ──
 function InfoRow({ icon: Icon, label, children }) {
@@ -21,6 +22,7 @@ export default function AccountModal({ onClose }) {
   const [editingGender, setEditingGender] = useState(false);
   const [genderDraft, setGenderDraft]     = useState(user?.gender ?? '');
   const [savingGender, setSavingGender]   = useState(false);
+  const panelRef = useModalA11y(onClose);
 
   if (!user) return null;
 
@@ -39,11 +41,12 @@ export default function AccountModal({ onClose }) {
       style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(2px)' }}
       onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5">
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="account-modal-title"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5 outline-none">
 
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-primary">My Account</h2>
+          <h2 id="account-modal-title" className="text-base font-bold text-primary">My Account</h2>
           <button onClick={onClose}
             className="text-faint hover:text-secondary-strong rounded-lg p-1 hover:bg-surface-subtle transition-colors">
             <X className="h-5 w-5" />

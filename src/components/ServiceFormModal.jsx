@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Image as ImageIcon, Clock, Loader2 } from 'lucide-react';
 import { DAYS_OF_WEEK, emptyService, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat, isValidLatitude, isValidLongitude } from '../models/Service.js';
+import { useModalA11y } from '../hook/useModalA11y.js';
 
 const VERIFICATION_OPTIONS = ['needs verification', 'verified', 'rejected', 'archived'];
 
@@ -22,6 +23,7 @@ const inputCls = `w-full bg-surface-muted border border-divider rounded-lg px-3 
   focus:border-focus-ring transition-all`;
 
 export default function ServiceFormModal({ mode, initial, onSave, onClose, categories, tags, isAdmin, saveError, saving }) {
+  const panelRef = useModalA11y(onClose);
   const [form, setForm]     = useState(emptyService());
   const [errors, setErrors] = useState({});
 
@@ -105,11 +107,12 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
       onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       {/* Modal panel */}
-      <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="service-form-title"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden outline-none">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-divider-subtle">
-          <h2 className="text-base font-bold text-primary">
+          <h2 id="service-form-title" className="text-base font-bold text-primary">
             {mode === 'edit' ? 'Edit Service' : 'Add New Service'}
           </h2>
           <button onClick={onClose}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Clock, User, Loader2, MessageCircleHeart } from 'lucide-react';
 import { DAYS_OF_WEEK, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat, isValidLatitude, isValidLongitude } from '../models/Service.js';
+import { useModalA11y } from '../hook/useModalA11y.js';
 
 function Field({ label, icon: Icon, hint, error, children }) {
   return (
@@ -36,6 +37,7 @@ const emptySuggestion = () => ({
 // pre-fills YOUR NAME section for a logged-in user without forcing them to retype it
 // not logged in user can still submit
 export default function RecommendServiceModal({ onSave, onClose, categories, tags, currentUser, submitError, submitting }) {
+  const panelRef = useModalA11y(onClose, !submitting);
   const [form, setForm]     = useState(() => ({
     ...emptySuggestion(),
     recommender_name: currentUser?.name ?? '',
@@ -96,12 +98,13 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
       style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(2px)' }}
       onMouseDown={e => { if (e.target === e.currentTarget && !submitting) onClose(); }}
     >
-      <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="suggest-service-title"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden outline-none">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-divider-subtle">
           <div>
-            <h2 className="text-base font-bold text-primary">Suggest a Service</h2>
+            <h2 id="suggest-service-title" className="text-base font-bold text-primary">Suggest a Service</h2>
             <p className="text-[11px] text-faint mt-0.5">
               Know a great 2SLGBTQIA+-friendly service? Let us know — an admin will review it before it goes live.
             </p>

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { X, LogIn, UserPlus, User, Mail, Lock, Loader2, VenetianMask } from 'lucide-react';
 import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
+import { useModalA11y } from '../hook/useModalA11y.js';
 
 export default function LoginModal({ onClose }) {
   const { login, register, error, clearError } = useAuth();
   const [mode, setMode] = useState('login');        // 'login' | 'register'
   const [submitting, setSubmitting] = useState(false);
+  const panelRef = useModalA11y(onClose, true, mode !== 'register');
 
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
@@ -34,12 +36,13 @@ export default function LoginModal({ onClose }) {
     <div
       className="fixed inset-0 z-[4000] flex items-center justify-center p-4"
       style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(2px)' }}
-      onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
+      onMouseDown={e => { if (e.target === e.currentTarget && mode !== 'register') onClose(); }}
     >
-      <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5">
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="login-modal-title"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5 outline-none">
         {/* Sign In / Register Button */}
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-primary">
+          <h2 id="login-modal-title" className="text-base font-bold text-primary">
             {mode === 'login' ? 'Sign In' : 'Create Account'}
           </h2>
           <button onClick={onClose}

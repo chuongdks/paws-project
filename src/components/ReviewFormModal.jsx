@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Star, Loader2 } from 'lucide-react';
+import { useModalA11y } from '../hook/useModalA11y.js';
 
 // ── Reusable clickable star row, used for each of the 3 ratings below ──────────
 function StarPicker({ label, hint, value, onSelect }) {
@@ -38,6 +39,7 @@ export default function ReviewFormModal({ serviceName, initialReview = null, onS
   const [comment, setComment]                   = useState(initialReview?.comment ?? '');
   const [error, setError]                       = useState(null);
   const [submitting, setSubmitting]             = useState(false);
+  const panelRef = useModalA11y(onClose, !submitting);
 
   const handleSubmit = async () => {
     if (rating === 0) {
@@ -61,10 +63,11 @@ export default function ReviewFormModal({ serviceName, initialReview = null, onS
       style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(2px)' }}
       onMouseDown={e => { if (e.target === e.currentTarget && !submitting) onClose(); }}
     >
-      <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5">
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="review-form-title"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5 outline-none">
 
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-primary">{isEdit ? 'Edit Your Review' : 'Write a Review'}</h2>
+          <h2 id="review-form-title" className="text-base font-bold text-primary">{isEdit ? 'Edit Your Review' : 'Write a Review'}</h2>
           <button onClick={onClose} disabled={submitting}
             className="text-faint hover:text-secondary-strong rounded-lg p-1 hover:bg-surface-subtle transition-colors disabled:opacity-50">
             <X className="h-5 w-5" />
