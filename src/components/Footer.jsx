@@ -17,12 +17,12 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-surface border-t border-divider-page px-4 sm:px-5 py-3 shrink-0 space-y-2">
+    <footer className="bg-surface border-t border-divider-page px-4 sm:px-5 py-1 shrink-0 space-y-1">
 
       {/* Logo + socials */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <a href="https://pawsinrecovery.ca/" target="_blank" rel="noopener noreferrer" className="shrink-0">
-          <img src={myLogo} alt="Paws in Recovery" className="h-14 sm:h-10 w-auto object-contain" />
+          <img src={myLogo} alt="Paws in Recovery" className="h-10 sm:h-14 w-auto object-contain" />
         </a>
 
         <div className="flex items-center gap-1 text-secondary">
@@ -36,13 +36,13 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Short disclaimer, always visible, links out to the full version */}
-      <p className="text-[11px] text-faint leading-relaxed border-t border-divider-subtle pt-2">
+      {/* Short disclaimer, always visible, links out to the full version
+      <p className="text-[11px] text-faint leading-relaxed border-t border-divider-subtle pt-0">
         <button onClick={() => setShowDisclaimer(true)}
           className="inline-flex items-center gap-0.5 font-semibold text-accent-text hover:underline">
           <Info className="h-3 w-3" /> Read full disclaimer
         </button>
-      </p>
+      </p> */}
 
       {/* Copyright + signature */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[11px] text-faint">
@@ -63,9 +63,9 @@ export default function Footer() {
         </span>
       </div>
 
-      {showDisclaimer && (
+      {/* {showDisclaimer && (
         <DisclaimerModal onClose={() => setShowDisclaimer(false)} />
-      )}
+      )} */}
     </footer>
   );
 }

@@ -48,12 +48,12 @@ export default function Header({ resultCount, user, isAuthenticated, isAdmin, on
   return (
     /* ── Header ─────────────────────────────────────────────────────────── */
     <div ref={rootRef} className="relative shrink-0 z-20">
-      <header className="bg-surface border-b border-divider-page px-4 sm:px-5 py-3 flex items-center justify-between gap-3 z-10">
+      <header className="bg-surface border-b border-divider-page px-4 sm:px-5 py-0 flex items-center justify-between gap-3 z-10">
 
         {/* Logo + description (Link to the PAWS site)*/}
         <a href="https://pawsinrecovery.ca/" target="_blank" rel="noopener noreferrer" className="flex flex-col min-w-0 shrink-0"
         >
-          <img src={myLogo} alt="Paws in Recovery" className="h-14 sm:h-20 w-auto object-contain" />
+          <img src={myLogo} alt="Paws in Recovery" className="h-10 sm:h-14 w-auto object-contain" />
         </a>
 
         {/* Site nav — mirrors the main PAWS site's header links. Hidden below lg, where the hamburger toggle + collapsible vertical menu belowtakes over instead  */}
@@ -135,9 +135,14 @@ export default function Header({ resultCount, user, isAuthenticated, isAdmin, on
         </ul>
       </nav>
 
-      {/* Tagline Descripotion */}
-      <p className="bg-surface border-b border-divider-page px-4 sm:px-5 py-1.5 text-[11px] sm:text-xs text-muted">
-        Windsor-Essex 2SLGBTQIA+ support programs
+      {/* Disclaimer Descripotion */}
+      <p className="bg-surface border-b border-divider-page px-4 sm:px-5 py-0.5 text-[11px] sm:text-xs text-muted">
+        Welcome to the Safe Spaces & Services Map. This map is designed to help connect 2SLGBTQIA+ community members, allies, and visitors with businesses, organizations, services, performers and spaces that strive to be inclusive, respectful and welcoming.
+        <br />
+        While we make every effort to keep listings accurate and up to date, inclusion and safety are personal experiences and cannot be guaranteed.
+      </p>
+      <p className="bg-danger-soft border-b border-danger-border px-4 sm:px-5 py-1.5 text-[11px] sm:text-xs text-danger-text text-left">
+        A listing on this map does not constitute an endorsement or guarentee of services accessibility or conduct. If you notice inaccurate information or would like to suggest an addition or update, please contact us. Together we can help keep this resource welcoming, accurate and community driven.
       </p>
     </div>
   );
