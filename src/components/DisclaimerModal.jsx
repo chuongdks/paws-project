@@ -26,7 +26,7 @@ export default function DisclaimerModal({ onClose }) {
         {/* Body */}
         <div className="text-sm text-secondary leading-relaxed space-y-3 max-h-[60vh] overflow-y-auto pr-1">
           <p>
-            Welcome to the Safe Spaces $ Services Map. This map is designed to help connect 2SLGBTQIA+ community members, allies, and visitors with businesses, organizations, services, performers and spaces that strive to be inclusive, respectful and welcoming. 
+            Welcome to the Safe Spaces & Services Map. This map is designed to help connect 2SLGBTQIA+ community members, allies, and visitors with businesses, organizations, services, performers and spaces that strive to be inclusive, respectful and welcoming. 
             While we make every effort to keep listings accurate and up to date, inclusion and safety are personal experiences and cannot be guarenteed. 
             A listing on this map does not constitute an endorsement or guarentee of services accessibility or conduct. If you notice inaccurate information or would like to suggest an addition or update, please contact us.
             Together we can help keep this resource welcoming, accurate and community driven.

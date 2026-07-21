@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { createService } from '../models/Service.js';
 import servicesData from '../data/service.json';
 import api from '../api/axiosConfig.js';
+import { useToast } from '../context/ToastContext.jsx';
 
 // Owns the services array and every create/update/delete/image operation.
 // WARNING: photo updates are still in-memory only, since the backend has no image storage endpoint yet. We have GET/POST/PUT/DELETE ready
 export function useServiceCRUD() {
+  const toast = useToast();
   const [services, setServices] = useState(() => servicesData.map(createService));
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
@@ -98,6 +100,7 @@ export function useServiceCRUD() {
         if (!json.success) throw new Error(json.message || 'API returned success: false');
         setServices(prev => [...prev, createService(json.data)]);
         closeModal();
+        toast.success('Service added.');
       } catch (err) {
         console.error('Failed to create service\n Full Error:', err);
         setSaveError('Could not save the new service — please try again.');
@@ -112,6 +115,7 @@ export function useServiceCRUD() {
         if (!json.success) throw new Error(json.message || 'API returned success: false');
         setServices(prev => prev.map(s => s.id === modal.service.id ? createService(json.data) : s));
         closeModal();
+        toast.success('Service updated.');
       } catch (err) {
         console.error('Failed to update service\n Full Error:', err);
         setSaveError('Could not save changes to this service — please try again.');
@@ -136,6 +140,7 @@ export function useServiceCRUD() {
       setServices(prev => prev.filter(s => s.id !== service.id));
       setDeleteError(null);
       setDeleteTarget(null);
+      toast.success('Service deleted.');
     } catch (err) {
       console.error('Failed to delete service\n Full Error:', err);
       setDeleteError('Could not delete this service — please try again.');

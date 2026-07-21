@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api, { TOKEN_STORAGE_KEY, setUnauthorizedHandler } from '../api/axiosConfig.js';
+import { useToast } from './ToastContext.jsx';
 
 const AuthContext = createContext(null);
 
@@ -14,6 +15,7 @@ export const GENDER_OPTIONS = [
 ];
 
 export function AuthProvider({ children }) {
+  const toast = useToast();
   const [user, setUser]               = useState(null);
   const [error, setError]             = useState(null);
   const [profileError, setProfileError] = useState(null); // separate from login/register error
@@ -69,6 +71,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem(TOKEN_STORAGE_KEY, json.token);
       setUser(json.user);
       setError(null);
+      toast.success(`Welcome back, ${json.user.name}!`);
       return true;
     } catch (err) {
       console.error('Login failed\n Full Error:', err);
@@ -89,6 +92,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem(TOKEN_STORAGE_KEY, json.token);
       setUser(json.user);
       setError(null);
+      toast.success(`Welcome, ${json.user.name}. Your account is ready.`);
       return true;
     } catch (err) {
       console.error('Registration failed\n Full Error:', err);
@@ -106,6 +110,7 @@ export function AuthProvider({ children }) {
     } finally {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       setUser(null);
+      toast.success('Signed out.');
     }
   };
 
@@ -122,6 +127,7 @@ export function AuthProvider({ children }) {
       }
       setUser(prevUser => prevUser ? { ...prevUser, gender } : null);
       setProfileError(null);
+      toast.success('Profile updated.');
       return true;
     } catch (err) {
       console.error('Failed to update gender\n Full Error:', err);

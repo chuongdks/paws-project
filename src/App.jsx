@@ -20,6 +20,7 @@ import ServiceDetailPanel from './components/ServiceDetailPanel.jsx';
 import ServiceFormModal from './components/ServiceFormModal.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import Footer from './components/Footer.jsx';
+import ToastContainer from './components/ToastContainer.jsx';
 
 // ── Main App ───────────────────────────────────────────────────────────────────
 export default function App() {
@@ -323,6 +324,8 @@ export default function App() {
           onCancel={() => setDeleteTarget(null)}
         />
       )}
+
+      <ToastContainer />
     </div>
   );
 }

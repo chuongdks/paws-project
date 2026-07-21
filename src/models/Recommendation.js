@@ -28,7 +28,8 @@ export function createRecommendation(raw = {}) {
     recommended_by_contact: raw.recommended_by_contact  ?? '',
     recommended_by_email:   raw.recommended_by_email    ?? '',
     message:                raw.message                 ?? '',
-    status:                 raw.status                  ?? 'new', // 'new' | 'reviewing' | 'approved' | 'rejected'
+    // 'new' | 'reviewing' | 'approved' | 'rejected'
+    status:                 raw.status                  ?? 'new',
     reviewed_by_user_id:    raw.reviewed_by_user_id     ?? null,
     admin_notes:            raw.admin_notes             ?? '',
     reviewed_at:            raw.reviewed_at             ?? null,

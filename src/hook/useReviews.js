@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { createReview } from '../models/Review.js';
 import api from '../api/axiosConfig.js';
+import { useToast } from '../context/ToastContext.jsx';
 
 // Reviews are now fetched (and cached) per listing_id + status, like how backend is made:
 //   - fetchReviews(listingId)                  -> public 'approved' reviews
@@ -9,6 +10,7 @@ import api from '../api/axiosConfig.js';
 const cacheKey = (listingId, status) => `${listingId}:${status}`;
 
 export function useReviews() {
+  const toast = useToast();
   const [reviewsByKey, setReviewsByKey] = useState({});   // { "listingId:status": Review[] }
   const [loadingByKey, setLoadingByKey] = useState({});   // { "listingId:status": boolean }
   const [error, setError]               = useState(null);
@@ -55,9 +57,16 @@ export function useReviews() {
         inclusivity_rating: inclusivity_rating || null,
         comment,
       });
-      return Boolean(response.data.success);
+      const ok = Boolean(response.data.success);
+      if (ok) {
+        toast.success('Review submitted. Awaiting approval.');
+      } else {
+        toast.error(response.data.message || 'Could not submit your review — please try again.');
+      }
+      return ok;
     } catch (err) {
       console.error('Failed to add review:', err);
+      toast.error('Could not submit your review — please try again.');
       return false;
     }
   };
@@ -72,11 +81,14 @@ export function useReviews() {
           ...prev,
           [key]: (prev[key] ?? []).filter(r => r.id !== reviewId),
         }));
+        toast.success('Review deleted.');
         return true;
       }
+      toast.error(response.data.message || 'Could not delete this review.');
       return false;
     } catch (err) {
       console.error('Failed to delete review:', err);
+      toast.error('Could not delete this review.');
       return false;
     }
   };
@@ -109,11 +121,14 @@ export function useReviews() {
           fetchReviews(listingId, 'approved'),
           fetchReviews(listingId, 'pending'),
         ]);
+        toast.success('Review updated. Sent back to admin for approval.');
         return true;
       }
+      toast.error(response.data.message || 'Could not save your changes — please try again.');
       return false;
     } catch (err) {
       console.error('Failed to update review:', err);
+      toast.error('Could not save your changes — please try again.');
       return false;
     }
   };
@@ -136,8 +151,19 @@ export function useReviews() {
     }
   };
 
-  const approveReview = (reviewId, listingId) => updateReviewStatus(reviewId, 'approved', listingId);
-  const rejectReview  = (reviewId, listingId) => updateReviewStatus(reviewId, 'rejected', listingId);
+  const approveReview = async (reviewId, listingId) => {
+    const ok = await updateReviewStatus(reviewId, 'approved', listingId);
+    if (ok) toast.success('Review approved.');
+    else toast.error('Could not approve this review.');
+    return ok;
+  };
+
+  const rejectReview = async (reviewId, listingId) => {
+    const ok = await updateReviewStatus(reviewId, 'rejected', listingId);
+    if (ok) toast.success('Review rejected.');
+    else toast.error('Could not reject this review.');
+    return ok;
+  };
 
   // NOTE: the backend only includes `user_id` on review rows when the
   // requester is an admin (see reviews.php normalizeReviews($rows, $isAdmin)).
