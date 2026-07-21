@@ -2,15 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Image as ImageIcon, Clock, Loader2 } from 'lucide-react';
 import { DAYS_OF_WEEK, emptyService, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat, isValidLatitude, isValidLongitude } from '../models/Service.js';
 import { useModalA11y } from '../hook/useModalA11y.js';
+import api from '../api/axiosConfig.js';
 
 const VERIFICATION_OPTIONS = ['needs verification', 'verified', 'rejected', 'archived'];
+
+// Mirrors the backend's own checks in upload-image.php 
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // ── Field length limits ─────────────────────────────────────────────────────
 // Character-only fields (single-line inputs) use LIMITS + the native
 // maxLength attribute. Free-text fields use WORD_LIMITS as the primary rule,
-// but also carry a CHAR_LIMITS ceiling — otherwise someone could "cheat" the
-// word count by typing one 10,000-character non-space blob, since that's
-// technically still just one "word". Whichever limit is hit first wins.
+// but also carry a CHAR_LIMITS ceiling
 const LIMITS = {
   name:    50,   // characters
   address: 100,  // characters
@@ -128,12 +131,45 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
   };
 
   const fileInputRef = useRef(null);
-  const handleImageFile = (e) => {
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState(null);
+
+  const handleImageFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => set('image_url', reader.result);
-    reader.readAsDataURL(file);
+    setImageError(null);
+
+    // Same checks the backend enforces (see upload-image.php) — catches the
+    // obvious cases instantly instead of waiting on a failed round trip.
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setImageError('Only JPG, PNG, and WebP images are allowed.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setImageError('Image must be 5 MB or smaller.');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const body = new FormData();
+      body.append('image', file);
+      // NOTE: don't set a Content-Type header here
+      const response = await api.post('/upload-image.php', body, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const json = response.data;
+      if (!json.success) throw new Error(json.message || 'Upload failed.');
+      set('image_url', json.data.image_url);
+    } catch (err) {
+      console.error('Failed to upload image:', err);
+      setImageError(err.response?.data?.message || err.message || 'Could not upload image — please try again.');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = ''; // lets the same file be re-selected later if needed
+    }
   };
 
   const validate = () => {
@@ -186,18 +222,23 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
           {/* ── Basic info ── */}
-          <Field label="Photo" icon={ImageIcon} hint="Optional. Stored in-memory only for now.">
+          <Field label="Photo" icon={ImageIcon}
+            hint={uploadingImage ? null : 'Optional. JPG, PNG, or WebP — up to 5 MB.'}
+            error={imageError}>
             <div className="flex items-center gap-3">
               <div className="w-20 h-20 rounded-lg bg-surface-subtle overflow-hidden border border-divider shrink-0 flex items-center justify-center">
-                {form.image_url ? (
+                {uploadingImage ? (
+                  <Loader2 className="h-5 w-5 text-faint animate-spin" />
+                ) : form.image_url ? (
                   <img src={form.image_url} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <ImageIcon className="h-6 w-6 text-disabled" />
                 )}
               </div>
-              <label className="cursor-pointer text-xs font-semibold text-accent-text hover:underline">
-                {form.image_url ? 'Change photo' : 'Upload photo'}
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageFile} />
+              <label className={`text-xs font-semibold text-accent-text ${uploadingImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:underline'}`}>
+                {uploadingImage ? 'Uploading…' : form.image_url ? 'Change photo' : 'Upload photo'}
+                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp"
+                  className="hidden" disabled={uploadingImage} onChange={handleImageFile} />
               </label>
             </div>
           </Field>
@@ -405,11 +446,11 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
         <div className="px-6 py-4 border-t border-divider-subtle space-y-2">
             {saveError && <p className="text-xs text-danger-text">{saveError}</p>}
             <div className="flex gap-2">
-              <button onClick={onClose} disabled={saving}
+              <button onClick={onClose} disabled={saving || uploadingImage}
                 className="px-4 py-2 text-sm font-medium text-secondary hover:bg-surface-subtle rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 Cancel
               </button>
-              <button onClick={handleSubmit} disabled={saving}
+              <button onClick={handleSubmit} disabled={saving || uploadingImage}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 {saving ? 'Saving…' : mode === 'edit' ? 'Save Changes' : 'Add Service'}

@@ -1,7 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Clock, User, Loader2, MessageCircleHeart } from 'lucide-react';
+import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Clock, User, Loader2, MessageCircleHeart, Image as ImageIcon } from 'lucide-react';
 import { DAYS_OF_WEEK, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat, isValidLatitude, isValidLongitude } from '../models/Service.js';
 import { useModalA11y } from '../hook/useModalA11y.js';
+import api from '../api/axiosConfig.js';
+
+// Mirrors the backend's own checks in upload-image.php.
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // ── Field length limits ─────────────────────────────────────────────────────
 const LIMITS = {
@@ -75,6 +80,7 @@ const emptySuggestion = () => ({
   latitude: '', longitude: '',
   description: '', inclusivity_notes: '', washroom_info: '',
   by_appointment_only: false, hours: defaultHours(),
+  image_url: null,
   tags: [],
   message: '',
   recommender_name: '', recommender_email: '',
@@ -106,6 +112,49 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
 
   // Same as `set`, but clamps free-text fields to their word + character limits as the person types
   const setWordLimited = (field, value) => set(field, limitText(value, WORD_LIMITS[field], CHAR_LIMITS[field]));
+
+  const fileInputRef = useRef(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState(null);
+
+  const handleImageFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageError(null);
+
+    // Same checks the backend enforces (see upload-image.php) — catches the
+    // obvious cases instantly instead of waiting on a failed round trip.
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setImageError('Only JPG, PNG, and WebP images are allowed.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setImageError('Image must be 5 MB or smaller.');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const body = new FormData();
+      body.append('image', file);
+      // NOTE: don't set a Content-Type header here beyond this — the browser
+      // needs to generate its own multipart boundary for FormData bodies.
+      const response = await api.post('/upload-image.php', body, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const json = response.data;
+      if (!json.success) throw new Error(json.message || 'Upload failed.');
+      set('image_url', json.data.image_url);
+    } catch (err) {
+      console.error('Failed to upload image:', err);
+      setImageError(err.response?.data?.message || err.message || 'Could not upload image — please try again.');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
 
   const toggleTag = (tagId) =>
     setForm(f => ({
@@ -166,7 +215,7 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
               Know a great 2SLGBTQIA+-friendly service? Let us know and an admin will review it before it goes live.
             </p>
           </div>
-          <button onClick={onClose} disabled={submitting}
+          <button onClick={onClose} disabled={submitting || uploadingImage}
             className="text-faint hover:text-secondary-strong rounded-lg p-1 hover:bg-surface-subtle transition-colors shrink-0 disabled:opacity-50">
             <X className="h-5 w-5" />
           </button>
@@ -174,6 +223,27 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+
+          <Field label="Photo" icon={ImageIcon}
+            hint={uploadingImage ? null : 'Optional. JPG, PNG, or WebP — up to 5 MB.'}
+            error={imageError}>
+            <div className="flex items-center gap-3">
+              <div className="w-20 h-20 rounded-lg bg-surface-subtle overflow-hidden border border-divider shrink-0 flex items-center justify-center">
+                {uploadingImage ? (
+                  <Loader2 className="h-5 w-5 text-faint animate-spin" />
+                ) : form.image_url ? (
+                  <img src={form.image_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <ImageIcon className="h-6 w-6 text-disabled" />
+                )}
+              </div>
+              <label className={`text-xs font-semibold text-accent-text ${uploadingImage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:underline'}`}>
+                {uploadingImage ? 'Uploading…' : form.image_url ? 'Change photo' : 'Upload photo'}
+                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp"
+                  className="hidden" disabled={uploadingImage} onChange={handleImageFile} />
+              </label>
+            </div>
+          </Field>
 
           <Field label="Service Name *" error={errors.name}
             hint={`${form.name.length}/${LIMITS.name} characters`}>
@@ -368,11 +438,11 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
         <div className="px-6 py-4 border-t border-divider-subtle space-y-2">
           {submitError && <p className="text-xs text-danger-text">{submitError}</p>}
           <div className="flex gap-2">
-            <button onClick={onClose} disabled={submitting}
+            <button onClick={onClose} disabled={submitting || uploadingImage}
               className="px-4 py-2 text-sm font-medium text-secondary hover:bg-surface-subtle rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               Cancel
             </button>
-            <button onClick={handleSubmit} disabled={submitting}
+            <button onClick={handleSubmit} disabled={submitting || uploadingImage}
               className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               {submitting ? 'Submitting…' : 'Submit Suggestion'}

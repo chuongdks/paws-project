@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import {
   ArrowLeft, Pencil, Trash2, Globe, Phone, Mail, MapPin, ExternalLink,
   FileText, Transgender, DoorOpen, MessageSquare, Plus, Clock, CalendarClock,
-  Image as ImageIcon, Upload, ShieldQuestion, Check, X as XIcon
+  Image as ImageIcon, ShieldQuestion, Check, X as XIcon
 } from 'lucide-react';
 import { getCategoryName, fullAddress, buildGoogleMapsLink, hasHours, groupedHoursDisplay, isOpenNow, isAppointmentOnly } from '../models/Service.js';
 import { averageRating, formatReviewDate, getInitials } from '../models/Review.js';
@@ -11,20 +11,10 @@ import StarRating from './StarRating.jsx';
 import ReviewFormModal from './ReviewFormModal.jsx';
 import DeleteConfirmModal from './DeleteConfirmModal.jsx';
 
-// ── Image area. WARNING: temporary client-side-only upload until DB support exists ────
-function ImageUploader({ imageUrl, onChange, isAdmin }) {
-  const inputRef = useRef(null);
-
-  const handleFile = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => onChange(reader.result);
-    reader.readAsDataURL(file);
-  };
-
+// ── Image area — read-only display.
+function ImageUploader({ imageUrl }) {
   return (
-    <div className="relative w-full aspect-[16/9] bg-surface-subtle rounded-xl overflow-hidden border border-divider group">
+    <div className="relative w-full aspect-[16/9] bg-surface-subtle rounded-xl overflow-hidden border border-divider">
       {imageUrl ? (
         <img src={imageUrl} alt="" className="w-full h-full object-cover" />
       ) : (
@@ -33,20 +23,6 @@ function ImageUploader({ imageUrl, onChange, isAdmin }) {
           <span className="text-xs">No photo yet</span>
         </div>
       )}
-
-      {/* Admin privilage */}
-      {isAdmin && (
-        <button
-          onClick={() => inputRef.current?.click()}
-          className={`absolute bottom-2.5 right-2.5 flex items-center gap-1.5 bg-surface/90 hover:bg-surface text-secondary-strong text-xs font-semibold px-3 py-1.5 rounded-lg shadow-md border border-divider transition-opacity ${
-            imageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
-          }`}
-        >
-          <Upload className="h-3.5 w-3.5" /> {imageUrl ? 'Change Photo' : 'Add Photo'}
-        </button>
-      )}
-
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
     </div>
   );
 }
@@ -217,11 +193,7 @@ export default function ServiceDetailPanel({
       <div className="flex-1 overflow-y-auto p-5 space-y-5">
 
         {/* Photo */}
-        <ImageUploader
-          imageUrl={service.image_url}
-          onChange={(dataUrl) => onUpdateImage(service.id, dataUrl)}
-          isAdmin={isAdmin}
-        />
+        <ImageUploader imageUrl={service.image_url} />
 
         {/* Name + category + verification */}
         <div className="space-y-2">
