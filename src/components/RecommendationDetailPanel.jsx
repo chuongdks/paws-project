@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   ArrowLeft, Check, X, Trash2, Phone, Mail, Globe, MapPin, ExternalLink,
   FileText, DoorOpen, Clock, CalendarClock, MessageCircleHeart, User,
-  Loader2, CircleCheck, CircleX, StickyNote, Eye,
+  Loader2, CircleCheck, CircleX, StickyNote, Eye, Image as ImageIcon,
 } from 'lucide-react';
 import { getCategoryName, fullAddress, buildGoogleMapsLink, hasHours, groupedHoursDisplay, isAppointmentOnly } from '../models/Service.js';
 
@@ -14,6 +14,22 @@ function InfoRow({ icon: Icon, children }) {
     <div className="flex items-start gap-2.5 text-sm text-secondary">
       <Icon className="h-4 w-4 text-faint mt-0.5 shrink-0" />
       <span className="leading-snug">{children}</span>
+    </div>
+  );
+}
+
+// Read-only photo display 
+function ImageViewer({ imageUrl }) {
+  return (
+    <div className="relative w-full aspect-[16/9] bg-surface-subtle rounded-xl overflow-hidden border border-divider">
+      {imageUrl ? (
+        <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full flex flex-col items-center justify-center text-faint gap-1.5">
+          <ImageIcon className="h-8 w-8" />
+          <span className="text-xs">No photo submitted</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -54,6 +70,9 @@ export default function RecommendationDetailPanel({
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto p-5 space-y-5">
+
+        {/* Photo — read-only, whatever the person suggesting this service uploaded (if anything) */}
+        <ImageViewer imageUrl={recommendation.image_url} />
 
         {/* Name + category */}
         <div className="space-y-2">
