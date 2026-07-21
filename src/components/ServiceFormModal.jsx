@@ -59,11 +59,12 @@ const limitText = (text, maxWords, maxChars) => {
   return clipped;
 };
 
-function Field({ label, icon: Icon, hint, error, children }) {
+function Field({ label, icon: Icon, hint, error, required, children }) {
   return (
     <div className="space-y-1">
       <label className="flex items-center gap-1.5 text-xs font-semibold text-secondary uppercase tracking-wider">
         {Icon && <Icon className="h-3.5 w-3.5" />} {label}
+        {required && <span className="text-danger-text font-bold text-base leading-none">*</span>}
       </label>
       {children}
       {hint  && <p className="text-[11px] text-faint">{hint}</p>}
@@ -243,14 +244,14 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
             </div>
           </Field>
 
-          <Field label="Name *" error={errors.name}
+          <Field label="Name" required error={errors.name}
             hint={`${form.name.length}/${LIMITS.name} characters`}>
             <input className={inputCls} placeholder="e.g. Campus Pride Centre"
               maxLength={LIMITS.name}
               value={form.name} onChange={e => set('name', e.target.value)} />
           </Field>
 
-          <Field label="Category *" icon={Building2} error={errors.category_id}>
+          <Field label="Category" required icon={Building2} error={errors.category_id}>
             <select className={inputCls} value={form.category_id ?? ''}
               onChange={e => set('category_id', e.target.value)}>
               <option value="">Select a category...</option>
