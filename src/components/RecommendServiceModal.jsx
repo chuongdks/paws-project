@@ -3,6 +3,54 @@ import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Clock, User, L
 import { DAYS_OF_WEEK, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat, isValidLatitude, isValidLongitude } from '../models/Service.js';
 import { useModalA11y } from '../hook/useModalA11y.js';
 
+// ── Field length limits ─────────────────────────────────────────────────────
+const LIMITS = {
+  name:    50,   // characters
+  address: 100,  // characters
+};
+
+const WORD_LIMITS = {
+  description:       100,
+  inclusivity_notes: 60,
+  washroom_info:     40,
+  message:           60,
+};
+
+const CHAR_LIMITS = {
+  description:       750,  // ~100 words at a generous average word length
+  inclusivity_notes: 450,
+  washroom_info:     300,
+  message:           450,
+};
+
+// Counts words (whitespace-separated, ignoring empty strings)
+const countWords = (text) => (text?.trim() ? text.trim().split(/\s+/).length : 0);
+
+// Enforces both a hard character ceiling and a word-count ceiling, called on
+// every keystroke so it's impossible to type past either limit.
+const limitText = (text, maxWords, maxChars) => {
+  // 1. Hard character cap first — closes the "one giant word" loophole
+  //    regardless of how the word-splitting below behaves.
+  let clipped = text.length > maxChars ? text.slice(0, maxChars) : text;
+
+  // 2. Word cap — rebuild by re-joining only the first maxWords non-empty
+  //    words, preserving trailing whitespace so typing doesn't feel jumpy.
+  if (countWords(clipped) > maxWords) {
+    const words = clipped.split(/\s+/);
+    let count = 0;
+    let result = '';
+    for (const w of words) {
+      if (w === '') { result += ' '; continue; }
+      count += 1;
+      if (count > maxWords) break;
+      result += (result && !result.endsWith(' ') ? ' ' : '') + w;
+    }
+    clipped = result;
+  }
+
+  return clipped;
+};
+
 function Field({ label, icon: Icon, hint, error, children }) {
   return (
     <div className="space-y-1">
@@ -55,6 +103,9 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
     setForm(f => ({ ...f, [field]: value }));
     if (errors[field]) setErrors(e => ({ ...e, [field]: null }));
   };
+
+  // Same as `set`, but clamps free-text fields to their word + character limits as the person types
+  const setWordLimited = (field, value) => set(field, limitText(value, WORD_LIMITS[field], CHAR_LIMITS[field]));
 
   const toggleTag = (tagId) =>
     setForm(f => ({
@@ -112,7 +163,7 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
           <div>
             <h2 id="suggest-service-title" className="text-base font-bold text-primary">Suggest a Service</h2>
             <p className="text-[11px] text-faint mt-0.5">
-              Know a great 2SLGBTQIA+-friendly service? Let us know — an admin will review it before it goes live.
+              Know a great 2SLGBTQIA+-friendly service? Let us know and an admin will review it before it goes live.
             </p>
           </div>
           <button onClick={onClose} disabled={submitting}
@@ -124,8 +175,10 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
-          <Field label="Service Name *" error={errors.name}>
+          <Field label="Service Name *" error={errors.name}
+            hint={`${form.name.length}/${LIMITS.name} characters`}>
             <input className={inputCls} placeholder="e.g. Campus Pride Centre"
+              maxLength={LIMITS.name}
               value={form.name} onChange={e => set('name', e.target.value)} />
           </Field>
 
@@ -156,8 +209,9 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
           </Field>
 
           <Field label="Street Address" icon={MapPin}
-            hint="Leave blank for provincial / national helplines / performers artist.">
+            hint={`Leave blank for provincial / national helplines / performers artist. (${form.address.length}/${LIMITS.address} characters)`}>
             <input className={inputCls} placeholder="123 Main Street"
+              maxLength={LIMITS.address}
               value={form.address} onChange={e => set('address', e.target.value)} />
           </Field>
 
@@ -195,21 +249,24 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
             </ul>
           </div>
 
-          <Field label="Description" icon={FileText}>
+          <Field label="Description (Optional)" icon={FileText}
+            hint={`${countWords(form.description)}/${WORD_LIMITS.description} words · ${form.description.length}/${CHAR_LIMITS.description} characters`}>
             <textarea className={`${inputCls} resize-none`} rows={3}
               placeholder="Describe the services offered..."
-              value={form.description} onChange={e => set('description', e.target.value)} />
+              value={form.description} onChange={e => setWordLimited('description', e.target.value)} />
           </Field>
 
-          <Field label="Inclusivity Notes" hint="Who is welcomed, or how the space is inclusive.">
+          <Field label="Inclusivity Notes (Optional)"
+            hint={`Who is welcomed, or how the space is inclusive. (${countWords(form.inclusivity_notes)}/${WORD_LIMITS.inclusivity_notes} words · ${form.inclusivity_notes.length}/${CHAR_LIMITS.inclusivity_notes} characters)`}>
             <textarea className={`${inputCls} resize-none`} rows={2}
               placeholder="e.g. Free of charge for youth 12-29. Anonymous and confidential."
-              value={form.inclusivity_notes} onChange={e => set('inclusivity_notes', e.target.value)} />
+              value={form.inclusivity_notes} onChange={e => setWordLimited('inclusivity_notes', e.target.value)} />
           </Field>
 
-          <Field label="Washroom Info" hint="Gender-inclusive or accessible washroom availability.">
+          <Field label="Washroom Info (Optional)"
+            hint={`Gender-inclusive or accessible washroom availability. (${countWords(form.washroom_info)}/${WORD_LIMITS.washroom_info} words · ${form.washroom_info.length}/${CHAR_LIMITS.washroom_info} characters)`}>
             <input className={inputCls} placeholder="e.g. Gender-inclusive washroom available."
-              value={form.washroom_info} onChange={e => set('washroom_info', e.target.value)} />
+              value={form.washroom_info} onChange={e => setWordLimited('washroom_info', e.target.value)} />
           </Field>
 
           <Field label="Hours of Operation" icon={Clock}
@@ -281,10 +338,11 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
             </div>
           </Field>
 
-          <Field label="Why do you recommend this?" icon={MessageCircleHeart} hint="Optional — helps our admins review faster.">
+          <Field label="Why do you recommend this? (Optional)" icon={MessageCircleHeart}
+            hint={`Optional but it helps our admins review faster. (${countWords(form.message)}/${WORD_LIMITS.message} words · ${form.message.length}/${CHAR_LIMITS.message} characters)`}>
             <textarea className={`${inputCls} resize-none`} rows={2}
               placeholder="Tell us a bit about your experience..."
-              value={form.message} onChange={e => set('message', e.target.value)} />
+              value={form.message} onChange={e => setWordLimited('message', e.target.value)} />
           </Field>
 
           {/* Your info — optional, only really needed so we can follow up on anonymous submissions */}

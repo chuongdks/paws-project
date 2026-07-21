@@ -3,11 +3,11 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 const ThemeContext = createContext(null);
 const STORAGE_KEY = 'paws-theme';
 
-// Defaults to whatever the person already saved, otherwise follows the OS setting once on first visit
+// Defaults to whatever the person already saved
 const getInitialTheme = () => {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored === 'light' || stored === 'dark') return stored;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return 'light';
 };
 
 export function ThemeProvider({ children }) {

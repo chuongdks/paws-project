@@ -20,6 +20,19 @@ const FOCUSABLE_SELECTOR = [
 export function useModalA11y(onClose, active = true, closeOnEscape = true) {
   const containerRef = useRef(null);
 
+  // Kept current on every render without being an effect dependency.
+  const closeOnEscapeRef = useRef(closeOnEscape);
+  useEffect(() => {
+    closeOnEscapeRef.current = closeOnEscape;
+  }, [closeOnEscape]);
+
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // Mount/unmount only — deliberately does NOT depend on closeOnEscape (see
+  // above) so it doesn't rerun (and re-steal focus) while the modal is open.
   useEffect(() => {
     if (!active) return;
     const container = containerRef.current;
@@ -33,9 +46,9 @@ export function useModalA11y(onClose, active = true, closeOnEscape = true) {
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        if (closeOnEscape) {
+        if (closeOnEscapeRef.current) {
           e.stopPropagation();
-          onClose?.();
+          onCloseRef.current?.();
         }
         return;
       }
@@ -62,7 +75,7 @@ export function useModalA11y(onClose, active = true, closeOnEscape = true) {
       document.removeEventListener('keydown', handleKeyDown, true);
       previouslyFocused?.focus?.();
     };
-  }, [onClose, active, closeOnEscape]);
+  }, [active]);
 
   return containerRef;
 }

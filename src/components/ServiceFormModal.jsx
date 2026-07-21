@@ -5,6 +5,57 @@ import { useModalA11y } from '../hook/useModalA11y.js';
 
 const VERIFICATION_OPTIONS = ['needs verification', 'verified', 'rejected', 'archived'];
 
+// ── Field length limits ─────────────────────────────────────────────────────
+// Character-only fields (single-line inputs) use LIMITS + the native
+// maxLength attribute. Free-text fields use WORD_LIMITS as the primary rule,
+// but also carry a CHAR_LIMITS ceiling — otherwise someone could "cheat" the
+// word count by typing one 10,000-character non-space blob, since that's
+// technically still just one "word". Whichever limit is hit first wins.
+const LIMITS = {
+  name:    50,   // characters
+  address: 100,  // characters
+};
+
+const WORD_LIMITS = {
+  description:       100,
+  inclusivity_notes: 60,
+  washroom_info:     40,
+};
+
+const CHAR_LIMITS = {
+  description:       750,  // ~100 words at a generous average word length
+  inclusivity_notes: 450,
+  washroom_info:     300,
+};
+
+// Counts words (whitespace-separated, ignoring empty strings)
+const countWords = (text) => (text?.trim() ? text.trim().split(/\s+/).length : 0);
+
+// Enforces both a hard character ceiling and a word-count ceiling, called on
+// every keystroke so it's impossible to type past either limit.
+const limitText = (text, maxWords, maxChars) => {
+  // 1. Hard character cap first — closes the "one giant word" loophole
+  //    regardless of how the word-splitting below behaves.
+  let clipped = text.length > maxChars ? text.slice(0, maxChars) : text;
+
+  // 2. Word cap — rebuild by re-joining only the first maxWords non-empty
+  //    words, preserving trailing whitespace so typing doesn't feel jumpy.
+  if (countWords(clipped) > maxWords) {
+    const words = clipped.split(/\s+/);
+    let count = 0;
+    let result = '';
+    for (const w of words) {
+      if (w === '') { result += ' '; continue; }
+      count += 1;
+      if (count > maxWords) break;
+      result += (result && !result.endsWith(' ') ? ' ' : '') + w;
+    }
+    clipped = result;
+  }
+
+  return clipped;
+};
+
 function Field({ label, icon: Icon, hint, error, children }) {
   return (
     <div className="space-y-1">
@@ -52,6 +103,9 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
     setForm(f => ({ ...f, [field]: value }));
     if (errors[field]) setErrors(e => ({ ...e, [field]: null }));
   };
+
+  // Same as `set`, but clamps free-text fields to their word + character limits as the person types
+  const setWordLimited = (field, value) => set(field, limitText(value, WORD_LIMITS[field], CHAR_LIMITS[field]));
 
   // form.tags is an array of tag ids
   const toggleTag = (tagId) =>
@@ -148,8 +202,10 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
             </div>
           </Field>
 
-          <Field label="Name *" error={errors.name}>
+          <Field label="Name *" error={errors.name}
+            hint={`${form.name.length}/${LIMITS.name} characters`}>
             <input className={inputCls} placeholder="e.g. Campus Pride Centre"
+              maxLength={LIMITS.name}
               value={form.name} onChange={e => set('name', e.target.value)} />
           </Field>
 
@@ -181,9 +237,10 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
           </Field>
 
           {/* ── Location ── */}
-          <Field label="Street Address" icon={MapPin}
-            hint="Leave blank for provincial / national helplines / performers artist.">
+          <Field label="Street Address" icon={MapPin} error={errors.address}
+            hint={`Leave blank for provincial / national helplines / performers artist. (${(form.address ?? '').length}/${LIMITS.address} characters)`}>
             <input className={inputCls} placeholder="123 Main Street"
+              maxLength={LIMITS.address}
               value={form.address ?? ''} onChange={e => set('address', e.target.value)} />
           </Field>
 
@@ -225,23 +282,24 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
           </div>
 
           {/* ── Details ── */}
-          <Field label="Description" icon={FileText}>
+          <Field label="Description (Optional)" icon={FileText}
+            hint={`${countWords(form.description)}/${WORD_LIMITS.description} words · ${form.description.length}/${CHAR_LIMITS.description} characters`}>
             <textarea className={`${inputCls} resize-none`} rows={3}
               placeholder="Describe the services offered..."
-              value={form.description} onChange={e => set('description', e.target.value)} />
+              value={form.description} onChange={e => setWordLimited('description', e.target.value)} />
           </Field>
 
-          <Field label="Inclusivity Notes"
-            hint="Specific notes about who is welcomed or how the space is inclusive.">
+          <Field label="Inclusivity Notes (Optional)"
+            hint={`Specific notes about who is welcomed or how the space is inclusive. (${countWords(form.inclusivity_notes)}/${WORD_LIMITS.inclusivity_notes} words · ${form.inclusivity_notes.length}/${CHAR_LIMITS.inclusivity_notes} characters)`}>
             <textarea className={`${inputCls} resize-none`} rows={2}
               placeholder="e.g. Free of charge for youth 12-29. Anonymous and confidential."
-              value={form.inclusivity_notes} onChange={e => set('inclusivity_notes', e.target.value)} />
+              value={form.inclusivity_notes} onChange={e => setWordLimited('inclusivity_notes', e.target.value)} />
           </Field>
 
-          <Field label="Washroom Info"
-            hint="Gender-inclusive or accessible washroom availability.">
+          <Field label="Washroom Info (Optional)"
+            hint={`Gender-inclusive or accessible washroom availability. (${countWords(form.washroom_info)}/${WORD_LIMITS.washroom_info} words · ${form.washroom_info.length}/${CHAR_LIMITS.washroom_info} characters)`}>
             <input className={inputCls} placeholder="e.g. Gender-inclusive washroom available."
-              value={form.washroom_info} onChange={e => set('washroom_info', e.target.value)} />
+              value={form.washroom_info} onChange={e => setWordLimited('washroom_info', e.target.value)} />
           </Field>
 
           {/* ── Hours of Operation ── */}
@@ -363,4 +421,3 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
     </div>
   );
 }
-
