@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { GestureHandling } from 'leaflet-gesture-handling';
+import 'leaflet-gesture-handling/dist/leaflet-gesture-handling.css';
 import { isMappable, fullAddress } from '../models/Service.js';
 
 const centerOfWindsor = [42.3149, -83.0364];
@@ -12,6 +14,9 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+
+// Gesture Handling, Ctrl + Zoom for PC or 2 finger pinch to zoom. Handle edge case where user would zoom in on the map and got stuck
+L.Map.addInitHook('addHandler', 'gestureHandling', GestureHandling);
 
 // Blue default marker
 const defaultIcon = L.icon({
@@ -98,7 +103,7 @@ export default function LeafletTestMap({ services, selectedService, onSelectServ
   return (
     // h-full fills whatever height the parent panel gives it
     <div className="w-full h-full relative z-0">
-      <MapContainer center={centerOfWindsor} zoom={12} style={{ width: '100%', height: '100%' }}>
+      <MapContainer center={centerOfWindsor} zoom={12} gestureHandling={true} style={{ width: '100%', height: '100%' }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

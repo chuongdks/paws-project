@@ -157,7 +157,7 @@ export default function App() {
 
   return (
     /* HEADER, FILTER BAR, BODY and CRUD MODAL */
-    <div className="min-h-screen md:h-screen flex flex-col bg-app-bg overflow-y-auto md:overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-app-bg">
 
       {/* ── Header: Website name, logo, and others and Logging In/Sign Out ─── */}
       <Header
@@ -185,7 +185,7 @@ export default function App() {
       )}
 
       {/* ── Body: sidebar -> detail panel + map (stacked on mobile, row on desktop) ───────────────────────────── */}
-      <div className="flex flex-1 flex-col md:flex-row md:overflow-hidden">
+      <div className="flex flex-1 flex-col md:flex-row md:flex-none md:h-[70vh] min-h-0">
 
         {/* Mobile only bar: always visible, since there's no floating edge handle to grab in the stacked layout */}
         <button onClick={() => setSidebarCollapsed(c => !c)}
@@ -267,8 +267,8 @@ export default function App() {
           {/* Desktop only floating handle: sits right on the boundary between sidebar and map; positioned relative to the host above (not the clipping box), so it's never cut off mid-animation */}
           <button onClick={() => setSidebarCollapsed(c => !c)}
             title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
-            className="hidden md:flex absolute top-1/2 -right-6.5 -translate-y-1/2 z-20 items-center justify-center w-8 h-15 rounded-full bg-surface-raised border border-divider shadow-md hover:bg-surface-subtle hover:shadow-lg transition-all cursor-pointer active:scale-95">
-            {sidebarCollapsed ? <ChevronRight className="h-5 w-5 text-muted" /> : <ChevronLeft className="h-5 w-5 text-muted" />}
+            className="hidden md:flex absolute top-1/2 -right-3 -translate-y-1/2 z-20 items-center justify-center w-6 h-12 rounded-full bg-surface-raised border border-divider shadow-md hover:bg-surface-subtle hover:shadow-lg transition-all cursor-pointer active:scale-95">
+            {sidebarCollapsed ? <ChevronRight className="h-4 w-4 text-muted" /> : <ChevronLeft className="h-4 w-4 text-muted" />}
           </button>
         </div>
 

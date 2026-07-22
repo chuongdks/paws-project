@@ -53,11 +53,11 @@ export default function Footer() {
             Noor Haddad
           </a>
           ,
-          <a href="#" className="font-semibold text-muted hover:text-accent-text transition-colors">
+          <a href="https://www.linkedin.com/in/parsia-zahedi-bb49402b6/" target="_blank" className="font-semibold text-muted hover:text-accent-text transition-colors">
             Parsia Zahedimazandarani
           </a>
           , and 
-          <a href="https://github.com/chuongdks" target="_blank" className="font-semibold text-muted hover:text-accent-text transition-colors">
+          <a href="https://www.linkedin.com/in/phchuong98/" target="_blank" className="font-semibold text-muted hover:text-accent-text transition-colors">
             Chuong Pham
           </a>
         </span>

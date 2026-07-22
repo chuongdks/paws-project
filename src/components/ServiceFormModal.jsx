@@ -82,6 +82,10 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
   const [errors, setErrors] = useState({});
   const initialSnapshotRef  = useRef(JSON.stringify(emptyService()));
 
+  // ── Honeypot ─────────────────────────────────────────────────────────────
+  // A decoy field, invisible to real people, that only a bot filling in every input it finds would ever populate. 
+  const [hpWebsite, setHpWebsite] = useState('');
+
   // Populate form when editing an existing service. `initial.tags` comes in as [{ id, name }] (see Service.js normalizeTags)
   //  the form itself works with plain tag ids, so convert here. Legacy/offline tags with no real id (id:null) get matched up by name against the live `tags` list as a bridge.
   useEffect(() => {
@@ -187,6 +191,12 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
   };
 
   const handleSubmit = () => {
+    // Bot check first, before touching real validation or the network.
+    if (hpWebsite.trim() !== '') {
+      onClose();
+      return;
+    }
+
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
     onSave({
@@ -221,6 +231,21 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+
+          {/* Honeypot Trap
+            Positioned off-screen (not display:none/visibility:hidden, which some bots specifically know to skip) */}
+          <div aria-hidden="true" className="absolute -left-[9999px] top-0 h-0 w-0 overflow-hidden">
+            <label htmlFor="svc-hp-website">Leave this field blank</label>
+            <input
+              id="svc-hp-website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={hpWebsite}
+              onChange={e => setHpWebsite(e.target.value)}
+            />
+          </div>
 
           {/* ── Basic info ── */}
           <Field label="Photo" icon={ImageIcon}

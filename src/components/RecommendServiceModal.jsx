@@ -102,6 +102,10 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
   const [errors, setErrors] = useState({});
   const initialSnapshotRef  = useRef(JSON.stringify(getInitialForm()));
 
+  // ── Honeypot ─────────────────────────────────────────────────────────────
+  // A decoy field, invisible to real people, that only a bot filling in every input it finds would ever populate.
+  const [hpWebsite, setHpWebsite] = useState('');
+
   // True once the form differs from its starting point 
   const isDirty = JSON.stringify(form) !== initialSnapshotRef.current;
   const panelRef = useModalA11y(onClose, !submitting, !isDirty);
@@ -189,6 +193,12 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
   };
 
   const handleSubmit = async () => {
+    // Bot check first, before touching real validation or the network.
+    if (hpWebsite.trim() !== '') {
+      onClose();
+      return;
+    }
+
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
     const ok = await onSave({
@@ -224,6 +234,21 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+
+          {/* Honeypot Trap
+              Positioned off-screen (not display:none/visibility:hidden, which some bots specifically know to skip), */}
+          <div aria-hidden="true" className="absolute -left-[9999px] top-0 h-0 w-0 overflow-hidden">
+            <label htmlFor="rec-hp-website">Leave this field blank</label>
+            <input
+              id="rec-hp-website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={hpWebsite}
+              onChange={e => setHpWebsite(e.target.value)}
+            />
+          </div>
 
           <Field label="Photo" icon={ImageIcon}
             hint={uploadingImage ? null : 'Optional. JPG, PNG, or WebP — up to 5 MB.'}
