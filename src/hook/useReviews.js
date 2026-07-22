@@ -59,14 +59,23 @@ export function useReviews() {
       });
       const ok = Boolean(response.data.success);
       if (ok) {
+        // Refresh the 'approved' cache
+        await fetchReviews(listingId, 'approved');
         toast.success('Review submitted. Awaiting approval.');
+      } else if (response.status === 409 || response.data.code === 'DUPLICATE_REVIEW') {
+        // Backend enforces one review per user per listing
+        toast.error(response.data.message || 'You\'ve already reviewed this listing.');
       } else {
         toast.error(response.data.message || 'Could not submit your review — please try again.');
       }
       return ok;
     } catch (err) {
       console.error('Failed to add review:', err);
-      toast.error('Could not submit your review — please try again.');
+      if (err.response?.status === 409) {
+        toast.error(err.response?.data?.message || 'You\'ve already reviewed this listing.');
+      } else {
+        toast.error(err.response?.data?.message || 'Could not submit your review — please try again.');
+      }
       return false;
     }
   };
@@ -94,18 +103,6 @@ export function useReviews() {
   };
 
   // PUT: the review's own author edits its content (rating/comment).
-  // WARNING for BACKEND: reviews.php's current PUT handler
-  // (updateReviewStatus()) only reads/writes `status` and is gated behind
-  // requireAdminUser(). For this to actually work, the backend needs to:
-  //   1. Allow the request through when the caller is either an admin OR the
-  //      review's own user_id (not admin-only).
-  //   2. Accept overall_rating / respect_rating / inclusivity_rating / comment
-  //      in the PUT body and update those columns when present.
-  //   3. When a non-admin author edits their own review, force status back
-  //      to 'pending' regardless of what's in the request body (so an edit
-  //      can't be used to silently re-approve without re-review). Admins
-  //      changing status directly should keep working exactly as today.
-  // Until that's in place, this call will 403 for non-admins.
   const updateReview = async (reviewId, listingId, { rating, respect_rating, inclusivity_rating, comment }) => {
     try {
       const response = await api.put('/reviews.php', {

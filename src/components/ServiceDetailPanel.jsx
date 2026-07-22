@@ -59,6 +59,9 @@ function SubRatings({ review }) {
 
 // ── Single review row ───────────────────────────────────────────────────────────
 function ReviewCard({ review, isAdmin, isOwnReview, onEdit, onDelete }) {
+  // The backend includes a person's own pending/rejected review alongside approved ones in this list 
+  const isPending = review.status && review.status !== 'approved';
+
   return (
     <div className="space-y-2 pb-4 border-b border-divider-subtle last:border-0 last:pb-0">
       <div className="flex items-start justify-between gap-2">
@@ -67,7 +70,14 @@ function ReviewCard({ review, isAdmin, isOwnReview, onEdit, onDelete }) {
             {getInitials(review.reviewer_name)}
           </div>
           <div>
-            <p className="text-sm font-semibold text-secondary-strong leading-tight">{review.reviewer_name}</p>
+            <p className="text-sm font-semibold text-secondary-strong leading-tight flex items-center gap-1.5">
+              {review.reviewer_name}
+              {isPending && (
+                <span className="text-[10px] font-semibold text-warning-text bg-warning-soft border border-warning-border px-1.5 py-0.5 rounded-full">
+                  Pending approval
+                </span>
+              )}
+            </p>
             <p className="text-[11px] text-faint">{formatReviewDate(review.created_at)}</p>
           </div>
         </div>
@@ -378,15 +388,19 @@ export default function ServiceDetailPanel({
             </p>
           )}
 
-          {reviews.length > 0 && (
-            <div className="flex items-center gap-2">
-              <StarRating rating={averageRating(reviews)} />
-              <span className="text-sm font-semibold text-secondary">{averageRating(reviews)}</span>
-              <span className="text-xs text-faint">
-                ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
-              </span>
-            </div>
-          )}
+          {(() => {
+            // The `reviews` prop can include the caller's own not-yet-approved review mixed in with real approved ones 
+            const publicReviews = reviews.filter(r => !r.status || r.status === 'approved');
+            return publicReviews.length > 0 && (
+              <div className="flex items-center gap-2">
+                <StarRating rating={averageRating(publicReviews)} />
+                <span className="text-sm font-semibold text-secondary">{averageRating(publicReviews)}</span>
+                <span className="text-xs text-faint">
+                  ({publicReviews.length} {publicReviews.length === 1 ? 'review' : 'reviews'})
+                </span>
+              </div>
+            );
+          })()}
 
           {reviews.length > 0 ? (
             <div className="space-y-4 pt-1">
