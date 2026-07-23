@@ -31,8 +31,8 @@
   --text-primary: #0f172a;         /* headings, names, slate-900 */
   --text-secondary: #334155;       /* body text, slate-700 */
   --text-secondary-strong: #1e293b;/* emphasized body text, slate-800 */
-  --text-muted: #64748b;           /* de-emphasized text, slate-500 */
-  --text-faint: #94a3b8;           /* placeholders, meta text, slate-400 */
+  --text-muted: #475569;           /* de-emphasized text, slate-600 (darkened from slate-500 for WCAG AA 4.5:1 contrast) */
+  --text-faint: #475569;           /* placeholders, meta text, slate-600 (darkened from slate-400 — slate-400 measured 2.56:1 on white, far below the 4.5:1 AA minimum for normal text) */
   --text-disabled: #cbd5e1;        /* disabled/empty-state text, slate-300 */
   --icon-faint: #e2e8f0;           /* unfilled star icons etc, slate-200 */
 
@@ -66,7 +66,7 @@
   /* Status: danger (delete actions, errors) */
   --danger: #dc2626;
   --danger-hover: #b91c1c;
-  --danger-text: #ef4444;
+  --danger-text: #b91c1c;          /* red-700, darkened from red-500 (#ef4444, 3.44:1 on danger-soft) for WCAG AA 4.5:1 — reuses --danger-hover's value rather than adding a new color */
   --danger-soft: #fef2f2;
   --danger-soft-strong: #fee2e2;
   --danger-border: #fecaca;
@@ -93,7 +93,7 @@
   --text-secondary: #cbd5e1;       /* slate-300 */
   --text-secondary-strong: #e2e8f0;/* slate-200 */
   --text-muted: #94a3b8;           /* slate-400 */
-  --text-faint: #64748b;           /* slate-500 */
+  --text-faint: #94a3b8;           /* slate-400 (was slate-500, which measured 3.07–3.75:1 against dark surfaces — below the 4.5:1 AA minimum) */
   --text-disabled: #475569;        /* slate-600 */
   --icon-faint: #334155;           /* slate-700 */
 
@@ -238,4 +238,14 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* Leaflet's own attribution control (bottom-right corner of the map) ships
+   with a hardcoded `color: #333` on a semi-transparent white background (rgba(255,255,255,0.7))  */
+.leaflet-control-attribution {
+  background: var(--surface-raised) !important;
+  color: var(--text-secondary) !important;
+}
+.leaflet-control-attribution a {
+  color: var(--accent-text) !important;
 }
