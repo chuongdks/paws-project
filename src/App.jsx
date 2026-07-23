@@ -159,6 +159,10 @@ export default function App() {
     /* HEADER, FILTER BAR, BODY and CRUD MODAL */
     <div className="min-h-screen flex flex-col bg-app-bg">
 
+      {/* Hideen on top of heading. 
+      The logo already conveys the site's identity visually, it is here so screen reader users have a real <h1> to land on via heading-navigation shortcuts } */}
+      <h1 className="sr-only">Safe Spaces &amp; Services Map — Windsor-Essex 2SLGBTQIA+ Support Directory</h1>
+
       {/* ── Header: Website name, logo, and others and Logging In/Sign Out ─── */}
       <Header
         resultCount={filteredServices.length}
@@ -185,7 +189,7 @@ export default function App() {
       )}
 
       {/* ── Body: sidebar -> detail panel + map (stacked on mobile, row on desktop) ───────────────────────────── */}
-      <div className="flex flex-1 flex-col md:flex-row md:flex-none md:h-[70vh] min-h-0">
+      <div className="flex flex-1 flex-col md:flex-row md:flex-none md:h-[600px] min-h-0">
 
         {/* Mobile only bar: always visible, since there's no floating edge handle to grab in the stacked layout */}
         <button onClick={() => setSidebarCollapsed(c => !c)}
