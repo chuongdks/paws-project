@@ -57,15 +57,27 @@ const limitText = (text, maxWords, maxChars) => {
 };
 
 function Field({ label, icon: Icon, hint, error, required, children }) {
+  const fieldId = 'field-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const hintId  = hint  ? `${fieldId}-hint`  : undefined;
+  const errorId = error ? `${fieldId}-error` : undefined;
+  const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined;
+
+  const child = React.isValidElement(children)
+    ? React.cloneElement(children, {
+        id: children.props.id ?? fieldId,
+        'aria-describedby': children.props['aria-describedby'] ?? describedBy,
+      })
+    : children;
+
   return (
     <div className="space-y-1">
-      <label className="flex items-center gap-1.5 text-xs font-semibold text-secondary uppercase tracking-wider">
+      <label htmlFor={fieldId} className="flex items-center gap-1.5 text-xs font-semibold text-secondary uppercase tracking-wider">
         {Icon && <Icon className="h-3.5 w-3.5" />} {label}
         {required && <span className="text-danger-text font-bold text-base leading-none">*</span>}
       </label>
-      {children}
-      {hint  && <p className="text-[11px] text-faint">{hint}</p>}
-      {error && <p className="text-xs text-danger-text">{error}</p>}
+      {child}
+      {hint  && <p id={hintId} className="text-[11px] text-faint">{hint}</p>}
+      {error && <p id={errorId} className="text-xs text-danger-text">{error}</p>}
     </div>
   );
 }

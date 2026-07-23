@@ -45,7 +45,7 @@ export default function Footer() {
       </p> */}
 
       {/* Copyright + signature */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[11px] text-faint">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[12px] text-faint">
         <span>© {year} PAWS in Recovery. All rights reserved.</span>
         <span className="flex items-center gap-1">
           Created by{' '}

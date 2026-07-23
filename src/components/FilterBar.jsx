@@ -87,7 +87,7 @@ export default function FilterBar({
       <div className="relative w-full sm:w-64 shrink-0">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-faint" />
         <input
-          type="text" placeholder="Search services..."
+          type="text" placeholder="Search services..." aria-label="Search services"
           value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
           className="w-full bg-surface-muted border border-divider rounded-lg pl-9 pr-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-focus-ring/20 focus:border-focus-ring transition-all"
         />

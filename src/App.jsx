@@ -271,8 +271,8 @@ export default function App() {
           {/* Desktop only floating handle: sits right on the boundary between sidebar and map; positioned relative to the host above (not the clipping box), so it's never cut off mid-animation */}
           <button onClick={() => setSidebarCollapsed(c => !c)}
             title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
-            className="hidden md:flex absolute top-1/2 -right-3 -translate-y-1/2 z-20 items-center justify-center w-6 h-12 rounded-full bg-surface-raised border border-divider shadow-md hover:bg-surface-subtle hover:shadow-lg transition-all cursor-pointer active:scale-95">
-            {sidebarCollapsed ? <ChevronRight className="h-4 w-4 text-muted" /> : <ChevronLeft className="h-4 w-4 text-muted" />}
+            className="hidden md:flex absolute top-1/2 -right-6.5 -translate-y-1/2 z-20 items-center justify-center w-8 h-15 rounded-full bg-surface-raised border border-divider shadow-md hover:bg-surface-subtle hover:shadow-lg transition-all cursor-pointer active:scale-95">
+            {sidebarCollapsed ? <ChevronRight className="h-5 w-5 text-muted" /> : <ChevronLeft className="h-5 w-5 text-muted" />}
           </button>
         </div>
 

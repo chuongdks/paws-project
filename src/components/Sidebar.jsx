@@ -19,6 +19,12 @@ export default function Sidebar({
   return (
     <aside className="w-full h-full shrink-0 flex flex-col border-r border-divider-page bg-app-bg overflow-hidden">
 
+      {/* Hidden H2: restores a valid h1 -> h2 -> h3 heading order for SCREEN READER only, not for display
+      Without this, the page's h1 (App.jsx) was followed directly by each ServiceCard/RecommendationCard's h3, skipping h2. */}
+      <h2 className="sr-only">
+        {activeTab === 'suggestions' && isAdmin ? 'Suggested Services' : 'Services'}
+      </h2>
+
       {/* Tab switcher — only admins have anything to moderate here */}
       {isAdmin && (
         <div className="flex bg-surface-subtle p-1 m-3 mb-0 rounded-lg shrink-0">
