@@ -2,13 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Image as ImageIcon, Clock, Loader2 } from 'lucide-react';
 import { DAYS_OF_WEEK, emptyService, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat, isValidLatitude, isValidLongitude } from '../models/Service.js';
 import { useModalA11y } from '../hook/useModalA11y.js';
-import api from '../api/axiosConfig.js';
+// import api from '../api/axiosConfig.js'; // no longer needed now that photos are pasted-in URLs, not uploaded files
 
 const VERIFICATION_OPTIONS = ['needs verification', 'verified', 'rejected', 'archived'];
 
+// ── Photo handling switched from local file upload to a pasted image URL ───────
+// Reason: hosting costs scale with stored images once the directory grows
+// Store url link to the image instead
+
 // Mirrors the backend's own checks in upload-image.php 
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+// const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
+// const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // ── Field length limits ─────────────────────────────────────────────────────
 // Character-only fields (single-line inputs) use LIMITS + the native
@@ -58,6 +62,9 @@ const limitText = (text, maxWords, maxChars) => {
 
   return clipped;
 };
+
+// simple image url checker
+const isLikelyImageUrl = (url) => /^https?:\/\/.+/i.test(url.trim());
 
 function Field({ label, icon: Icon, hint, error, required, children }) {
   // Auto-derive a stable id from the label text 
@@ -117,6 +124,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
     setForm(seeded);
     initialSnapshotRef.current = JSON.stringify(seeded); // baseline for the dirty-check below
     setErrors({});
+    setImagePreviewFailed(false);
   }, [initial, tags]);
 
   // True once the form differs from whatever it was seeded with 
@@ -151,47 +159,62 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
     }));
   };
 
-  const fileInputRef = useRef(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [imageError, setImageError] = useState(null);
+  // ── Photo URL state ──────────────────────────────────────────────────────
+  const [imageUrlError, setImageUrlError] = useState(null);
+  const [imagePreviewFailed, setImagePreviewFailed] = useState(false);
 
-  const handleImageFile = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImageError(null);
-
-    // Same checks the backend enforces (see upload-image.php) — catches the
-    // obvious cases instantly instead of waiting on a failed round trip.
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      setImageError('Only JPG, PNG, and WebP images are allowed.');
-      e.target.value = '';
-      return;
-    }
-    if (file.size > MAX_IMAGE_BYTES) {
-      setImageError('Image must be 5 MB or smaller.');
-      e.target.value = '';
-      return;
-    }
-
-    setUploadingImage(true);
-    try {
-      const body = new FormData();
-      body.append('image', file);
-      // NOTE: don't set a Content-Type header here
-      const response = await api.post('/upload-image.php', body, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      const json = response.data;
-      if (!json.success) throw new Error(json.message || 'Upload failed.');
-      set('image_url', json.data.image_url);
-    } catch (err) {
-      console.error('Failed to upload image:', err);
-      setImageError(err.response?.data?.message || err.message || 'Could not upload image — please try again.');
-    } finally {
-      setUploadingImage(false);
-      e.target.value = ''; // lets the same file be re-selected later if needed
+  const handleImageUrlChange = (value) => {
+    set('image_url', value);
+    setImagePreviewFailed(false);
+    if (value.trim() && !isLikelyImageUrl(value)) {
+      setImageUrlError('Please enter a valid http(s) URL.');
+    } else {
+      setImageUrlError(null);
     }
   };
+
+  // ── OLD: local file upload (commented out — kept for reference / rollback) ──
+  // const fileInputRef = useRef(null);
+  // const [uploadingImage, setUploadingImage] = useState(false);
+  // const [imageError, setImageError] = useState(null);
+  //
+  // const handleImageFile = async (e) => {
+  //   const file = e.target.files?.[0];
+  //   if (!file) return;
+  //   setImageError(null);
+  //
+  //   // Same checks the backend enforces (see upload-image.php) — catches the
+  //   // obvious cases instantly instead of waiting on a failed round trip.
+  //   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+  //     setImageError('Only JPG, PNG, and WebP images are allowed.');
+  //     e.target.value = '';
+  //     return;
+  //   }
+  //   if (file.size > MAX_IMAGE_BYTES) {
+  //     setImageError('Image must be 5 MB or smaller.');
+  //     e.target.value = '';
+  //     return;
+  //   }
+  //
+  //   setUploadingImage(true);
+  //   try {
+  //     const body = new FormData();
+  //     body.append('image', file);
+  //     // NOTE: don't set a Content-Type header here
+  //     const response = await api.post('/upload-image.php', body, {
+  //       headers: { 'Content-Type': 'multipart/form-data' },
+  //     });
+  //     const json = response.data;
+  //     if (!json.success) throw new Error(json.message || 'Upload failed.');
+  //     set('image_url', json.data.image_url);
+  //   } catch (err) {
+  //     console.error('Failed to upload image:', err);
+  //     setImageError(err.response?.data?.message || err.message || 'Could not upload image — please try again.');
+  //   } finally {
+  //     setUploadingImage(false);
+  //     e.target.value = ''; // lets the same file be re-selected later if needed
+  //   }
+  // };
 
   const validate = () => {
     const e = {};
@@ -203,6 +226,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
     if (form.longitude && !isValidLongitude(form.longitude))  e.longitude = 'Longitude must be a number between -180 and 180.';
     if (form.latitude && !form.longitude)                      e.longitude = 'Longitude is required when latitude is set.';
     if (form.longitude && !form.latitude)                      e.latitude = 'Latitude is required when longitude is set.';
+    if (form.image_url && !isLikelyImageUrl(form.image_url))  e.image_url = 'Please enter a valid http(s) URL.';
     return e;
   };
 
@@ -264,6 +288,26 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
           </div>
 
           {/* ── Basic info ── */}
+          {/* ── Photo URL field ── */}
+          <Field label="Photo URL" icon={ImageIcon}
+            hint="Optional. Paste a link to an image already hosted somewhere (e.g. Imgur, Google Drive share link, your own website)."
+            error={imageUrlError || (imagePreviewFailed ? 'Could not load an image from that URL.' : null) || errors.image_url}>
+            <div className="flex items-center gap-3">
+              <div className="w-20 h-20 rounded-lg bg-surface-subtle overflow-hidden border border-divider shrink-0 flex items-center justify-center">
+                {form.image_url && !imagePreviewFailed ? (
+                  <img src={form.image_url} alt="" className="w-full h-full object-cover"
+                    onError={() => setImagePreviewFailed(true)} />
+                ) : (
+                  <ImageIcon className="h-6 w-6 text-disabled" />
+                )}
+              </div>
+              <input className={inputCls} placeholder="https://example.com/photo.jpg"
+                value={form.image_url ?? ''}
+                onChange={e => handleImageUrlChange(e.target.value)} />
+            </div>
+          </Field>
+
+          {/* ── OLD: local file upload field (commented out — kept for reference / rollback) ──
           <Field label="Photo" icon={ImageIcon}
             hint={uploadingImage ? null : 'Optional. JPG, PNG, or WebP — up to 5 MB.'}
             error={imageError}>
@@ -284,6 +328,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
               </label>
             </div>
           </Field>
+          */}
 
           <Field label="Name" required error={errors.name}
             hint={`${form.name.length}/${LIMITS.name} characters`}>
@@ -488,11 +533,11 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
         <div className="px-6 py-4 border-t border-divider-subtle space-y-2">
             {saveError && <p className="text-xs text-danger-text">{saveError}</p>}
             <div className="flex gap-2">
-              <button onClick={onClose} disabled={saving || uploadingImage}
+              <button onClick={onClose} disabled={saving}
                 className="px-4 py-2 text-sm font-medium text-secondary hover:bg-surface-subtle rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 Cancel
               </button>
-              <button onClick={handleSubmit} disabled={saving || uploadingImage}
+              <button onClick={handleSubmit} disabled={saving}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 {saving ? 'Saving…' : mode === 'edit' ? 'Save Changes' : 'Add Service'}
