@@ -18,6 +18,18 @@ export function useServiceCRUD() {
   const loadServices = async () => {
     setLoading(true);
     try {
+      /* GET /services.php
+       * Query: ?search=<text>&category=<category_slug>   (both optional)
+       * Returns: { success: true, data: [{
+       *     id, name, address, location, latitude, longitude, city, province, region,
+       *     phone, email, website_url, website, google_maps_url, description,
+       *     inclusivity_notes, washroom_info, hours, by_appointment_only, image_url,
+       *     accessibility_notes, verification_status, last_verified_at,
+       *     category_id, category_name, category_slug,
+       *     tags: [{ id, name, slug }]
+       * }] }
+       * Only listings with is_visible = 1 are returned.
+       */
       const response = await api.get('/services.php');
       const json = response.data;
       if (!json.success) throw new Error(json.message || 'API returned success: false');
@@ -38,6 +50,10 @@ export function useServiceCRUD() {
 
     (async () => {
       try {
+        /* GET /services.php
+         * Same shape as loadServices() above — this is the initial load on mount.
+         * Returns: { success: true, data: [<service>...] }
+         */
         const response = await api.get('/services.php');
         if (cancelled) return;
 
@@ -95,6 +111,20 @@ export function useServiceCRUD() {
     setSaving(true);
     if (modal.mode === 'add') {
       try {
+        /* POST /services.php  (admin only)
+         * Body: {
+         *   name, category_id,
+         *   address, city, province, google_maps_url, latitude, longitude,
+         *   phone, email, website_url,
+         *   description, inclusivity_notes, washroom_info, accessibility_notes,
+         *   hours, by_appointment_only, image_url,
+         *   tags: [tag_id, ...],
+         *   verification_status
+         * }
+         * Returns: { success: true, message: "Service created.", data: <service> }
+         * New listings always start is_visible = 1, region defaults to 'Windsor-Essex'
+         * server-side if omitted.
+         */
         const response = await api.post('/services.php', buildPayload(formData));
         const json = response.data;
         if (!json.success) throw new Error(json.message || 'API returned success: false');
@@ -109,6 +139,11 @@ export function useServiceCRUD() {
       }
     } else {
       try {
+        /* PUT /services.php  (admin only)
+         * Body: { id, name, category_id, ...same fields as POST above }
+         * Returns: { success: true, message: "Service updated.", data: <service> }
+         * 404s (as { success:false, message }) if the id doesn't exist.
+         */
         const payload = { id: modal.service.id, ...buildPayload(formData) };
         const response = await api.put('/services.php', payload);
         const json = response.data;
@@ -131,6 +166,12 @@ export function useServiceCRUD() {
   const handleDelete = async (service) => {
     setDeleting(true);
     try {
+      /* DELETE /services.php  (admin only)
+       * Body: { id }
+       * Returns: { success: true, message: "Service deleted." }
+       * This is a SOFT delete — server sets is_visible = 0, the row still
+       * exists in `listings`; it just won't come back from GET /services.php.
+       */
       // delete() takes a config object, not a body directly 
       // { data } is how a request body gets attached to a DELETE
       const response = await api.delete('/services.php', { data: { id: service.id } });

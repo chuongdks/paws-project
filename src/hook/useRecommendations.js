@@ -25,6 +25,11 @@ export function useRecommendations() {
   // The backend only filters by a single status per request, so this fires both and sums them rather than trying to fetch a combined status.
   const refreshPendingCount = useCallback(async () => {
     try {
+      /* GET /recommendations.php?status=new  AND  GET /recommendations.php?status=reviewing  (admin only, fired together)
+       * Query: ?status=new | reviewing | approved | rejected | all
+       * Returns (each): { success: true, data: [<recommendation>...] }
+       * Only the array length from each call is used here to build the badge count.
+       */
       const [newRes, reviewingRes] = await Promise.all([
         api.get('/recommendations.php', { params: { status: 'new' } }),
         api.get('/recommendations.php', { params: { status: 'reviewing' } }),
@@ -42,6 +47,17 @@ export function useRecommendations() {
     setStatusFilter(status);
     setLoading(true);
     try {
+      /* GET /recommendations.php  (admin only)
+       * Query: ?status=new | reviewing | approved | rejected | all
+       * Returns: { success: true, data: [{
+       *     id, submitted_by_user_id, recommended_name, category_id, category_name, category_slug,
+       *     address, city, province, region, phone, email, website_url, google_maps_url,
+       *     description, inclusivity_notes, washroom_info, hours, by_appointment_only,
+       *     image_url, accessibility_notes, tag_ids: [id,...],
+       *     recommended_by_name, recommended_by_contact, recommended_by_email, message,
+       *     status, reviewed_by_user_id, admin_notes, reviewed_at, approved_listing_id, created_at
+       * }] }
+       */
       const response = await api.get('/recommendations.php', { params: { status } });
       if (response.data.success) {
         setRecommendations(response.data.data.map(createRecommendation));
@@ -62,6 +78,21 @@ export function useRecommendations() {
     setSubmitting(true);
     setSubmitError(null);
     try {
+      /* POST /recommendations.php  (public, no auth required)
+       * Body: {
+       *   recommended_name, category_id,
+       *   address, city, province, phone, email, website_url,
+       *   description, inclusivity_notes, washroom_info,
+       *   hours, by_appointment_only, image_url, tag_ids: [id,...],
+       *   recommended_by_name, recommended_by_email, message,
+       *   latitude, longitude
+       * }
+       * Returns: { success: true, message: "Recommendation submitted for review.",
+       *            email_sent: boolean, data: <recommendation> }
+       * Silently returns a fake success (data: null) if the honeypot field
+       * was filled in (bot detection) — no row is actually created.
+       * Also rate-limited server-side to 5 submissions/hour per IP (HTTP 429 if exceeded).
+       */
       const response = await api.post('/recommendations.php', {
         recommended_name:     formData.name,
         category_id:          Number(formData.category_id),
@@ -104,6 +135,10 @@ export function useRecommendations() {
   const markReviewing = async (id, adminNotes = null) => {
     setActioningId(id);
     try {
+      /* PUT /recommendations.php  (admin only)
+       * Body: { id, status: "reviewing", admin_notes }
+       * Returns: { success: true, message: "Recommendation updated.", data: <recommendation> }
+       */
       const response = await api.put('/recommendations.php', { id, status: 'reviewing', admin_notes: adminNotes });
       if (response.data.success) {
         await Promise.all([fetchRecommendations(statusFilter), refreshPendingCount()]);
@@ -125,6 +160,16 @@ export function useRecommendations() {
   const approve = async (id, adminNotes = null) => {
     setActioningId(id);
     try {
+      /* PUT /recommendations.php  (admin only)
+       * Body: { id, status: "approved", admin_notes }
+       * Returns: { success: true, message: "Recommendation approved and added to listings.",
+       *            data: <recommendation>, listing_id: <int> }
+       * Server-side this INSERTs a new row into `listings` (verification_status
+       * forced to 'verified', is_visible = 1) inside a transaction, copies over
+       * tag_ids into listing_tags, then stamps approved_listing_id on the
+       * recommendation row. If already approved, just updates status/notes
+       * without creating a duplicate listing.
+       */
       const response = await api.put('/recommendations.php', { id, status: 'approved', admin_notes: adminNotes });
       if (response.data.success) {
         await Promise.all([fetchRecommendations(statusFilter), refreshPendingCount()]);
@@ -146,6 +191,11 @@ export function useRecommendations() {
   const reject = async (id, adminNotes = null) => {
     setActioningId(id);
     try {
+      /* PUT /recommendations.php  (admin only)
+       * Body: { id, status: "rejected", admin_notes }
+       * Returns: { success: true, message: "Recommendation updated.", data: <recommendation> }
+       * Row is kept (not deleted) — just marked rejected for record-keeping.
+       */
       const response = await api.put('/recommendations.php', { id, status: 'rejected', admin_notes: adminNotes });
       if (response.data.success) {
         await Promise.all([fetchRecommendations(statusFilter), refreshPendingCount()]);
@@ -167,6 +217,12 @@ export function useRecommendations() {
   const remove = async (id) => {
     setActioningId(id);
     try {
+      /* DELETE /recommendations.php  (admin only)
+       * Body: { id }
+       * Returns: { success: true, message: "Recommendation deleted." }
+       * This is a HARD delete of the recommendation row — unlike reject(),
+       * nothing is kept for records. Intended for spam/duplicate submissions.
+       */
       const response = await api.delete('/recommendations.php', { data: { id } });
       if (response.data.success) {
         setRecommendations(prev => prev.filter(r => r.id !== id));

@@ -33,6 +33,11 @@ export function AuthProvider({ children }) {
 
     (async () => {
       try {
+        /* GET /auth/me.php  (auth required — Bearer token)
+         * No body.
+         * Returns: { success: true, user: { id, name, email, role, gender } }
+         * 401s with { success: false, message: "Authentication required." } if the token is missing/expired/revoked
+         */
         const response = await api.get('/auth/me.php');
         const json = response.data;
         if (cancelled) return;
@@ -62,6 +67,13 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
+      /* POST /auth/login.php
+       * Body: { email, password }
+       * Returns: { success: true, message: "Login successful.", token: "<random 64-char hex>",
+       *            user: { id, name, email, role, gender } }
+       * 401s with { success: false, message: "Invalid email or password." } on bad credentials or a deactivated account (is_active = 0).
+       * Token is a bearer token stored in auth_tokens, valid for 30 days.
+       */
       const response = await api.post('/auth/login.php', { email, password });
       const json = response.data;
       if (!json.success) {
@@ -83,6 +95,14 @@ export function AuthProvider({ children }) {
   // Always creates role: 'user' server-side (see register.php). Admin can only be created through SUPA SPECIAL PRIVILAGE
   const register = async (name, email, password, gender) => {
     try {
+      /* POST /auth/register.php
+       * Body: { name, email, password, gender }
+       * Returns: { success: true, message: "Account created.", token: "<random 64-char hex>",
+       *            user: { id, name, email, role: "user", gender } }
+       * Validates: email format, password >= 6 chars, email not already registered
+       * (409 { success:false, message } if it is). role is always forced to
+       * 'user' server-side — there's no way to self-register as admin.
+       */
       const response = await api.post('/auth/register.php', { name, email, password, gender });
       const json = response.data;
       if (!json.success) {
@@ -103,6 +123,10 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
+      /* POST /auth/logout.php  (auth required — Bearer token)
+       * No body. Deletes the auth_tokens row matching the current bearer token.
+       * Returns: { success: true, message: "Logged out." }
+       */
       await api.post('/auth/logout.php');
     } catch (err) {
       // clear the local session even if the server call itself fails, dont trap user in login UI cuz network fucked up
@@ -119,6 +143,15 @@ export function AuthProvider({ children }) {
   // me.php rejects anything but GET with a 405. Local only for now
   const updateGender = async (gender) => {
     try {
+      /* PUT /auth/me.php  (auth required — Bearer token)
+       * Body: { gender }
+       * Returns: { success: true, message: "Profile updated.", user: { id, name, email, role, gender } }
+       * Rejects with { success: false, message } (400) if gender is longer
+       * than 50 characters, or if the "gender" key is missing from the body entirely.
+       * NOTE: the comment above this function is stale — me.php DOES have a
+       * working PUT/PATCH handler (see updateProfile() in me.php); it isn't
+       * still rejecting with a 405.
+       */
       const response = await api.put('/auth/me.php', { gender });
       const json = response.data;
       if (!json.success) {

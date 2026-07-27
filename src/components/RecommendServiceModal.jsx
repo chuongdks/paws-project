@@ -60,7 +60,7 @@ const limitText = (text, maxWords, maxChars) => {
   return clipped;
 };
 
-// simple image url checker
+// "simple" image url checker
 const isLikelyImageUrl = (url) => /^https?:\/\/.+/i.test(url.trim());
 
 function Field({ label, icon: Icon, hint, error, required, children }) {
@@ -180,6 +180,14 @@ export default function RecommendServiceModal({ onSave, onClose, categories, tag
   //     body.append('image', file);
   //     // NOTE: don't set a Content-Type header here beyond this — the browser
   //     // needs to generate its own multipart boundary for FormData bodies.
+  //     /* POST /upload-image.php
+  //      * Body: multipart/form-data, field "image" (file, JPEG/PNG/WebP, <= 5 MB)
+  //      * Returns: { success: true, message: "Image uploaded.", data: {
+  //      *     image_url, filename, mime_type, size_bytes
+  //      * } }
+  //      * Rate-limited to 10 uploads/hour per IP (429 if exceeded). No longer
+  //      * called — kept here for reference only since photos are now pasted URLs.
+  //      */
   //     const response = await api.post('/upload-image.php', body, {
   //       headers: { 'Content-Type': 'multipart/form-data' },
   //     });

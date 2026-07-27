@@ -23,6 +23,16 @@ export function useTaxonomy() {
 
     (async () => {
       try {
+        /* GET /categories.php
+         * No params.
+         * Returns: { success: true, data: [{ id, name, slug }] }  (ordered by name ASC)
+         */
+        /* GET /tags.php
+         * No params.
+         * Returns: { success: true, data: [{ id, name, slug }] }  (ordered by name ASC)
+         * Includes admin-managed tags like "Verified by PAWS" — filtered out
+         * client-side below via ADMIN_ONLY_TAG_NAMES for the assignable list.
+         */
         const [catRes, tagRes] = await Promise.all([
           api.get('/categories.php'),
           api.get('/tags.php'),

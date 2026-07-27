@@ -21,6 +21,18 @@ export function useReviews() {
     const key = cacheKey(listingId, status);
     setLoadingByKey(prev => ({ ...prev, [key]: true }));
     try {
+      /* GET /reviews.php
+       * Query: ?listing_id=<int>&status=approved | pending | all
+       * Returns: { success: true, data: [{
+       *     id, listing_id, user_id?, reviewer_name, reviewer_contact?,
+       *     overall_rating, respect_rating, inclusivity_rating, comment, status, created_at
+       * }] }
+       * - Anonymous callers only ever get 'approved' reviews, regardless of ?status.
+       * - Logged-in non-admins get 'approved' reviews PLUS their own review at any status.
+       * - Admins can request status=pending/approved/rejected/all.
+       * - user_id and reviewer_contact are stripped from the response unless the
+       *   viewer is an admin or the review's own author.
+       */
       const response = await api.get('/reviews.php', {
         params: { listing_id: listingId, status },
       });
@@ -50,6 +62,13 @@ export function useReviews() {
   // New reviews always start 'pending' server-side (see reviews.php)
   const addReview = async (listingId, { rating, respect_rating, inclusivity_rating, comment }) => {
     try {
+      /* POST /reviews.php  (auth required)
+       * Body: { listing_id, overall_rating, respect_rating, inclusivity_rating, comment }
+       * Returns: { success: true, message: "Review submitted for moderation.", data: <review> }
+       * New rows always start status: 'pending'. Fails with HTTP 409 and
+       * { success: false, message, code: undefined } if this user already
+       * reviewed this listing — DB has a UNIQUE (listing_id, user_id) constraint.
+       */
       const response = await api.post('/reviews.php', {
         listing_id: listingId,
         overall_rating: rating,
@@ -83,6 +102,10 @@ export function useReviews() {
   // DELETE: remove a review (admin only)
   const deleteReview = async (reviewId, listingId, status = 'approved') => {
     try {
+      /* DELETE /reviews.php  (admin only)
+       * Body: { id }
+       * Returns: { success: true, message: "Review deleted." }
+       */
       const response = await api.delete('/reviews.php', { data: { id: reviewId } });
       if (response.data.success) {
         const key = cacheKey(listingId, status);
@@ -105,6 +128,15 @@ export function useReviews() {
   // PUT: the review's own author edits its content (rating/comment).
   const updateReview = async (reviewId, listingId, { rating, respect_rating, inclusivity_rating, comment }) => {
     try {
+      /* PUT /reviews.php  (auth required — must be the review's own author, or an admin)
+       * Body: { id, overall_rating, respect_rating, inclusivity_rating, comment, status: "pending" }
+       * Returns: { success: true, message: "Review updated and submitted for moderation.", data: <review> }
+       * Forcing status back to 'pending' here resubmits the edited review for
+       * re-approval — it won't show publicly again until an admin approves it.
+       * (Note: if the caller is an admin, the backend's updateReview() actually
+       * routes admin requests to the status-only branch first — see
+       * updateReviewStatus() below for that behavior on this same endpoint.)
+       */
       const response = await api.put('/reviews.php', {
         id: reviewId,
         overall_rating: rating,
@@ -133,6 +165,10 @@ export function useReviews() {
   // PUT: admin approve/reject moderation
   const updateReviewStatus = async (reviewId, status, listingId) => {
     try {
+      /* PUT /reviews.php  (admin only)
+       * Body: { id, status: "approved" | "rejected" }
+       * Returns: { success: true, message: "Review status updated.", data: <review> }
+       */
       const response = await api.put('/reviews.php', { id: reviewId, status });
       if (response.data.success) {
         await Promise.all([
@@ -162,10 +198,8 @@ export function useReviews() {
     return ok;
   };
 
-  // NOTE: the backend only includes `user_id` on review rows when the
-  // requester is an admin (see reviews.php normalizeReviews($rows, $isAdmin)).
-  // For a logged in non admin viewer this will always read false, even for their own review — that's an existing backend behavior, not something this frontend fix changes. 
-  // Look into this SOON
+  // NOTE: the backend only includes `user_id` on review rows when the requester is an admin (see reviews.php normalizeReviews($rows, $isAdmin))
+  // But it is solved by not allowing the admin to review in the front end only
   const hasUserReviewed = (listingId, userId, status = 'approved') =>
     (reviewsByKey[cacheKey(listingId, status)] ?? []).some(r => r.user_id === userId);
 
