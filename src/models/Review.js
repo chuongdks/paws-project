@@ -10,6 +10,9 @@ export function createReview(raw = {}) {
     respect_rating:     raw.respect_rating      ?? null,
     inclusivity_rating: raw.inclusivity_rating  ?? null,
     comment:            raw.comment             ?? '',
+    // Only present when fetched via the admin-wide cross-listing query
+    // (GET /reviews.php?status=... with no listing_id). null otherwise.
+    listing_name:       raw.listing_name         ?? null,
     // DB default is 'pending' (awaiting moderation) — this prototype has no moderation queue yet, so reviews default to 'approved' and show immediately. 
     // Swap this default once a moderation flow exists: enum('pending','approved','rejected')
     status:             raw.status              ?? 'approved',

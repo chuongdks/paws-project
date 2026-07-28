@@ -1,7 +1,8 @@
 import React from 'react';
-import { MapPin, ListChecks, Inbox } from 'lucide-react';
+import { MapPin, ListChecks, Inbox, MessageSquare } from 'lucide-react';
 import ServiceCard from './ServiceCard.jsx';
 import RecommendationCard from './RecommendationCard.jsx';
+import PendingReviewQueueCard from './PendingReviewQueueCard.jsx';
 
 export default function Sidebar({
   filteredServices, selectedService, onSelectService,
@@ -15,6 +16,10 @@ export default function Sidebar({
   pendingRecommendationCount = 0,
   onSelectRecommendation,
   onStartReviewRecommendation, onApproveRecommendation, onRejectRecommendation, onDeleteRecommendation,
+  // Admin-only "Reviews" tab — every pending review across every listing
+  allPendingReviews = [], allPendingLoading = false, allPendingActioningId = null,
+  onApprovePendingReview, onRejectPendingReview, onOpenServiceFromReview,
+  getServiceNameById,
 }) {
   return (
     <aside className="w-full h-full shrink-0 flex flex-col border-r border-divider-page bg-app-bg overflow-hidden">
@@ -22,7 +27,11 @@ export default function Sidebar({
       {/* Hidden H2: restores a valid h1 -> h2 -> h3 heading order for SCREEN READER only, not for display
       Without this, the page's h1 (App.jsx) was followed directly by each ServiceCard/RecommendationCard's h3, skipping h2. */}
       <h2 className="sr-only">
-        {activeTab === 'suggestions' && isAdmin ? 'Suggested Services' : 'Services'}
+        {activeTab === 'suggestions' && isAdmin
+          ? 'Suggested Services'
+          : activeTab === 'reviews' && isAdmin
+          ? 'Pending Reviews'
+          : 'Services'}
       </h2>
 
       {/* Tab switcher — only admins have anything to moderate here */}
@@ -42,6 +51,17 @@ export default function Sidebar({
             {pendingRecommendationCount > 0 && (
               <span className="text-[10px] font-bold bg-warning-soft text-warning-text px-1.5 py-0.5 rounded-full">
                 {pendingRecommendationCount}
+              </span>
+            )}
+          </button>
+          <button onClick={() => onChangeTab?.('reviews')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
+              activeTab === 'reviews' ? 'bg-surface-raised text-primary shadow-sm' : 'text-muted hover:text-secondary-strong'
+            }`}>
+            <MessageSquare className="h-3.5 w-3.5" /> Reviews
+            {allPendingReviews.length > 0 && (
+              <span className="text-[10px] font-bold bg-warning-soft text-warning-text px-1.5 py-0.5 rounded-full">
+                {allPendingReviews.length}
               </span>
             )}
           </button>
@@ -67,7 +87,28 @@ export default function Sidebar({
 
       {/* Card list */}
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-3 space-y-2">
-        {activeTab === 'suggestions' && isAdmin ? (
+        {activeTab === 'reviews' && isAdmin ? (
+          allPendingLoading ? (
+            <p className="text-center text-faint text-sm py-12">Loading pending reviews…</p>
+          ) : allPendingReviews.length > 0 ? (
+            allPendingReviews.map(review => (
+              <PendingReviewQueueCard
+                key={review.id}
+                review={review}
+                serviceName={getServiceNameById?.(review.listing_id)}
+                busy={allPendingActioningId === review.id}
+                onApprove={onApprovePendingReview}
+                onReject={onRejectPendingReview}
+                onOpenService={onOpenServiceFromReview}
+              />
+            ))
+          ) : (
+            <div className="text-center text-faint text-sm py-12">
+              <MessageSquare className="h-8 w-8 mx-auto mb-2 text-disabled" />
+              Nothing waiting on review right now.
+            </div>
+          )
+        ) : activeTab === 'suggestions' && isAdmin ? (
           recommendationsLoading ? (
             <p className="text-center text-faint text-sm py-12">Loading suggestions…</p>
           ) : recommendations.length > 0 ? (

@@ -29,7 +29,7 @@ export default function App() {
   const [showAccount, setShowAccount] = useState(false);
   const [showSuggestForm, setShowSuggestForm] = useState(false);
   const [selectedRecommendation, setSelectedRecommendation] = useState(null);
-  const [sidebarTab, setSidebarTab] = useState('services'); // 'services' | 'suggestions'
+  const [sidebarTab, setSidebarTab] = useState('services'); // 'services' | 'suggestions' | 'reviews'
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const mapSectionRef = useRef(null);
 
@@ -39,7 +39,10 @@ export default function App() {
     addReview, updateReview, deleteReview,
     approveReview, rejectReview,
     hasUserReviewed,
+    allPendingReviews, allPendingLoading,
+    fetchAllPendingReviews, approveReviewGlobal, rejectReviewGlobal,
   } = useReviews();
+  const [reviewActioningId, setReviewActioningId] = useState(null); // review row being approved/rejected from the Reviews tab
 
   // Public "suggest a service" submissions + admin moderation queue
   const {
@@ -96,6 +99,36 @@ export default function App() {
   useEffect(() => {
     if (isAdmin) fetchRecommendations('new');
   }, [isAdmin]);
+
+  // Admins get the cross-listing pending-reviews queue whenever they open the Reviews tab
+  useEffect(() => {
+    if (isAdmin && sidebarTab === 'reviews') fetchAllPendingReviews();
+  }, [isAdmin, sidebarTab]);
+
+  // Looks up a service's display name for a review row by its listing_id —
+  // reviews themselves don't carry a listing name, so this is resolved
+  // client-side against whatever's currently in `services`.
+  const getServiceNameById = (listingId) => services.find(s => s.id === listingId)?.name;
+
+  // Approve/reject from the Reviews tab — mirrors the per-listing versions
+  // used in ServiceDetailPanel, but refreshes the cross-listing queue after.
+  const handleApprovePendingReview = async (review) => {
+    setReviewActioningId(review.id);
+    await approveReviewGlobal(review.id, review.listing_id);
+    setReviewActioningId(null);
+  };
+  const handleRejectPendingReview = async (review) => {
+    setReviewActioningId(review.id);
+    await rejectReviewGlobal(review.id, review.listing_id);
+    setReviewActioningId(null);
+  };
+
+  // Jumps from a review row straight to that service's detail panel —
+  // closes the Reviews tab view and opens the normal service selection flow.
+  const handleOpenServiceFromReview = (listingId) => {
+    const service = services.find(s => s.id === listingId);
+    if (service) handleSelectServiceAndScroll(service);
+  };
 
   // Marking as 'reviewing'
   // keep the detail panel open afterward so the admin can continue straight into Approve/Reject.
@@ -264,6 +297,14 @@ export default function App() {
                   onApproveRecommendation={handleApproveRecommendation}
                   onRejectRecommendation={handleRejectRecommendation}
                   onDeleteRecommendation={handleDeleteRecommendation}
+
+                  allPendingReviews={allPendingReviews}
+                  allPendingLoading={allPendingLoading}
+                  allPendingActioningId={reviewActioningId}
+                  onApprovePendingReview={handleApprovePendingReview}
+                  onRejectPendingReview={handleRejectPendingReview}
+                  onOpenServiceFromReview={handleOpenServiceFromReview}
+                  getServiceNameById={getServiceNameById}
                 />
               )}
             </div>

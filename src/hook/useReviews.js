@@ -15,6 +15,34 @@ export function useReviews() {
   const [loadingByKey, setLoadingByKey] = useState({});   // { "listingId:status": boolean }
   const [error, setError]               = useState(null);
 
+  // ── Admin-wide "Reviews" tab — every pending (edited or new) review across ALL listings, not scoped to one service like reviewsByKey above
+  const [allPendingReviews, setAllPendingReviews]     = useState([]);
+  const [allPendingLoading, setAllPendingLoading]     = useState(false);
+  const [allPendingError, setAllPendingError]         = useState(null);
+
+  const fetchAllPendingReviews = useCallback(async () => {
+    setAllPendingLoading(true);
+    try {
+      /* GET /reviews.php  (admin only)
+       * Query: ?status=pending   (listing_id intentionally omitted)
+       * Returns: { success: true, data: [{
+       *     id, listing_id, user_id, reviewer_name, reviewer_contact,
+       *     overall_rating, respect_rating, inclusivity_rating, comment, status, created_at
+       * }] }
+       */
+      const response = await api.get('/reviews.php', { params: { status: 'pending' } });
+      if (response.data.success) {
+        setAllPendingReviews(response.data.data.map(createReview));
+        setAllPendingError(null);
+      }
+    } catch (err) {
+      console.error('Failed to fetch all pending reviews:', err);
+      setAllPendingError('Could not load the pending reviews queue.');
+    } finally {
+      setAllPendingLoading(false);
+    }
+  }, []);
+
   // status: 'approved' (default/public), or 'pending' | 'all' 
   const fetchReviews = useCallback(async (listingId, status = 'approved') => {
     if (!listingId) return;
@@ -198,6 +226,30 @@ export function useReviews() {
     return ok;
   };
 
+  // Same approve/reject, but for the admin-wide Reviews tab — refreshes the
+  // cross-listing queue afterward instead of (only) a single listing's cache.
+  const approveReviewGlobal = async (reviewId, listingId) => {
+    const ok = await updateReviewStatus(reviewId, 'approved', listingId);
+    if (ok) {
+      toast.success('Review approved.');
+      await fetchAllPendingReviews();
+    } else {
+      toast.error('Could not approve this review.');
+    }
+    return ok;
+  };
+
+  const rejectReviewGlobal = async (reviewId, listingId) => {
+    const ok = await updateReviewStatus(reviewId, 'rejected', listingId);
+    if (ok) {
+      toast.success('Review rejected.');
+      await fetchAllPendingReviews();
+    } else {
+      toast.error('Could not reject this review.');
+    }
+    return ok;
+  };
+
   // NOTE: the backend only includes `user_id` on review rows when the requester is an admin (see reviews.php normalizeReviews($rows, $isAdmin))
   // But it is solved by not allowing the admin to review in the front end only
   const hasUserReviewed = (listingId, userId, status = 'approved') =>
@@ -208,5 +260,8 @@ export function useReviews() {
     addReview, updateReview, deleteReview,
     updateReviewStatus, approveReview, rejectReview,
     hasUserReviewed,
+    // Admin-wide Reviews tab
+    allPendingReviews, allPendingLoading, allPendingError,
+    fetchAllPendingReviews, approveReviewGlobal, rejectReviewGlobal,
   };
 }

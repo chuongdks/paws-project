@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, User, Mail, ShieldCheck, VenetianMask, Pencil, Check, Loader2 } from 'lucide-react';
+import { X, User, Mail, ShieldCheck, VenetianMask, Pencil, Check, Loader2, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
 import { useState } from 'react';
 import { useModalA11y } from '../hook/useModalA11y.js';
@@ -17,12 +17,62 @@ function InfoRow({ icon: Icon, label, children }) {
   );
 }
 
+// `onExportServices` is optional and admin-only — passed down from App.jsx (useServiceCRUD's exportServicesJSON). 
+// Kept as a plain text link rather than a button so it doesn't read as a "real" feature in the UI; it's a dev convenience for refreshing src/data/service.json, not something meant to  be discovered by browsing.
 export default function AccountModal({ onClose, onExportServices }) {
-  const { user, isAdmin, updateGender, profileError, clearProfileError } = useAuth();
+  const { user, isAdmin, updateGender, profileError, clearProfileError, changePassword, passwordError, clearPasswordError } = useAuth();
   const [editingGender, setEditingGender] = useState(false);
   const [genderDraft, setGenderDraft]     = useState(user?.gender ?? '');
   const [savingGender, setSavingGender]   = useState(false);
   const panelRef = useModalA11y(onClose);
+
+  // ── Change password ─────────────────────────────────────────────────────
+  const [editingPassword, setEditingPassword]   = useState(false);
+  const [currentPassword, setCurrentPassword]   = useState('');
+  const [newPassword, setNewPassword]           = useState('');
+  const [confirmPassword, setConfirmPassword]   = useState('');
+  const [showPasswords, setShowPasswords]       = useState(false);
+  const [savingPassword, setSavingPassword]     = useState(false);
+  const [passwordFormError, setPasswordFormError] = useState(null); // client-side checks, separate from the server's passwordError
+
+  const resetPasswordForm = () => {
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setPasswordFormError(null);
+    setShowPasswords(false);
+  };
+
+  const openPasswordForm = () => {
+    resetPasswordForm();
+    clearPasswordError();
+    setEditingPassword(true);
+  };
+
+  const cancelPasswordForm = () => {
+    resetPasswordForm();
+    clearPasswordError();
+    setEditingPassword(false);
+  };
+
+  const savePassword = async () => {
+    if (newPassword.length < 6) {
+      setPasswordFormError('New password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordFormError('New password and confirmation do not match.');
+      return;
+    }
+    setPasswordFormError(null);
+    setSavingPassword(true);
+    const ok = await changePassword(currentPassword, newPassword, confirmPassword);
+    setSavingPassword(false);
+    if (ok) {
+      resetPasswordForm();
+      setEditingPassword(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -107,6 +157,72 @@ export default function AccountModal({ onClose, onExportServices }) {
               </div>
             )}
           </InfoRow>
+        </div>
+
+        {/* Change password — collapsed by default, expands into a small form */}
+        <div className="pt-1 border-t border-divider-subtle">
+          {!editingPassword ? (
+            <button onClick={openPasswordForm}
+              className="flex items-center gap-2.5 text-sm text-secondary-strong hover:text-accent-text transition-colors">
+              <Lock className="h-4 w-4 text-faint shrink-0" />
+              Change Password
+            </button>
+          ) : (
+            <div className="space-y-2.5">
+              <p className="flex items-center gap-2.5 text-[11px] font-semibold text-muted uppercase tracking-wider">
+                <Lock className="h-4 w-4 text-faint shrink-0" /> Change Password
+              </p>
+
+              <div className="space-y-2 pl-6">
+                <input
+                  type={showPasswords ? 'text' : 'password'}
+                  placeholder="Current password"
+                  value={currentPassword}
+                  onChange={e => { setCurrentPassword(e.target.value); setPasswordFormError(null); clearPasswordError(); }}
+                  disabled={savingPassword}
+                  className="w-full bg-surface-muted border border-divider text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring/20 focus:border-focus-ring transition-all disabled:opacity-60"
+                />
+                <input
+                  type={showPasswords ? 'text' : 'password'}
+                  placeholder="New password (min. 6 characters)"
+                  value={newPassword}
+                  onChange={e => { setNewPassword(e.target.value); setPasswordFormError(null); clearPasswordError(); }}
+                  disabled={savingPassword}
+                  className="w-full bg-surface-muted border border-divider text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring/20 focus:border-focus-ring transition-all disabled:opacity-60"
+                />
+                <input
+                  type={showPasswords ? 'text' : 'password'}
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={e => { setConfirmPassword(e.target.value); setPasswordFormError(null); clearPasswordError(); }}
+                  disabled={savingPassword}
+                  className="w-full bg-surface-muted border border-divider text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring/20 focus:border-focus-ring transition-all disabled:opacity-60"
+                />
+
+                <button type="button" onClick={() => setShowPasswords(s => !s)}
+                  className="flex items-center gap-1.5 text-[11px] text-faint hover:text-secondary-strong transition-colors">
+                  {showPasswords ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                  {showPasswords ? 'Hide passwords' : 'Show passwords'}
+                </button>
+
+                {(passwordFormError || passwordError) && (
+                  <p className="text-xs text-danger-text">{passwordFormError || passwordError}</p>
+                )}
+
+                <div className="flex gap-2 pt-0.5">
+                  <button onClick={cancelPasswordForm} disabled={savingPassword}
+                    className="flex-1 px-3 py-2 text-xs font-medium text-secondary hover:bg-surface-subtle rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    Cancel
+                  </button>
+                  <button onClick={savePassword} disabled={savingPassword}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                    {savingPassword ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                    {savingPassword ? 'Saving…' : 'Save Password'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <button onClick={() => { clearProfileError(); onClose(); }}

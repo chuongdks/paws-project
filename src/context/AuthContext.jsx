@@ -169,6 +169,40 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Persists a password change server-side. Separate error state from
+  // profileError (gender) since both can be open/edited independently in
+  // AccountModal and shouldn't stomp on each other's error messages.
+  const [passwordError, setPasswordError] = useState(null);
+
+  const changePassword = async (currentPassword, newPassword, confirmPassword) => {
+    try {
+      /* POST /auth/change-password.php  (auth required — Bearer token)
+       * Body: { current_password, new_password, confirm_password }
+       * Returns: { success: true, message: "Password updated successfully." }
+       * Presumed failure cases (mirroring login/register's own validation):
+       * 400 { success:false, message } if current_password is wrong,
+       * new_password is too short, or new_password/confirm_password don't match.
+       */
+      const response = await api.post('/auth/change-password.php', {
+        current_password: currentPassword,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      });
+      const json = response.data;
+      if (!json.success) {
+        setPasswordError(json.message || 'Could not update your password.');
+        return false;
+      }
+      setPasswordError(null);
+      toast.success('Password updated.');
+      return true;
+    } catch (err) {
+      console.error('Failed to change password\n Full Error:', err);
+      setPasswordError(err.response?.data?.message || 'Could not update your password — please try again.');
+      return false;
+    }
+  };
+
   const value = {
     user,
     isAuthenticated: !!user,
@@ -183,6 +217,9 @@ export function AuthProvider({ children }) {
     clearError: () => setError(null),
     profileError,
     clearProfileError: () => setProfileError(null),
+    changePassword,
+    passwordError,
+    clearPasswordError: () => setPasswordError(null),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
