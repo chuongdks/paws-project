@@ -195,6 +195,26 @@ export function useServiceCRUD() {
     setServices(prev => prev.map(s => s.id === id ? { ...s, image_url: dataUrl } : s));
   };
 
+  // ── Dev-only: export the current live `services` array as JSON ────────────
+  // Used to refresh src/data/service.json (the offline fallback) with a fresh snapshot of whatever the API is currently serving. 
+  const exportServicesJSON = () => {
+    try {
+      const blob = new Blob([JSON.stringify(services, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'service.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success('Exported service.json.');
+    } catch (err) {
+      console.error('Failed to export services JSON\n Full Error:', err);
+      toast.error('Could not export services data.');
+    }
+  };
+
   return {
     services, loading, error,
     refetchServices: loadServices,
@@ -203,5 +223,6 @@ export function useServiceCRUD() {
     handleSave, handleDelete, handleUpdateImage,
     saveError, saving,
     deleteError, deleting,
+    exportServicesJSON,
   };
 }

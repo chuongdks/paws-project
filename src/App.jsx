@@ -57,6 +57,7 @@ export default function App() {
     handleSave, handleDelete, handleUpdateImage,
     saveError, saving,
     deleteError, deleting,
+    exportServicesJSON,
   } = useServiceCRUD();
 
   // Search + access/category filtering
@@ -297,7 +298,12 @@ export default function App() {
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
 
       {/* ── Account modal ─────────────────────────────────────────────────────── */}
-      {showAccount && <AccountModal onClose={() => setShowAccount(false)} />}
+      {showAccount && (
+        <AccountModal
+          onClose={() => setShowAccount(false)}
+          onExportServices={isAdmin ? exportServicesJSON : undefined}
+        />
+      )}
 
       {/* ── Add / Edit pop up modal ───────────────────────────────────────────────────────── */}
       {modal && (

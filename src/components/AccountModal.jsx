@@ -17,7 +17,7 @@ function InfoRow({ icon: Icon, label, children }) {
   );
 }
 
-export default function AccountModal({ onClose }) {
+export default function AccountModal({ onClose, onExportServices }) {
   const { user, isAdmin, updateGender, profileError, clearProfileError } = useAuth();
   const [editingGender, setEditingGender] = useState(false);
   const [genderDraft, setGenderDraft]     = useState(user?.gender ?? '');
@@ -113,6 +113,16 @@ export default function AccountModal({ onClose }) {
           className="w-full py-2.5 rounded-lg bg-surface-subtle hover:bg-divider text-secondary text-sm font-semibold transition-colors">
           Close
         </button>
+
+        {/* Exports the live services array as service.json so it can be dropped back into src/data/service.json as a fresh offline fallback snapshot. */}
+        {isAdmin && onExportServices && (
+          <div className="pt-1 text-center">
+            <button onClick={onExportServices}
+              className="text-[11px] text-faint hover:text-secondary-strong hover:underline transition-colors">
+              Export services data (JSON)
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
