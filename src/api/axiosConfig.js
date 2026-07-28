@@ -26,7 +26,10 @@ export const setUnauthorizedHandler = (handler) => { onUnauthorized = handler; }
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && onUnauthorized) {
+    // Some endpoints legitimately return 401 for a reason that has nothing to do with the session/token itself 
+    const skipAuthHandler = error.config?.skipAuthHandler === true;
+
+    if (error.response?.status === 401 && onUnauthorized && !skipAuthHandler) {
       onUnauthorized();
     }
     return Promise.reject(error);

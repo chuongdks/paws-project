@@ -179,15 +179,18 @@ export function AuthProvider({ children }) {
       /* POST /auth/change-password.php  (auth required — Bearer token)
        * Body: { current_password, new_password, confirm_password }
        * Returns: { success: true, message: "Password updated successfully." }
-       * Presumed failure cases (mirroring login/register's own validation):
-       * 400 { success:false, message } if current_password is wrong,
-       * new_password is too short, or new_password/confirm_password don't match.
+       * Failure cases: 400 or 401 { success:false, message } if current_password
+       * is wrong, new_password is too short, or new_password/confirm_password
+       * don't match. `skipAuthHandler: true` below opts this request out of the
+       * global 401-logout interceptor in axiosConfig.js — a wrong current
+       * password is a validation failure, not an expired/invalid session, and
+       * shouldn't log the person out.
        */
       const response = await api.post('/auth/change-password.php', {
         current_password: currentPassword,
         new_password: newPassword,
         confirm_password: confirmPassword,
-      });
+      }, { skipAuthHandler: true });
       const json = response.data;
       if (!json.success) {
         setPasswordError(json.message || 'Could not update your password.');
@@ -198,7 +201,10 @@ export function AuthProvider({ children }) {
       return true;
     } catch (err) {
       console.error('Failed to change password\n Full Error:', err);
-      setPasswordError(err.response?.data?.message || 'Could not update your password — please try again.');
+      const fallback = err.response?.status === 401
+        ? 'Incorrect current password.'
+        : 'Could not update your password — please try again.';
+      setPasswordError(err.response?.data?.message || fallback);
       return false;
     }
   };
