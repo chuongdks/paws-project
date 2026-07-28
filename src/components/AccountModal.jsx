@@ -119,7 +119,8 @@ export default function AccountModal({ onClose, onExportServices }) {
           <div className="pt-1 text-center">
             <button onClick={onExportServices}
               className="text-[11px] text-faint hover:text-secondary-strong hover:underline transition-colors">
-              Export services data (JSON)
+              Export services data for offline use (JSON)<br></br>
+              For those who come after: Put the service.json file in "paws-project/src/data"
             </button>
           </div>
         )}
