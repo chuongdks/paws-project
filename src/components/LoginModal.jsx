@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, LogIn, UserPlus, User, Mail, Lock, Loader2, VenetianMask } from 'lucide-react';
+import { X, LogIn, UserPlus, User, Mail, Lock, Loader2, VenetianMask, Eye, EyeOff } from 'lucide-react';
 import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
 import { useModalA11y } from '../hook/useModalA11y.js';
 
@@ -13,6 +13,7 @@ export default function LoginModal({ onClose }) {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [gender, setGender]     = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // ── Helper Function ──────────────────────────────────────────────────────
   const switchMode = (next) => {
@@ -99,12 +100,19 @@ export default function LoginModal({ onClose }) {
             <label className="text-xs font-semibold text-secondary uppercase tracking-wider flex items-center gap-1.5">
               <Lock className="h-3.5 w-3.5" /> Password
             </label>
-            <input
-              type="password" required value={password}
-              onChange={e => { setPassword(e.target.value); clearError(); }}
-              placeholder="••••••••"
-              className={inputCls}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'} required value={password}
+                onChange={e => { setPassword(e.target.value); clearError(); }}
+                placeholder="••••••••"
+                className={`${inputCls} pr-9`}
+              />
+              <button type="button" onClick={() => setShowPassword(s => !s)}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-faint hover:text-secondary-strong transition-colors">
+                {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              </button>
+            </div>
           </div>
 
           {mode === 'register' && (

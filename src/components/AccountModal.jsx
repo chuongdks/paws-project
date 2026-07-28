@@ -1,8 +1,62 @@
 import React from 'react';
-import { X, User, Mail, ShieldCheck, VenetianMask, Pencil, Check, Loader2, Lock, Eye, EyeOff } from 'lucide-react';
+import { X, User, Mail, ShieldCheck, VenetianMask, Pencil, Check, Loader2, Lock, Eye, EyeOff, Users, ShieldPlus, ShieldMinus, Ban, RotateCcw, ChevronDown } from 'lucide-react';
 import { useAuth, GENDER_OPTIONS } from '../context/AuthContext.jsx';
 import { useState } from 'react';
 import { useModalA11y } from '../hook/useModalA11y.js';
+import { useUserManagement } from '../hook/useUserManagement.js';
+
+// True unless the record explicitly marks the account inactive — handles
+// is_active coming back as a real boolean, 0/1, or "0"/"1" from the API.
+const isUserActive = (u) => !(u.is_active === false || u.is_active === 0 || u.is_active === '0');
+
+// One row in the admin's user-management list — compact by necessity, since
+// this whole panel lives inside the account modal's max-w-sm shell rather
+// than getting its own dedicated screen.
+function UserRow({ targetUser, isSelf, onPromote, onDemote, onToggleActive, busy }) {
+  const isTargetAdmin = targetUser.role === 'admin';
+  const active = isUserActive(targetUser);
+
+  return (
+    <div className="flex items-center justify-between gap-2 py-2 border-b border-divider-subtle last:border-0">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-secondary-strong truncate">{targetUser.name}</p>
+        <p className="text-[11px] text-faint truncate">{targetUser.email}</p>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full border whitespace-nowrap ${
+          isTargetAdmin ? 'bg-admin-soft text-admin-text border-admin-border' : 'bg-surface-subtle text-secondary border-divider'
+        }`}>
+          {isTargetAdmin ? 'Admin' : 'Member'}
+        </span>
+        {!active && (
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-danger-soft text-danger-text border border-danger-border whitespace-nowrap">
+            Disabled
+          </span>
+        )}
+        {!isSelf && (
+          <>
+            <button
+              title={isTargetAdmin ? 'Demote to member' : 'Promote to admin'}
+              onClick={() => (isTargetAdmin ? onDemote(targetUser.id) : onPromote(targetUser.id))}
+              disabled={busy}
+              className="p-1 rounded-md text-faint hover:text-accent-text hover:bg-accent-soft transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : isTargetAdmin ? <ShieldMinus className="h-3.5 w-3.5" /> : <ShieldPlus className="h-3.5 w-3.5" />}
+            </button>
+            <button
+              title={active ? 'Disable account' : 'Re-enable account'}
+              onClick={() => onToggleActive(targetUser.id, !active)}
+              disabled={busy}
+              className="p-1 rounded-md text-faint hover:text-danger-text hover:bg-danger-soft transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {active ? <Ban className="h-3.5 w-3.5" /> : <RotateCcw className="h-3.5 w-3.5" />}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // ── Small read-only row, matches the style used in ServiceDetailPanel's InfoRow ──
 function InfoRow({ icon: Icon, label, children }) {
@@ -17,8 +71,11 @@ function InfoRow({ icon: Icon, label, children }) {
   );
 }
 
-// `onExportServices` is optional and admin-only — passed down from App.jsx (useServiceCRUD's exportServicesJSON). 
-// Kept as a plain text link rather than a button so it doesn't read as a "real" feature in the UI; it's a dev convenience for refreshing src/data/service.json, not something meant to  be discovered by browsing.
+// `onExportServices` is optional and admin-only — passed down from App.jsx
+// (useServiceCRUD's exportServicesJSON). Kept as a plain text link rather
+// than a button so it doesn't read as a "real" feature in the UI; it's a dev
+// convenience for refreshing src/data/service.json, not something meant to
+// be discovered by browsing.
 export default function AccountModal({ onClose, onExportServices }) {
   const { user, isAdmin, updateGender, profileError, clearProfileError, changePassword, passwordError, clearPasswordError } = useAuth();
   const [editingGender, setEditingGender] = useState(false);
@@ -72,6 +129,19 @@ export default function AccountModal({ onClose, onExportServices }) {
       resetPasswordForm();
       setEditingPassword(false);
     }
+  };
+
+  // ── Manage users (admin only) ────────────────────────────────────────────
+  const [showUserManagement, setShowUserManagement] = useState(false);
+  const {
+    users, loading: usersLoading, error: usersError, actioningId,
+    fetchUsers, promote, demote, setActive,
+  } = useUserManagement();
+
+  const toggleUserManagement = () => {
+    const next = !showUserManagement;
+    setShowUserManagement(next);
+    if (next && users.length === 0) fetchUsers();
   };
 
   if (!user) return null;
@@ -224,6 +294,46 @@ export default function AccountModal({ onClose, onExportServices }) {
             </div>
           )}
         </div>
+
+        {/* Manage users — admin only. Promote/demote and enable/disable any account. */}
+        {isAdmin && (
+          <div className="pt-1 border-t border-divider-subtle">
+            <button onClick={toggleUserManagement}
+              className="w-full flex items-center justify-between gap-2.5 text-sm text-secondary-strong hover:text-accent-text transition-colors">
+              <span className="flex items-center gap-2.5">
+                <Users className="h-4 w-4 text-faint shrink-0" />
+                Manage Users
+              </span>
+              <ChevronDown className={`h-3.5 w-3.5 text-faint transition-transform ${showUserManagement ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showUserManagement && (
+              <div className="pt-2.5">
+                {usersLoading ? (
+                  <p className="text-xs text-faint italic py-2 text-center">Loading users…</p>
+                ) : usersError ? (
+                  <p className="text-xs text-danger-text py-2 text-center">{usersError}</p>
+                ) : users.length === 0 ? (
+                  <p className="text-xs text-faint italic py-2 text-center">No users found.</p>
+                ) : (
+                  <div className="max-h-56 overflow-y-auto pr-0.5">
+                    {users.map(u => (
+                      <UserRow
+                        key={u.id}
+                        targetUser={u}
+                        isSelf={u.id === user.id}
+                        onPromote={promote}
+                        onDemote={demote}
+                        onToggleActive={setActive}
+                        busy={actioningId === u.id}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <button onClick={() => { clearProfileError(); onClose(); }}
           className="w-full py-2.5 rounded-lg bg-surface-subtle hover:bg-divider text-secondary text-sm font-semibold transition-colors">
