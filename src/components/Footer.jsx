@@ -22,7 +22,7 @@ export default function Footer() {
       {/* Logo + socials */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <a href="https://pawsinrecovery.ca/" target="_blank" rel="noopener noreferrer" className="shrink-0">
-          <img src={myLogo} alt="Paws in Recovery" className="h-10 sm:h-14 w-auto object-contain" />
+          <img src={myLogo} alt="Paws in Recovery" className="h-10 sm:h-22 w-auto object-contain" />
         </a>
 
         <div className="flex items-center gap-1 text-secondary">

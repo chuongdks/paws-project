@@ -16,7 +16,7 @@ function ImageUploader({ imageUrl }) {
   return (
     <div className="relative w-full aspect-[16/9] bg-surface-subtle rounded-xl overflow-hidden border border-divider">
       {imageUrl ? (
-        <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+        <img src={imageUrl} alt="" className="w-full h-full object-contain" />
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center text-faint gap-1.5">
           <ImageIcon className="h-8 w-8" />

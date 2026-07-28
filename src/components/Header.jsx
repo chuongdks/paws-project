@@ -53,7 +53,7 @@ export default function Header({ resultCount, user, isAuthenticated, isAdmin, on
         {/* Logo + description (Link to the PAWS site)*/}
         <a href="https://pawsinrecovery.ca/" target="_blank" rel="noopener noreferrer" className="flex flex-col min-w-0 shrink-0"
         >
-          <img src={myLogo} alt="Paws in Recovery" className="h-10 sm:h-14 w-auto object-contain" />
+          <img src={myLogo} alt="Paws in Recovery" className="h-10 sm:h-22 w-auto object-contain" />
         </a>
 
         {/* Site nav — mirrors the main PAWS site's header links. Hidden below lg, where the hamburger toggle + collapsible vertical menu belowtakes over instead  */}
