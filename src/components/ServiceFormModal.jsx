@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Image as ImageIcon, Clock, Loader2 } from 'lucide-react';
-import { DAYS_OF_WEEK, emptyService, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat, isValidLatitude, isValidLongitude } from '../models/Service.js';
+import { X, MapPin, Globe, Phone, Mail, FileText, Tag, Building2, Image as ImageIcon, Clock, Loader2, LocateFixed } from 'lucide-react';
+import { DAYS_OF_WEEK, emptyService, defaultHours, formatPhoneInput, isValidPhoneFormat, isValidEmailFormat, isValidLatitude, isValidLongitude, geocodeAddress } from '../models/Service.js';
 import { useModalA11y } from '../hook/useModalA11y.js';
 // import api from '../api/axiosConfig.js'; // no longer needed now that photos are pasted-in URLs, not uploaded files
 
@@ -224,6 +224,27 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
   //   }
   // };
 
+  // ── Auto-locate lat/long from the typed address ─────────────────────────
+  const [geocoding, setGeocoding] = useState(false);
+  const [geocodeError, setGeocodeError] = useState(null);
+
+  const handleFindCoordinates = async () => {
+    setGeocodeError(null);
+    if (!form.address?.trim()) {
+      setGeocodeError('Enter a street address first.');
+      return;
+    }
+    setGeocoding(true);
+    const result = await geocodeAddress({ address: form.address, city: form.city, province: form.province });
+    setGeocoding(false);
+    if (!result) {
+      setGeocodeError('Could not find coordinates for that address — enter them manually below.');
+      return;
+    }
+    setForm(f => ({ ...f, latitude: String(result.latitude), longitude: String(result.longitude) }));
+    setErrors(e => ({ ...e, latitude: null, longitude: null }));
+  };
+
   const validate = () => {
     const e = {};
     if (!form.name.trim())                          e.name        = 'Name is required.';
@@ -391,6 +412,18 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
             </Field>
           </div>
 
+          <div className="space-y-1">
+            <button type="button" onClick={handleFindCoordinates} disabled={geocoding}
+              className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-accent-text bg-accent-soft hover:bg-accent-soft-strong border border-accent-border rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+              {geocoding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LocateFixed className="h-3.5 w-3.5" />}
+              {geocoding ? 'Looking up coordinates…' : 'Find Coordinates From Address'}
+            </button>
+            {geocodeError && <p className="text-xs text-danger-text">{geocodeError}</p>}
+            <p className="text-[11px] text-faint">
+              Fills in Latitude/Longitude below automatically from the address, city, and province above. Always double-check the pin lands in the right spot — free geocoding isn't perfect, especially for newer buildings or rural addresses.
+            </p>
+          </div>
+
           {/* Coordinates — side by side */}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Latitude" error={errors.latitude}>
@@ -411,6 +444,7 @@ export default function ServiceFormModal({ mode, initial, onSave, onClose, categ
                You can find your Latitude and Longitude by:
             </p>
             <ul className="list-disc list-outside ml-4 text-left text-[11px] text-slate-400 space-y-1">
+              <li>Using the "Find Coordinates From Address" button above</li>
               <li>Searching your location on Google Maps</li>
               <li>Right-clicking on the map's red marker pin</li>
               <li>Clicking the coordinates shown at the top of the menu to copy them</li>

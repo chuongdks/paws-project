@@ -113,6 +113,35 @@ const normalizeTags = (raw) => {
     : { id: null, name: String(t) });
 };
 
+// ── Geocoding (address → lat/long) ─────────────────────────────────────────
+// Uses OpenStreetMap free Nominatim API 
+export async function geocodeAddress({ address, city, province }) {
+  const query = [address, city, province, 'Canada'].filter(Boolean).join(', ').trim();
+  if (!query) return null;
+
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=0&q=${encodeURIComponent(query)}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: { 'Accept': 'application/json' },
+    });
+    if (!response.ok) return null;
+
+    const results = await response.json();
+    if (!Array.isArray(results) || results.length === 0) return null;
+
+    const { lat, lon } = results[0];
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lon);
+    if (isNaN(latitude) || isNaN(longitude)) return null;
+
+    return { latitude, longitude };
+  } catch (err) {
+    console.error('Geocoding request failed:', err);
+    return null;
+  }
+}
+
 // ── Blank service for the Add form ────────────────────────────────────────────
 export const emptyService = () => createService({});
 
