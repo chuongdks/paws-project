@@ -1,301 +1,25 @@
 [
   {
     "id": 8,
-    "name": "Chuong Services for testing the web",
+    "name": "Art Windsor Essex",
     "category_id": 12,
-    "address": "",
+    "address": "401 Riverside Dr W, Windsor, ON N9A 7J1",
     "city": "Windsor",
     "province": "ON",
-    "phone": "666-362-9000",
-    "email": "fakemailcuzitistoccostlytocheckvalidmailinthebackend@nomoney.com",
-    "website_url": "https://www.youtube.com/watch?v=gA9SG2FFeFU",
-    "google_maps_url": null,
-    "latitude": 42.3040826,
-    "longitude": -83.0577779,
+    "phone": "(519) 977-0013",
+    "google_maps_url": "https://maps.app.goo.gl/UNvAaJVUZ6sRq5R86",
+    "latitude": 42.31837,
+    "longitude": -83.04446°,
     "description": "Test Description Edited Toast",
-    "inclusivity_notes": "Free for all Edited",
+    "inclusivity_notes": "Free for all",
     "washroom_info": "Gender inclusive bathroom is ready",
     "verification_status": "needs verification",
-    "image_url": "https://product-images.metro.ca/images/h17/h85/10379029184542.jpg",
-    "hours": {
-      "mon": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "tue": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "wed": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "thu": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "fri": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "sat": {
-        "open": "",
-        "close": "",
-        "closed": true
-      },
-      "sun": {
-        "open": "",
-        "close": "",
-        "closed": true
-      }
-    },
-    "accessibility_notes": "",
-    "last_verified_at": null,
-    "is_visible": 1,
-    "by_appointment_only": false,
-    "tags": [
-      {
-        "id": 1,
-        "name": "2SLGBTQIA+ owned or led"
-      },
-      {
-        "id": 2,
-        "name": "Active ally"
-      },
-      {
-        "id": 5,
-        "name": "Community recommended"
-      },
-      {
-        "id": 3,
-        "name": "Gender-inclusive washroom"
-      }
-    ]
-  },
-  {
-    "id": 12,
-    "name": "Dentist Service truck",
-    "category_id": 5,
-    "address": "",
-    "city": "Windsor",
-    "province": "ON",
-    "phone": "437-433-7338",
-    "email": "chuongawesome123@gmail.com",
-    "website_url": "youtube.com",
-    "google_maps_url": null,
-    "latitude": null,
-    "longitude": null,
-    "description": "Dental Truck on the go",
-    "inclusivity_notes": "Dental Truck on the go",
-    "washroom_info": "N/A",
-    "verification_status": "verified",
-    "image_url": null,
-    "hours": {
-      "mon": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "tue": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "wed": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "thu": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "fri": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "sat": {
-        "open": "",
-        "close": "",
-        "closed": true
-      },
-      "sun": {
-        "open": "",
-        "close": "",
-        "closed": true
-      }
-    },
-    "accessibility_notes": "",
-    "last_verified_at": "2026-07-20",
-    "is_visible": 1,
-    "by_appointment_only": false,
-    "tags": [
-      {
-        "id": 1,
-        "name": "2SLGBTQIA+ owned or led"
-      },
-      {
-        "id": 2,
-        "name": "Active ally"
-      },
-      {
-        "id": 3,
-        "name": "Gender-inclusive washroom"
-      }
-    ]
-  },
-  {
-    "id": 4,
-    "name": "Hours Image Test Service",
-    "category_id": 17,
-    "address": "Windsor, ON",
-    "city": "Windsor",
-    "province": "ON",
-    "phone": "519-333-3333",
-    "email": "hours-test@example.com",
-    "website_url": "https://pawsinrecovery.ca",
-    "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Windsor%2C%20ON",
-    "latitude": 42.3149,
-    "longitude": -83.0364,
-    "description": "Testing hours and image_url fields.",
-    "inclusivity_notes": "Test inclusivity notes.",
-    "washroom_info": "Test washroom info.",
-    "verification_status": "needs verification",
-    "image_url": "https://pawsinrecovery.ca/directory/uploads/services/b775a2474b69d0ef0039bec67a65ac73.jpg",
-    "hours": {
-      "mon": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "tue": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "wed": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "thu": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "fri": {
-        "open": "09:00",
-        "close": "17:00",
-        "closed": false
-      },
-      "sat": {
-        "open": "",
-        "close": "",
-        "closed": true
-      },
-      "sun": {
-        "open": "",
-        "close": "",
-        "closed": true
-      }
-    },
-    "accessibility_notes": "Test accessibility info.",
-    "last_verified_at": null,
-    "is_visible": 1,
-    "by_appointment_only": false,
-    "tags": []
-  },
-  {
-    "id": 2,
-    "name": "PAWS Test Service",
-    "category_id": 17,
-    "address": "Windsor, ON",
-    "city": "Windsor",
-    "province": "ON",
-    "phone": "519-000-0000",
-    "email": "test@example.com",
-    "website_url": "https://pawsinrecovery.ca",
-    "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Windsor%2C%20ON",
-    "latitude": 42.3149,
-    "longitude": -83.0364,
-    "description": "Temporary visible test service for frontend API testing.",
-    "inclusivity_notes": "Test inclusivity notes.",
-    "washroom_info": "Test washroom information.",
-    "verification_status": "needs verification",
-    "image_url": null,
+    "image_url": "https://en.wikipedia.org/wiki/Art_Windsor%E2%80%93Essex#/media/File:Art_Windsor-Essex,_Windsor,_Ontario,_2025-06-01_01.jpg",
     "hours": {
       "mon": {
         "open": "",
         "close": "",
-        "closed": false
-      },
-      "tue": {
-        "open": "",
-        "close": "",
-        "closed": false
-      },
-      "wed": {
-        "open": "",
-        "close": "",
-        "closed": false
-      },
-      "thu": {
-        "open": "",
-        "close": "",
-        "closed": false
-      },
-      "fri": {
-        "open": "",
-        "close": "",
-        "closed": false
-      },
-      "sat": {
-        "open": "",
-        "close": "",
-        "closed": false
-      },
-      "sun": {
-        "open": "",
-        "close": "",
-        "closed": false
-      }
-    },
-    "accessibility_notes": "Test accessibility information.",
-    "last_verified_at": null,
-    "is_visible": 1,
-    "by_appointment_only": false,
-    "tags": []
-  },
-  {
-    "id": 10,
-    "name": "Suggestion from not logged in user",
-    "category_id": 3,
-    "address": "734 Rosedale Avenue",
-    "city": "Windsor",
-    "province": "ON",
-    "phone": "232-342-4224",
-    "email": "23232@deeznut.com",
-    "website_url": "https://www.youtube.com/watch?v=MWlq5-at6_g&list=PLVVtLdSLiOfTnYMwdIqB1PGg9wIRZMcTu&index=65",
-    "google_maps_url": null,
-    "latitude": 42.3008913,
-    "longitude": -83.0688184,
-    "description": "Test a recommended service by not logging in",
-    "inclusivity_notes": "Noted",
-    "washroom_info": "They have a BIDET HERE!",
-    "verification_status": "verified",
-    "image_url": null,
-    "hours": {
-      "mon": {
-        "open": "09:00",
-        "close": "07:06",
-        "closed": false
+        "closed": true
       },
       "tue": {
         "open": "",
@@ -303,184 +27,30 @@
         "closed": true
       },
       "wed": {
-        "open": "23:45",
-        "close": "00:05",
+        "open": "11:00",
+        "close": "21:00",
         "closed": false
       },
       "thu": {
-        "open": "00:00",
-        "close": "12:00",
+        "open": "11:00",
+        "close": "17:00",
         "closed": false
       },
       "fri": {
-        "open": "",
-        "close": "",
-        "closed": true
-      },
-      "sat": {
-        "open": "",
-        "close": "",
-        "closed": true
-      },
-      "sun": {
-        "open": "",
-        "close": "",
-        "closed": true
-      }
-    },
-    "accessibility_notes": "",
-    "last_verified_at": "2026-07-16",
-    "is_visible": 1,
-    "by_appointment_only": false,
-    "tags": [
-      {
-        "id": 2,
-        "name": "Active ally"
-      },
-      {
-        "id": 5,
-        "name": "Community recommended"
-      },
-      {
-        "id": 4,
-        "name": "Safe / welcoming / affirming space"
-      }
-    ]
-  },
-  {
-    "id": 5,
-    "name": "Tags Test Service Updated",
-    "category_id": 17,
-    "address": "Windsor, ON",
-    "city": "Windsor",
-    "province": "ON",
-    "phone": "519-555-5555",
-    "email": "tags-updated@example.com",
-    "website_url": "https://pawsinrecovery.ca",
-    "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Windsor%2C%20ON",
-    "latitude": 42.3149,
-    "longitude": -83.0364,
-    "description": "Testing updated service tags.",
-    "inclusivity_notes": "Updated tags test inclusivity notes.",
-    "washroom_info": "Updated washroom info.",
-    "verification_status": "needs verification",
-    "image_url": "https://pawsinrecovery.ca/test-image-updated.jpg",
-    "hours": {
-      "mon": {
-        "open": "10:00",
-        "close": "18:00",
-        "closed": false
-      },
-      "tue": {
-        "open": "10:00",
-        "close": "18:00",
-        "closed": false
-      },
-      "wed": {
-        "open": "10:00",
-        "close": "18:00",
-        "closed": false
-      },
-      "thu": {
-        "open": "10:00",
-        "close": "18:00",
-        "closed": false
-      },
-      "fri": {
-        "open": "10:00",
-        "close": "18:00",
+        "open": "11:00",
+        "close": "17:00",
         "closed": false
       },
       "sat": {
-        "open": "",
-        "close": "",
-        "closed": true
-      },
-      "sun": {
-        "open": "",
-        "close": "",
-        "closed": true
-      }
-    },
-    "accessibility_notes": "Updated accessibility info.",
-    "last_verified_at": null,
-    "is_visible": 1,
-    "by_appointment_only": false,
-    "tags": [
-      {
-        "id": 2,
-        "name": "Active ally"
-      },
-      {
-        "id": 6,
-        "name": "Verified by PAWS"
-      }
-    ]
-  },
-  {
-    "id": 13,
-    "name": "Test upload an image for a service",
-    "category_id": 17,
-    "address": "3840 Finch Ave E, Scarborough, ON M1T 3T4",
-    "city": "Windsor",
-    "province": "ON",
-    "phone": "232-312-3213",
-    "email": "yougotmail@asl.com",
-    "website_url": "https://www.youtube.com/watch?v=p2qgIlpcZ1w",
-    "google_maps_url": null,
-    "latitude": 43.8010247,
-    "longitude": -79.3017216,
-    "description": "Test Description",
-    "inclusivity_notes": "Test Description",
-    "washroom_info": "Test Description",
-    "verification_status": "verified",
-    "image_url": "https://xboxwire.thesourcemediaassets.com/sites/2/2026/06/DOOMTDA_DLC_CosmicElemental_3840x2160_LOGO_Web-1ac9df41a9afc305f650-768x432.jpg",
-    "hours": {
-      "mon": {
-        "open": "",
-        "close": "",
-        "closed": false
-      },
-      "tue": {
-        "open": "",
-        "close": "",
-        "closed": false
-      },
-      "wed": {
-        "open": "",
-        "close": "",
-        "closed": false
-      },
-      "thu": {
-        "open": "",
-        "close": "",
-        "closed": false
-      },
-      "fri": {
-        "open": "",
-        "close": "",
-        "closed": false
-      },
-      "sat": {
-        "open": "",
-        "close": "",
+        "open": "11:00",
+        "close": "17:00",
         "closed": false
       },
       "sun": {
-        "open": "",
-        "close": "",
+        "open": "11:00",
+        "close": "17:00",
         "closed": false
       }
-    },
-    "accessibility_notes": "",
-    "last_verified_at": "2026-07-21",
-    "is_visible": 1,
-    "by_appointment_only": true,
-    "tags": [
-      {
-        "id": 4,
-        "name": "Safe / welcoming / affirming space"
-      }
-    ]
-  }
-]
+    }
+
+    ] 
