@@ -2,7 +2,7 @@
   {
     "id": 1,
     "name": "Art Windsor Essex",
-    "category_id": 12,
+    "category_id": 1,
     "address": "401 Riverside Dr W, Windsor, ON N9A 7J1",
     "city": "Windsor",
     "province": "ON",
@@ -16,13 +16,41 @@
     "verification_status": "needs verification",
     "image_url": "https://en.wikipedia.org/wiki/Art_Windsor%E2%80%93Essex#/media/File:Art_Windsor-Essex,_Windsor,_Ontario,_2025-06-01_01.jpg",
     "hours": {
-      "mon": { "open": "", "close": "", "closed": true },
-      "tue": { "open": "", "close": "", "closed": true },
-      "wed": { "open": "11:00", "close": "21:00", "closed": false },
-      "thu": { "open": "11:00", "close": "17:00", "closed": false },
-      "fri": { "open": "11:00", "close": "17:00", "closed": false },
-      "sat": { "open": "11:00", "close": "17:00", "closed": false },
-      "sun": { "open": "11:00", "close": "17:00", "closed": false }
+      "mon": {
+        "open": "",
+        "close": "",
+        "closed": true
+      },
+      "tue": {
+        "open": "",
+        "close": "",
+        "closed": true
+      },
+      "wed": {
+        "open": "11:00",
+        "close": "21:00",
+        "closed": false
+      },
+      "thu": {
+        "open": "11:00",
+        "close": "17:00",
+        "closed": false
+      },
+      "fri": {
+        "open": "11:00",
+        "close": "17:00",
+        "closed": false
+      },
+      "sat": {
+        "open": "11:00",
+        "close": "17:00",
+        "closed": false
+      },
+      "sun": {
+        "open": "11:00",
+        "close": "17:00",
+        "closed": false
+      }
     }
   }
 ]
